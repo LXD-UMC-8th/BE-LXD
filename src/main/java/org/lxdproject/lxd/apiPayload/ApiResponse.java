@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.lxdproject.lxd.apiPayload.code.status.BaseCode;
+import org.lxdproject.lxd.apiPayload.code.status.BaseErrorCode;
 import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 
 @Getter
@@ -30,8 +31,18 @@ public class ApiResponse<T> {
                 SuccessStatus._OK.getMessage(), result);
     }
 
+    public static <T> ApiResponse<T> onSuccess(BaseCode successCode, T result){
+        return new ApiResponse<>(true, successCode.getReasonHttpStatus().getCode(),
+                successCode.getReasonHttpStatus().getMessage(), result);
+    }
+
     // 실패한 경우 응답 생성
-    public static <T> ApiResponse<T> onFailure(String code, String message, T data){
+    public static <T> ApiResponse<T> onFailure(BaseErrorCode errorCode, T data){
+        return new ApiResponse<>(false, errorCode.getReasonHttpStatus().getCode(), errorCode.getReasonHttpStatus().getMessage(), data);
+    }
+
+    // ErrorReasonDTO를 위한 전용 onFailure 오버로딩
+    public static <T> ApiResponse<T> onFailure(String code, String message, T data) {
         return new ApiResponse<>(false, code, message, data);
     }
 }
