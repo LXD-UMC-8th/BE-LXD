@@ -1,7 +1,3 @@
----
-title: "[FEATURE] 기능 요약"
----
-
 ## 📌 Issue number and Link
 <!-- 관련있는 이슈 번호(#000)을 적어주세요.
   closed #Issue_number를 적어주세요 -->
@@ -24,6 +20,4 @@ title: "[FEATURE] 기능 요약"
 - [ ] infrastructure related changes (CI/CD, Build)
 - [ ] Documentation content changes
 
-
-## 📚 Other information
-<!-- 참고할 사항이 있다면 적어주세요 -->
+## 📸 Screenshot
