@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+  app:
+    image: ${DOCKER_USERNAME}/${DOCKER_REPO}
+    pull_policy: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PWD: ${DB_PWD}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+#      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+#      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+#      MAIL_USERNAME: ${MAIL_USERNAME}
+#      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod # prod 프로파일 활성화
+      hibernate_ddl_auto: update
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+       - app-network
+    restart: always
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  app-network:
+    driver: bridge
