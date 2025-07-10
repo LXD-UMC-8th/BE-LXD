@@ -44,6 +44,9 @@ jobs:
           target: "/home/ubuntu/deploy/"
 
       - name: Docker build and push
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: docker build --no-cache -t ${DOCKER_USERNAME}/${DOCKER_REPO} .
 
       - name: docker login
@@ -53,6 +56,9 @@ jobs:
           password: ${{secrets.DOCKER_PWD}}
 
       - name: docker Hub push
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: docker push ${DOCKER_USERNAME}/${DOCKER_REPO}
 
   deploy:
@@ -79,12 +85,8 @@ jobs:
             echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> ~/deploy/.env
             echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> ~/deploy/.env
             echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> ~/deploy/.env
-#            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ~/deploy/.env
-#            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ~/deploy/.env
-#            echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> ~/deploy/.env
-#            echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> ~/deploy/.env
             
-            sudo docker-compose -f ~/deploy/docker-compose.yml down
-            sudo docker-compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
-            sudo docker-compose -f ~/deploy/docker-compose.yml up -d --force-recreate
+            sudo docker compose -f ~/deploy/docker-compose.yml down
+            sudo docker compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
+            sudo docker compose -f ~/deploy/docker-compose.yml up -d --force-recreate
             sudo docker image prune -f
