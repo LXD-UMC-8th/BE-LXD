@@ -84,7 +84,7 @@ jobs:
 #            echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> ~/deploy/.env
 #            echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> ~/deploy/.env
             
-            sudo docker-compose -f ~/deploy/docker-compose.yml down
-            sudo docker-compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
-            sudo docker-compose -f ~/deploy/docker-compose.yml up -d --force-recreate
+            sudo docker compose -f ~/deploy/docker-compose.yml down
+            sudo docker compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
+            sudo docker compose -f ~/deploy/docker-compose.yml up -d --force-recreate
             sudo docker image prune -f
