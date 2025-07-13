@@ -2,11 +2,14 @@ package org.lxdproject.lxd.member.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.member.converter.MemberConverter;
+import org.lxdproject.lxd.member.dto.MemberRequestDTO;
+import org.lxdproject.lxd.member.dto.MemberResponseDTO;
+import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.service.MemberService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,7 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class MemberRestController {
 
+    private final MemberService memberService;
 
+    @GetMapping("/join")
+    public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(MemberRequestDTO.JoinRequestDTO joinRequestDTO) {
 
+        Member member = memberService.join(joinRequestDTO);
+        ApiResponse.onSuccess(MemberConverter.toJoinResponseDTO(member));
+    }
 
 }
