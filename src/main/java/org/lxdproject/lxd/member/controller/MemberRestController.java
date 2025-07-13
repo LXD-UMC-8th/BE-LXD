@@ -20,10 +20,10 @@ public class MemberRestController {
     private final MemberService memberService;
 
     @GetMapping("/join")
-    public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(MemberRequestDTO.JoinRequestDTO joinRequestDTO) {
+    public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(@RequestBody @Valid MemberRequestDTO.JoinRequestDTO joinRequestDTO) {
 
         Member member = memberService.join(joinRequestDTO);
-        ApiResponse.onSuccess(MemberConverter.toJoinResponseDTO(member));
+        return ApiResponse.onSuccess(MemberConverter.toJoinResponseDTO(member));
     }
 
 }
