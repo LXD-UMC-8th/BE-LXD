@@ -20,7 +20,10 @@ public class MemberService {
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO) {
 
-        System.out.print("email : " + joinRequestDTO.getEmail());
+
+        if(!joinRequestDTO.getIsPrivacyAgreed().equals(Boolean.TRUE)){
+            throw new MemberHandler(ErrorStatus.PRIVACY_POLICY_NOT_AGREED);
+        }
 
         if(memberRepository.existsByEmail(joinRequestDTO.getEmail())) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);

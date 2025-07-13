@@ -25,6 +25,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 준현 - MEMBER 에러 코드 (4300~4399)
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "MEMBER4301", "이미 존재하는 이메일입니다."),
     NICKNAME_DUPLICATION(HttpStatus.BAD_REQUEST, "MEMBER4302", "이미 존재하는 닉네임입니다."),
+    PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4303", "개인정보 동의는 필수입니다."),
 
     // 서현 - MEMBER 에러 코드 (4400~4499)
 
