@@ -32,7 +32,7 @@ public class MemberConverter {
                 .email(joinRequestDTO.getEmail())
                 .nickname(joinRequestDTO.getNickname())
                 .loginType(LoginType.LOCAL)
-                .isPrivacyAgreed(Boolean.TRUE)
+                .isPrivacyAgreed(joinRequestDTO.getIsPrivacyAgreed())
                 .profileImg(joinRequestDTO.getProfileImg())
                 .status(Status.ACTIVE)
                 .isAlarmAgreed(Boolean.FALSE) // 알람은 꺼져있는게 Default
