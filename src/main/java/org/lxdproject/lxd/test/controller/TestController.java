@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.controller;
+package org.lxdproject.lxd.test.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
