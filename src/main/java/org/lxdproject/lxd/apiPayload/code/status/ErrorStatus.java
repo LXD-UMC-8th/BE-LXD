@@ -29,6 +29,22 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 서현 - MEMBER 에러 코드 (4400~4499)
 
+
+
+    // 인증 관련 에러
+    // 소윤 - AUTH 에러 코드 (4000~4099)
+
+    // 민지 - AUTH 에러 코드 (4100~4199)
+
+    // 정은 - AUTH 에러 코드 (4200~4299)
+
+    // 준현 - AUTH 에러 코드 (4300~4399)
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4300", "토큰이 올바르지 않습니다"),
+
+    // 서현 - AUTH 에러 코드 (4400~4499)
+
+
+
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다.");
