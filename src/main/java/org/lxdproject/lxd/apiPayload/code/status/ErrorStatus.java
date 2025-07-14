@@ -21,6 +21,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 멤버 관련 에러 응답
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND,"MEMBER4001","존재하지 않는 회원입니다."),
+
+    // 일기 관련 에러 응답
+    DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),
+
     ;
 
     private final HttpStatus httpStatus;

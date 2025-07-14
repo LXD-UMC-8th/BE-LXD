@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
+import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
@@ -19,7 +20,7 @@ import org.lxdproject.lxd.member.entity.Member;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Diary{
+public class Diary extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
