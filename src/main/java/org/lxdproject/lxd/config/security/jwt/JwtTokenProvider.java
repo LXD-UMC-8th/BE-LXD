@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import org.lxdproject.lxd.config.security.properties.JwtProperties;
 
+@Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 

@@ -1,5 +1,8 @@
 package org.lxdproject.lxd.config.security;
 
+import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.config.security.jwt.JwtAuthenticationFilter;
+import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,9 +11,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     // 인증 없이 접근 가능한 화이트리스트 경로 정의
@@ -29,6 +34,8 @@ public class SecurityConfig {
             "/auth/email-verify"
     };
 
+    private final JwtTokenProvider jwtTokenProvider;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -42,7 +49,9 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable());
+                .httpBasic(basic -> basic.disable())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
