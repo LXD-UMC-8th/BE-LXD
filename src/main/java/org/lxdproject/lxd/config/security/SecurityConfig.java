@@ -24,12 +24,12 @@ public class SecurityConfig {
             "/health",
             "/test/**",
             "/members/join",
-            "/members/login",
             "/members/check-email",
             "/members/check-nickname",
             "/members/password-verify",
             "/swagger-ui/**",
             "/v3/api-docs/**",
+            "/auth/login",
             "/auth/email-verification",
             "/auth/email-verify"
     };
