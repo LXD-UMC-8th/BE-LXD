@@ -9,7 +9,6 @@ import org.lxdproject.lxd.diary.entity.enums.Visibility;
 
 @Getter @Setter
 public class DiaryRequestDTO {
-    private Long memberId; // 추후 인증 기반 처리 예정
     private String title;
     private String content;
     private Style style;

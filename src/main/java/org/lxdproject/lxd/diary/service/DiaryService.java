@@ -25,13 +25,9 @@ public class DiaryService {
 
     public DiaryResponseDTO createDiary(DiaryRequestDTO request) {
 
-        // Todo: 현재 로그인한 사용자의 고유번호 넣기
-        Member member = null;
-
-        if (request.getMemberId() != null) {
-            member = memberRepository.findById(request.getMemberId())
-                    .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        }
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Member member = memberRepository.findById(currentMemberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         Diary diary = Diary.builder()
                 .title(request.getTitle())
