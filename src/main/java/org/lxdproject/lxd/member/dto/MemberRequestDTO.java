@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 
 import java.time.LocalDateTime;
@@ -51,4 +52,5 @@ public class MemberRequestDTO {
         private Language language;
 
     }
+
 }
