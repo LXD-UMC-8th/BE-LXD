@@ -1,9 +1,11 @@
 package org.lxdproject.lxd.diary.service;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.dto.DiaryResponseDTO;
@@ -81,7 +83,11 @@ public class DiaryService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        // Todo: JWT 토큰에서 추출해서 삭제 권한을 검사
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        if (diary.getMember() == null || !diary.getMember().getId().equals(currentMemberId)) {
+            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
+        }
+
         // Todo: S3 이미지 삭제 로직 구현
 
         diaryRepository.delete(diary);
