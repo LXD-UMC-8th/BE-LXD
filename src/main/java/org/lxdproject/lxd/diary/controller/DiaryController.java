@@ -26,4 +26,10 @@ public class DiaryController implements DiaryApi{
     public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long id) {
         return ApiResponse.onSuccess(diaryService.getDiaryDetail(id));
     }
+
+    @Override
+    public ApiResponse<Boolean> deleteDiary(@PathVariable Long id) {
+        diaryService.deleteDiary(id);
+        return ApiResponse.onSuccess(Boolean.TRUE);
+    }
 }

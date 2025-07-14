@@ -36,4 +36,12 @@ public interface DiaryApi {
             @Parameter(name = "id", description = "일기의 아이디, path variable 입니다!"),
     })
     public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long id);
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DIARY4001", description = "없는 일기에요",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
+    public ApiResponse<Boolean> deleteDiary(@PathVariable Long id);
 }

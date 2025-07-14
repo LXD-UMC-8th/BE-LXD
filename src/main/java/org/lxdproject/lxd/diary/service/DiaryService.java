@@ -76,4 +76,14 @@ public class DiaryService {
         );
     }
 
+    @Transactional
+    public void deleteDiary(Long diaryId) {
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
+        // Todo: JWT 토큰에서 추출해서 삭제 권한을 검사
+        // Todo: S3 이미지 삭제 로직 구현
+
+        diaryRepository.delete(diary);
+    }
 }
