@@ -23,9 +23,11 @@ public enum ErrorStatus implements BaseErrorCode {
     // 정은 - MEMBER 에러 코드 (4200~4299)
 
     // 준현 - MEMBER 에러 코드 (4300~4399)
-    EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4301", "이미 존재하는 이메일입니다."),
-    NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4302", "이미 존재하는 닉네임입니다."),
-    PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4303", "개인정보 동의는 필수입니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
+
+    EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
+    NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4312", "이미 존재하는 닉네임입니다."),
+    PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4313", "개인정보 동의는 필수입니다."),
 
     // 서현 - MEMBER 에러 코드 (4400~4499)
 
@@ -39,7 +41,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // 정은 - AUTH 에러 코드 (4200~4299)
 
     // 준현 - AUTH 에러 코드 (4300~4399)
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4300", "토큰이 올바르지 않습니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4300", "토큰이 올바르지 않습니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH4310", "아이디 또는 비밀번호가 올바르지 않습니다."),
 
     // 서현 - AUTH 에러 코드 (4400~4499)
 
