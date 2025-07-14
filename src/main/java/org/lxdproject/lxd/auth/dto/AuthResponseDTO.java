@@ -23,7 +23,7 @@ public class AuthResponseDTO {
         private String refreshToken;*/
 
         @Schema(description = "로그인한 멤버 정보")
-        private MemberResponseDTO.LoginResponseDTO.MemberDTO member;
+        private MemberDTO member;
 
         @Getter
         @Builder
