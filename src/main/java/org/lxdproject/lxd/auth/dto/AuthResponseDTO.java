@@ -1,23 +1,29 @@
-package org.lxdproject.lxd.member.dto;
+package org.lxdproject.lxd.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 
-import java.time.LocalDateTime;
-
-public class MemberResponseDTO {
+public class AuthResponseDTO {
 
     @Builder
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class JoinResponseDTO{
+    public static class LoginResponseDTO{
 
-        @Schema(description = "회원가입한 멤버 정보")
-        private MemberDTO member;
+        @Schema(description = "액세스 토큰")
+        private String accessToken;
+
+        // TODO refresh 토큰 구현 시 해당 부분 주석 제거하기
+        /*@Schema(description = "리프레쉬 토큰")
+        private String refreshToken;*/
+
+        @Schema(description = "로그인한 멤버 정보")
+        private MemberResponseDTO.LoginResponseDTO.MemberDTO member;
 
         @Getter
         @Builder
@@ -45,6 +51,5 @@ public class MemberResponseDTO {
 
 
     }
-
 
 }

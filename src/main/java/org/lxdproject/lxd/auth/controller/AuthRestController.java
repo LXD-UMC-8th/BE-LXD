@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
+import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
@@ -28,9 +30,9 @@ public class AuthRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패 또는 파라미터 오류"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "이메일/비밀번호 불일치 또는 토큰이 올바르지 않음")
     })
-    public ApiResponse<MemberResponseDTO.LoginResponseDTO> login(@RequestBody @Valid MemberRequestDTO.LoginRequestDTO loginRequestDTO) {
+    public ApiResponse<AuthResponseDTO.LoginResponseDTO> login(@RequestBody @Valid AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
-        MemberResponseDTO.LoginResponseDTO loginResponseDTO = authService.login(loginRequestDTO);
+        AuthResponseDTO.LoginResponseDTO loginResponseDTO = authService.login(loginRequestDTO);
         return ApiResponse.onSuccess(loginResponseDTO);
     }
 }
