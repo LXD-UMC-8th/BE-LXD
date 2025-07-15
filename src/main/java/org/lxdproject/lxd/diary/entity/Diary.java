@@ -7,10 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
+import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
+import org.lxdproject.lxd.member.entity.Member;
 
 @Table(name = "일기")
 @Entity
@@ -18,15 +20,15 @@ import org.lxdproject.lxd.diary.entity.enums.Visibility;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Diary {
+public class Diary extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id")
-//    private Member member;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "member_id", nullable = true)
+    private Member member;
 
     private String title;
 
@@ -45,11 +47,14 @@ public class Diary {
     @Enumerated(EnumType.STRING)
     private Language language;
 
-    private Integer likeCount;
+    @Builder.Default
+    private Integer likeCount=0;
 
-    private Integer commentCount;
+    @Builder.Default
+    private Integer commentCount=0;
 
-    private Integer correctionCount;
+    @Builder.Default
+    private Integer correctionCount=0;
 
     @Column(columnDefinition = "TEXT")
     private String thumbImg;
