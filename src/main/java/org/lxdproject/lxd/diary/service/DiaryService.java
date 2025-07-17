@@ -10,6 +10,7 @@ import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.dto.DiaryResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
@@ -54,9 +55,10 @@ public class DiaryService {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        Member member = diary.getMember();
-        if (member == null) {
-            throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        // 비공개 일기의 경우 작성자만 접근 가능(가시성 검증)
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        if (diary.getVisibility() == Visibility.PRIVATE && !diary.getMember().getId().equals(currentMemberId)) {
+            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
         return new DiaryDetailResponseDTO(
@@ -64,9 +66,9 @@ public class DiaryService {
                 diary.getVisibility(),
                 diary.getTitle(),
                 diary.getLanguage(),
-                member.getProfileImg(),
-                member.getNickname(),
-                member.getUsername(),
+                diary.getMember().getProfileImg(),
+                diary.getMember().getNickname(),
+                diary.getMember().getUsername(),
                 diary.getCreatedAt(),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
