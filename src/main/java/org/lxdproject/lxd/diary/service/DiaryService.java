@@ -23,6 +23,7 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
 
+    @Transactional
     public DiaryResponseDTO createDiary(DiaryRequestDTO request) {
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
