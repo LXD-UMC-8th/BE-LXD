@@ -40,7 +40,7 @@ public class Member extends BaseEntity {
     private Role role;
 
     // 아이디
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, unique = true)
     private String username;
 
     // 비밀번호
