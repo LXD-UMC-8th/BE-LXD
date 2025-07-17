@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diary.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
@@ -15,7 +16,7 @@ public class DiaryController implements DiaryApi{
     private final DiaryService diaryService;
 
     @Override
-    public ApiResponse<DiaryDetailResponseDTO> createDiary(@RequestBody DiaryRequestDTO request) {
+    public ApiResponse<DiaryDetailResponseDTO> createDiary(@Valid @RequestBody DiaryRequestDTO request) {
         DiaryDetailResponseDTO response = diaryService.createDiary(request);
         return ApiResponse.onSuccess(response);
     }
