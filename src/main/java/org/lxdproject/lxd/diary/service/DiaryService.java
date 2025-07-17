@@ -8,7 +8,6 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.DiaryResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
@@ -25,7 +24,7 @@ public class DiaryService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public DiaryResponseDTO createDiary(DiaryRequestDTO request) {
+    public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(currentMemberId)
@@ -44,10 +43,7 @@ public class DiaryService {
 
         diaryRepository.save(diary);
 
-        return new DiaryResponseDTO(
-                diary.getId(),
-                diary.getThumbImg()
-        );
+        return DiaryDetailResponseDTO.from(diary);
     }
 
     @Transactional(readOnly = true)
@@ -61,20 +57,7 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        return new DiaryDetailResponseDTO(
-                diary.getId(),
-                diary.getVisibility(),
-                diary.getTitle(),
-                diary.getLanguage(),
-                diary.getMember().getProfileImg(),
-                diary.getMember().getNickname(),
-                diary.getMember().getUsername(),
-                diary.getCreatedAt(),
-                diary.getCommentCount(),
-                diary.getLikeCount(),
-                diary.getCorrectionCount(),
-                diary.getContent()
-        );
+        return DiaryDetailResponseDTO.from(diary);
     }
 
     @Transactional

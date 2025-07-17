@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.DiaryResponseDTO;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Diary API", description = "일기 관련 API 입니다.")
@@ -23,7 +22,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4001", description = "회원 정보가 이상해요!",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    public ApiResponse<DiaryResponseDTO> createDiary(@RequestBody DiaryRequestDTO request);
+    public ApiResponse<DiaryDetailResponseDTO> createDiary(@RequestBody DiaryRequestDTO request);
 
     @GetMapping("/{id}")
     @Operation(summary = "일기 상세 조회 API", description = "id에 해당하는 일기를 상세 조회하는 API입니다.")
