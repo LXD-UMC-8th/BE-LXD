@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.QuestionRequestDTO;
+import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,4 +50,14 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
     public ApiResponse<Boolean> deleteDiary(@PathVariable Long id);
+
+    @PostMapping("/random-question")
+    @Operation(summary = "랜덤 질문 조회 API", description = "요청으로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "랜덤 질문 반환 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<QuestionResponseDTO> getRandomQuestion(@Valid @org.springframework.web.bind.annotation.RequestBody QuestionRequestDTO request);
+
 }
