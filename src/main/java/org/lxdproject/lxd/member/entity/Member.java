@@ -4,10 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
+import org.lxdproject.lxd.diary.entity.mapping.DiaryLike;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.entity.enums.Role;
 import org.lxdproject.lxd.member.entity.enums.Status;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -75,5 +80,12 @@ public class Member{
     // 알림 설정 여부
     @Column(name = "is_alarm_agreed", nullable = false)
     private Boolean isAlarmAgreed;
+
+    // 일기 연관관계 설정
+    @OneToMany(mappedBy = "member")
+    private List<Diary> diaries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    private List<DiaryLike> diaryLikes = new ArrayList<>();
 
 }
