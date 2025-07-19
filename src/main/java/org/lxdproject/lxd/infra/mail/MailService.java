@@ -1,11 +1,14 @@
 package org.lxdproject.lxd.infra.mail;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MailHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +43,22 @@ public class MailService {
         message.setText(text);
 
         return message;
+    }
+
+    public void sendEmailFromMimeMessage(String toEmail, String title, String htmlContent) {
+        MimeMessage mimeMessage = emailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject(title);
+            helper.setText(htmlContent, true);  // HTML 형식임을 명시
+
+            emailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            log.error("MailService.sendEmail exception to: {}, subject: {}", toEmail, title, e);
+            throw new MailHandler(ErrorStatus.UNABLE_TO_SEND_EMAIL);
+        }
     }
 
 }
