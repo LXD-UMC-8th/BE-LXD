@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 
 import java.time.LocalDateTime;
 
@@ -45,6 +46,15 @@ public class MemberResponseDTO {
 
 
     }
+
+    @Getter
+    @AllArgsConstructor
+    @Schema(description = "언어 변경 응답 DTO")
+    public static class UpdateLanguageResponseDTO {
+        @Schema(description = "학습 언어 (예: KO, ENG)")
+        private Language language;
+    }
+
 
 
 }

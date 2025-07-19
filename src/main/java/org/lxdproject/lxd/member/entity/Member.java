@@ -77,4 +77,11 @@ public class Member extends BaseEntity {
     @Column(name = "is_alarm_agreed", nullable = false)
     private Boolean isAlarmAgreed;
 
+    // 언어 변경
+    public void updateLanguage(Language language) {
+        if (this.language == language) return; // 이미 동일하면 무시
+        this.language = language;
+    }
+
+
 }

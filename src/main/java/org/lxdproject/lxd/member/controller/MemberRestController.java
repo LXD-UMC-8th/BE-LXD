@@ -32,4 +32,15 @@ public class MemberRestController {
         return ApiResponse.onSuccess(MemberConverter.toJoinResponseDTO(member));
     }
 
+    @PatchMapping("/language")
+    @Operation(summary = "언어 변경 API", description = "회원의 학습 언어를 변경합니다.")
+    public ApiResponse<MemberResponseDTO.UpdateLanguageResponseDTO> updateLanguage(
+            @RequestBody @Valid MemberRequestDTO.UpdateLanguageRequestDTO requestDTO
+            /* , @AuthenticationPrincipal CustomUserDetails userDetails */
+    ) {
+        Long memberId = 1L; // 🧪 테스트용 — 추후 로그인 연동되면 교체
+        return ApiResponse.onSuccess(memberService.updateLanguage(memberId, requestDTO.getLanguage()));
+    }
+
+
 }

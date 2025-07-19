@@ -4,8 +4,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
+import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,4 +42,14 @@ public class MemberService {
         return member;
 
     }
+
+    public MemberResponseDTO.UpdateLanguageResponseDTO updateLanguage(Long memberId, Language newLanguage) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.updateLanguage(newLanguage);
+
+        return new MemberResponseDTO.UpdateLanguageResponseDTO(member.getLanguage());
+    }
+
 }

@@ -53,4 +53,12 @@ public class MemberRequestDTO {
 
     }
 
+    @Getter
+    @Schema(description = "언어 변경 요청 DTO")
+    public static class UpdateLanguageRequestDTO {
+        @NotNull(message = "언어는 필수입니다.")
+        @Schema(description = "학습 언어 (예: KO, ENG)")
+        private Language language;
+    }
+
 }
