@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.auth.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +96,7 @@ public class AuthService {
         }
 
         // Redis에 기존 값 삭제 후 재등록
+        // TODO 현재 같은 이메일 요청을 여러번 할 시, 한 개의 이메일에 여러 개의 토큰이 존재함 -> Redis hash 방식으로 추후 refactoring 하기
         redisService.deleteValues(token);
         redisService.setValues(token, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5L));
     }
@@ -105,6 +107,20 @@ public class AuthService {
                 .encodeToString(UUID.randomUUID().toString().getBytes());
     }
 
-    public void verifyEmailTokenAndRedirect(String token) {
+    public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
+        String email = redisService.getValues(token);
+        try {
+            if (email == null) {
+                // 만료 또는 잘못된 토큰일 경우 → 실패 페이지로
+                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+            } else {
+                redisService.deleteValues(token); // 재사용 방지
+                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/success");
+            }
+        }catch (IOException e) {
+            log.error("redirect에 실패했습니다");
+            throw new RuntimeException("리다이렉트 실패", e);
+        }
+
     }
 }

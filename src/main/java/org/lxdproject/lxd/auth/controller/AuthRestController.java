@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
@@ -48,8 +49,8 @@ public class AuthRestController {
     }
 
     @GetMapping("/emails/verifications")
-    public void verifyEmailTokenAndRedirect(@RequestParam("token") String token) {
-        authService.verifyEmailTokenAndRedirect(token);
+    public void verifyEmailTokenAndRedirect(@RequestParam("token") String token, HttpServletResponse response) {
+        authService.verifyEmailTokenAndRedirect(token, response);
     }
 
 }
