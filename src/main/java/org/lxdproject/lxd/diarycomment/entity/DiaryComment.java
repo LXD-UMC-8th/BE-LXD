@@ -26,6 +26,16 @@ public class DiaryComment extends BaseEntity {
     private Long parentId; // 일반 댓글이면 null
 
     private int likeCount;
+
+    // DiaryComment.java (Entity)
+    public void increaseLikeCount() {
+        this.likeCount += 1;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount = Math.max(this.likeCount - 1, 0); // 음수 방지
+    }
+
 }
 
 
