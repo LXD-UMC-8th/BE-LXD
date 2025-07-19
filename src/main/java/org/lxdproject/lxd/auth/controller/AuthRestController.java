@@ -37,6 +37,13 @@ public class AuthRestController {
     }
 
     @PostMapping("/emails/verification-requests")
+    @Operation(summary = "이메일 인증 링크 발송 API", description = "해당 이메일로 이메일 인증 링크를 발송합니다.", responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공, 토큰 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패 또는 파라미터 오류"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 존재하는 이메일 오류 "),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 문제")
+
+    })
     public ApiResponse<String> sendVerificationEmail(@RequestBody @Valid AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         authService.sendVerificationEmail(sendVerificationRequestDTO);
