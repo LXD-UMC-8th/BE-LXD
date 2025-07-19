@@ -44,4 +44,7 @@ public class AuthService {
                 member
         );
     }
+
+    public void sendVerificationEmail(AuthRequestDTO.@Valid sendVerificationRequestDTO sendVerificationRequestDTO) {
+    }
 }

@@ -39,7 +39,7 @@ public class AuthRestController {
     @PostMapping("/emails/verification-requests")
     public ApiResponse<String> sendVerificationEmail(@RequestBody @Valid AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
-        authService.sendVerficiationEmail(sendVerificationRequestDTO);
+        authService.sendVerificationEmail(sendVerificationRequestDTO);
         return ApiResponse.onSuccess("입력한 이메일로 인증 링크를 전송했습니다.");
     }
 
