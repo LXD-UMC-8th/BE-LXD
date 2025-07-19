@@ -49,6 +49,10 @@ public class AuthRestController {
     }
 
     @GetMapping("/emails/verifications")
+    @Operation(summary = "이메일 인증 API", description = "이메일 인증 후 프론트엔드 페이지로 리다이렉트 합니다", responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공, 토큰 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "리다이렉트 오류")
+    })
     public void verifyEmailTokenAndRedirect(@RequestParam("token") String token, HttpServletResponse response) {
         authService.verifyEmailTokenAndRedirect(token, response);
     }
