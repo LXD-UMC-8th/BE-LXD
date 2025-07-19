@@ -8,12 +8,18 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
+import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
+import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.util.Base64;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +31,8 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final MailService mailService;
+    private final UrlProperties urlProperties;
+    private final RedisService redisService;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -53,11 +61,22 @@ public class AuthService {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 
+        // 토큰 생성 및 인증 링크 구성
+        String token = createSecureToken();
         String title = "LXD 이메일 인증 번호";
-        String authLink= "test";
-        mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, authLink);
+        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + token;
 
-        // 이메일 인증 요청 시 임시 토큰 Redis에 저장 ( key = Email / value = Random Code )
-        // TODO 이메일 전송 기능 성공 시 구현
+        // 이메일 발송
+        mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, verificationLink);
+
+        // Redis에 기존 값 삭제 후 재등록
+        redisService.deleteValues(sendVerificationRequestDTO.getEmail());
+        redisService.setValues(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5L));
+    }
+
+    private String createSecureToken() {
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(UUID.randomUUID().toString().getBytes());
     }
 }
