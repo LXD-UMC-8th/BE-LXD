@@ -2,6 +2,8 @@ package org.lxdproject.lxd.correction.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
@@ -27,7 +29,7 @@ public class CorrectionService {
             Member author
     ) {
         Diary diary = diaryRepository.findById(requestDto.getDiaryId())
-                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다. ID: " + requestDto.getDiaryId()));
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Correction correction = Correction.builder()
                 .diary(diary)

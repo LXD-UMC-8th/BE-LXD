@@ -37,6 +37,6 @@ public class CorrectionRestController {
             @RequestBody @Valid CorrectionRequestDTO.CreateRequestDTO requestDto,
             @AuthenticationPrincipal Member member
     ) {
-        return ApiResponse.onSuccess( correctionService.createCorrection(requestDto, member));
+        return ApiResponse.onSuccess(correctionService.createCorrection(requestDto, member));
     }
 }
