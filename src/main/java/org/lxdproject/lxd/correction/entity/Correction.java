@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.member.entity.Member;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Correction {
+public class Correction extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,13 +28,15 @@ public class Correction {
     @JoinColumn(name = "diary_id", nullable = false)
     private Diary diary;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "author_id", nullable = false)
-//    private Member author;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Member author;
 
-    // 교정 부분 내용 (html 포함)
-    @Column(name = "content_html", columnDefinition = "TEXT", nullable = false)
-    private String contentHtml;
+    @Column(name = "original_text", nullable = false)
+    private String originalText;
+
+    @Column(name = "corrected", length = 300, nullable = false)
+    private String corrected;
 
     // 교정에 대한 코멘트 내용
     @Column(name = "comment_text", length = 500)
