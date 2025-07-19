@@ -104,4 +104,7 @@ public class AuthService {
                 .withoutPadding()
                 .encodeToString(UUID.randomUUID().toString().getBytes());
     }
+
+    public void verifyEmailTokenAndRedirect(String token) {
+    }
 }

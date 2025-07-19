@@ -11,10 +11,7 @@ import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,5 +47,9 @@ public class AuthRestController {
         return ApiResponse.onSuccess("입력한 이메일로 인증 링크를 전송했습니다.");
     }
 
+    @GetMapping("/emails/verifications")
+    public void verifyEmailTokenAndRedirect(@RequestParam("token") String token) {
+        authService.verifyEmailTokenAndRedirect(token);
+    }
 
 }
