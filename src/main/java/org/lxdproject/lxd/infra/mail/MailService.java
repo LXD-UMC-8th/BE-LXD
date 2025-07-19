@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.email;
+package org.lxdproject.lxd.infra.mail;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
