@@ -9,6 +9,7 @@ import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
+import org.lxdproject.lxd.email.MailService;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
@@ -24,6 +25,8 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final MailService mailService;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -46,5 +49,17 @@ public class AuthService {
     }
 
     public void sendVerificationEmail(AuthRequestDTO.@Valid sendVerificationRequestDTO sendVerificationRequestDTO) {
+
+        // 이미 존재하는 이메일인지 유효성 검사
+        if(memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail()).equals(Boolean.TRUE)){
+            throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
+        }
+
+        String title = "LXD 이메일 인증 번호";
+        String authLink= "test";
+        mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, authLink);
+
+        // 이메일 인증 요청 시 임시 토큰 Redis에 저장 ( key = Email / value = Random Code )
+        // TODO 이메일 전송 기능 성공 시 구현
     }
 }
