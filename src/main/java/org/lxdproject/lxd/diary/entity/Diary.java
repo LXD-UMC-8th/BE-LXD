@@ -12,7 +12,11 @@ import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
+import org.lxdproject.lxd.diary.entity.mapping.DiaryLike;
 import org.lxdproject.lxd.member.entity.Member;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "일기")
 @Entity
@@ -60,7 +64,7 @@ public class Diary extends BaseEntity {
     private String thumbImg;
 
     // 좋아요 연관관계
-//    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<DiaryLike> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiaryLike> likes = new ArrayList<>();
 }
 
