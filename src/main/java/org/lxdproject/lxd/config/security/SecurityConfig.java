@@ -30,8 +30,8 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/auth/login",
-            "/auth/email-verification",
-            "/auth/email-verify"
+            "/auth/emails/verification-requests",
+            "/auth/emails/verifications"
     };
 
     private final JwtTokenProvider jwtTokenProvider;
