@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.entity.enums.Role;
@@ -16,7 +17,7 @@ import org.lxdproject.lxd.member.entity.enums.Status;
 @AllArgsConstructor
 @DynamicUpdate
 @DynamicInsert
-public class Member{
+public class Member extends BaseEntity {
 
     // 고유번호
     @Id
@@ -39,7 +40,7 @@ public class Member{
     private Role role;
 
     // 아이디
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, unique = true)
     private String username;
 
     // 비밀번호
