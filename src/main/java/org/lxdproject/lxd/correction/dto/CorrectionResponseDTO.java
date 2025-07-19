@@ -3,6 +3,8 @@ package org.lxdproject.lxd.correction.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class CorrectionResponseDTO {
 
     @Getter
@@ -27,5 +29,29 @@ public class CorrectionResponseDTO {
         private String userId;
         private String nickname;
         private String profileImageUrl;
+    }
+
+    @Getter
+    @Builder
+    public static class CorrectionItem {
+        private Long correctionId;
+        private Long diaryId;
+        private String diaryTitle;
+        private String diaryCreatedAt;
+        private String createdAt;
+        private String original;
+        private String corrected;
+        private String commentText;
+    }
+
+    @Getter
+    @Builder
+    public static class ProvidedCorrectionsResponseDTO {
+        private AuthorDTO member;
+        private List<CorrectionItem> corrections;
+        private int page;
+        private int size;
+        private int totalCount;
+        private boolean hasNext;
     }
 }
