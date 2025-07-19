@@ -95,8 +95,8 @@ public class AuthService {
         }
 
         // Redis에 기존 값 삭제 후 재등록
-        redisService.deleteValues(sendVerificationRequestDTO.getEmail());
-        redisService.setValues(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5L));
+        redisService.deleteValues(token);
+        redisService.setValues(token, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5L));
     }
 
     private String createSecureToken() {
