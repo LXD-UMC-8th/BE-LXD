@@ -62,7 +62,7 @@ public class AuthService {
         );
     }
 
-    public void sendVerificationEmail(AuthRequestDTO.@Valid sendVerificationRequestDTO sendVerificationRequestDTO) {
+    public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         // 이미 존재하는 이메일인지 유효성 검사
         if (memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail()).equals(Boolean.TRUE)) {
