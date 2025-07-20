@@ -6,8 +6,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.config.security.properties.Constants;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -36,9 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     }
 
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(Constants.AUTH_HEADER);
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith(Constants.TOKEN_PREFIX)) {
-            return bearerToken.substring(Constants.TOKEN_PREFIX.length());
+        String bearerToken = request.getHeader(JwtConstants.AUTH_HEADER);
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstants.TOKEN_PREFIX)) {
+            return bearerToken.substring(JwtConstants.TOKEN_PREFIX.length());
         }
         return null;
     }

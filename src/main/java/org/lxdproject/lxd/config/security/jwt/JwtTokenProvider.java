@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.config.security.properties.Constants;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -16,8 +15,6 @@ import org.springframework.util.StringUtils;
 import java.security.Key;
 import java.util.Date;
 import java.util.Collections;
-
-import org.lxdproject.lxd.config.security.properties.JwtProperties;
 
 @Component
 @RequiredArgsConstructor
@@ -71,9 +68,9 @@ public class JwtTokenProvider {
     }
 
     public static String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(Constants.AUTH_HEADER);
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith(Constants.TOKEN_PREFIX)) {
-            return bearerToken.substring(Constants.TOKEN_PREFIX.length());
+        String bearerToken = request.getHeader(JwtConstants.AUTH_HEADER);
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstants.TOKEN_PREFIX)) {
+            return bearerToken.substring(JwtConstants.TOKEN_PREFIX.length());
         }
         return null;
     }
