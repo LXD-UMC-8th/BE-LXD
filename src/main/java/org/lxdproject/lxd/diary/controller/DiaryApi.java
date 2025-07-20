@@ -52,7 +52,7 @@ public interface DiaryApi {
     public ApiResponse<Boolean> deleteDiary(@PathVariable Long id);
 
     @GetMapping("/random-question")
-    @Operation(summary = "랜덤 질문 조회 API", description = "쿼리 파라미터로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
+    @Operation(summary = "일기 작성 시 랜덤 질문 조회 API", description = "쿼리 파라미터로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
     @Parameters({
             @Parameter(name = "language", description = "KO 또는 ENG 중 원하는 랜덤 질문의 언어를 선택합니다.", required = true)
     })
