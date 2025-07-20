@@ -1,10 +1,8 @@
-package org.lxdproject.lxd.config.security.properties;
+package org.lxdproject.lxd.config.security.jwt;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.stereotype.Component;
 
 @Component
