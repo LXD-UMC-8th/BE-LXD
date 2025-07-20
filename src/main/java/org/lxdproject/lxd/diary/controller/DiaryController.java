@@ -8,7 +8,10 @@ import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.service.DiaryService;
+import org.lxdproject.lxd.diary.service.QuestionService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -20,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class DiaryController implements DiaryApi{
     private final DiaryService diaryService;
     private final ImageService imageService;
+    private final QuestionService questionService;
 
     @Override
     public ApiResponse<DiaryDetailResponseDTO> createDiary(@Valid @RequestBody DiaryRequestDTO request) {
@@ -41,6 +45,12 @@ public class DiaryController implements DiaryApi{
     @Override
     public ApiResponse<ImageResponseDto> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
         ImageResponseDto response = imageService.uploadImage(image, ImageDir.DIARY);
+        return ApiResponse.onSuccess(response);
+    }
+
+    @Override
+    public ApiResponse<QuestionResponseDTO> getRandomQuestion(Language language) {
+        QuestionResponseDTO response = questionService.getRandomQuestion(language);
         return ApiResponse.onSuccess(response);
     }
 }

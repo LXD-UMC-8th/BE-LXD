@@ -13,6 +13,8 @@ import org.lxdproject.lxd.common.dto.ImageResponseDto;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.springframework.http.MediaType;
+import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,4 +69,17 @@ public interface DiaryApi {
             )
             @RequestPart("image") MultipartFile image
     );
+
+    @GetMapping("/random-question")
+    @Operation(summary = "일기 작성 시 랜덤 질문 조회 API", description = "쿼리 파라미터로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
+    @Parameters({
+            @Parameter(name = "language", description = "KO 또는 ENG 중 원하는 랜덤 질문의 언어를 선택합니다.", required = true)
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "랜덤 질문 반환 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<QuestionResponseDTO> getRandomQuestion(@RequestParam("language") Language language);
+
 }
