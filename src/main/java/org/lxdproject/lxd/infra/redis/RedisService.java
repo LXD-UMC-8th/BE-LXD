@@ -31,7 +31,6 @@ public class RedisService {
     }
 
     // key에 해당하는 String 값을 조회
-    @Transactional(readOnly = true)
     public String getValues(String key) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
         Object result = values.get(key);
