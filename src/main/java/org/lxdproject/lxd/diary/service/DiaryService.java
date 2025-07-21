@@ -5,6 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
@@ -16,12 +17,18 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final S3Uploader s3Uploader;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -70,8 +77,22 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        // Todo: S3 이미지 삭제 로직 구현
+        List<String> urls = extractImageUrls(diary.getContent());
+        List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
+        s3Uploader.deleteFiles(keys);
 
         diaryRepository.delete(diary);
     }
+
+    private static final Pattern IMG_URL_PATTERN = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
+
+    public List<String> extractImageUrls(String htmlContent) {
+        List<String> imageUrls = new ArrayList<>();
+        Matcher matcher = IMG_URL_PATTERN.matcher(htmlContent);
+        while (matcher.find()) {
+            imageUrls.add(matcher.group(1)); // src 값만 추출
+        }
+        return imageUrls;
+    }
+
 }
