@@ -86,7 +86,7 @@ public class DiaryService {
 
     private static final Pattern IMG_URL_PATTERN = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
 
-    public List<String> extractImageUrls(String htmlContent) {
+    private List<String> extractImageUrls(String htmlContent) {
         List<String> imageUrls = new ArrayList<>();
         Matcher matcher = IMG_URL_PATTERN.matcher(htmlContent);
         while (matcher.find()) {

@@ -24,6 +24,10 @@ public class MaxImageCountValidator implements ConstraintValidator<MaxImageCount
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return true; // null 값은 @NotBlank로 처리함
+        }
+
         int count = countImgTags(value);
         boolean isValid = count <= max;
 
@@ -38,7 +42,7 @@ public class MaxImageCountValidator implements ConstraintValidator<MaxImageCount
     }
 
     private int countImgTags(String html) {
-        Pattern pattern = Pattern.compile("<img\\s+[^>]*src=[\"'][^\"']+[\"'][^>]*>");
+        Pattern pattern = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
         Matcher matcher = pattern.matcher(html);
         int count = 0;
         while (matcher.find()) count++;
