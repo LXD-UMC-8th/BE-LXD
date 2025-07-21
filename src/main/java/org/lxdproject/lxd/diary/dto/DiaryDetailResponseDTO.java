@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.member.entity.Member;
@@ -24,6 +25,8 @@ public class DiaryDetailResponseDTO {
     private int likeCount;
     private int correctCount;
     private String content;
+    private CommentPermission commentPermission;
+    private String thumbnail;
 
     public static DiaryDetailResponseDTO from(Diary diary) {
         Member member = diary.getMember();
@@ -40,7 +43,9 @@ public class DiaryDetailResponseDTO {
                 diary.getCommentCount(),
                 diary.getLikeCount(),
                 diary.getCorrectionCount(),
-                diary.getContent()
+                diary.getContent(),
+                diary.getCommentPermission(),
+                diary.getThumbImg()
         );
     }
 
