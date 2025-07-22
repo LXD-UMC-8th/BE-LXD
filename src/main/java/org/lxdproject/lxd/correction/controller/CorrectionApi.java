@@ -8,12 +8,30 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Correction API", description = "교정 관련 API입니다.")
 @RequestMapping("/corrections")
 public interface CorrectionApi {
+
+    @GetMapping("/{diaryId}/corrections")
+    @Operation(
+            summary = "일기 상세 내 교정 목록 조회",
+            description = "특정 일기에 작성된 교정 리스트를 최신순으로 조회합니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 일기 ID")
+            }
+    )
+    ApiResponse<Slice<CorrectionResponseDTO.CorrectionDetailDTO>> getDiaryCorrections(
+            @PathVariable Long diaryId,
+            @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal Member member
+    );
 
     @Operation(
             summary = "교정 등록 API",
@@ -26,7 +44,7 @@ public interface CorrectionApi {
             }
     )
     @PostMapping
-    ApiResponse<CorrectionResponseDTO.CreateResponseDTO> createCorrection(
+    ApiResponse<CorrectionResponseDTO.CorrectionDetailDTO> createCorrection(
             @RequestBody @Valid CorrectionRequestDTO.CreateRequestDTO requestDto,
             @AuthenticationPrincipal Member member
     );

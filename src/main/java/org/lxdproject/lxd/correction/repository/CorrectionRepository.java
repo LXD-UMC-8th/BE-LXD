@@ -13,5 +13,5 @@ import java.util.List;
 
 public interface CorrectionRepository extends JpaRepository<Correction, Long> {
     Slice<Correction> findByAuthor(Member author, Pageable pageable);
-
+    Slice<Correction> findByDiaryId(Long diaryId, Pageable pageable);
 }

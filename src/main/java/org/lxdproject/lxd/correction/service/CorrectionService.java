@@ -1,9 +1,7 @@
 package org.lxdproject.lxd.correction.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
+import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
@@ -19,8 +17,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +28,49 @@ public class CorrectionService {
 
     private final CorrectionRepository correctionRepository;
     private final DiaryRepository diaryRepository;
+    private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
+
+    @Transactional(readOnly = true)
+    public Slice<CorrectionResponseDTO.CorrectionDetailDTO> getCorrectionsByDiaryId(Long diaryId, int page, int size, Member currentMember) {
+        if (!diaryRepository.existsById(diaryId)) {
+            throw new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Slice<Correction> correctionSlice = correctionRepository.findByDiaryId(diaryId, pageable);
+
+        List<Long> correctionIds = correctionSlice.getContent().stream()
+                .map(Correction::getId)
+                .toList();
+
+        // 좋아요한 correctionId 리스트 가져오기
+        Set<Long> likedIds = new HashSet<>(
+                memberSavedCorrectionRepository.findLikedCorrectionIdsByMember(currentMember, correctionIds)
+        );
+
+        return correctionSlice.map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
+                .correctionId(correction.getId())
+                .diaryId(correction.getDiary().getId())
+                .createdAt(formatDate(correction.getCreatedAt()))
+                .original(correction.getOriginalText())
+                .corrected(correction.getCorrected())
+                .commentText(correction.getCommentText())
+                .likeCount(correction.getLikeCount())
+                .commentCount(correction.getCommentCount())
+                .isLikedByMe(likedIds.contains(correction.getId()))
+                .author(CorrectionResponseDTO.AuthorDTO.builder()
+                        .memberId(correction.getAuthor().getId())
+                        .userId(correction.getAuthor().getUsername())
+                        .nickname(correction.getAuthor().getNickname())
+                        .profileImageUrl(correction.getAuthor().getProfileImg())
+                        .build())
+                .build()
+        );
+    }
 
     @Transactional
-    public CorrectionResponseDTO.CreateResponseDTO createCorrection(
+    public CorrectionResponseDTO.CorrectionDetailDTO createCorrection(
             CorrectionRequestDTO.CreateRequestDTO requestDto,
             Member author
     ) {
@@ -49,7 +89,7 @@ public class CorrectionService {
 
         Correction saved = correctionRepository.save(correction);
 
-        return CorrectionResponseDTO.CreateResponseDTO.builder()
+        return CorrectionResponseDTO.CorrectionDetailDTO.builder()
                 .correctionId(saved.getId())
                 .diaryId(saved.getDiary().getId())
                 .createdAt(formatDate(saved.getCreatedAt()))
@@ -72,7 +112,7 @@ public class CorrectionService {
     public CorrectionResponseDTO.ProvidedCorrectionsResponseDTO getMyProvidedCorrections(Member member, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
+        Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
 
         List<CorrectionResponseDTO.CorrectionItem> correctionItems = corrections.getContent().stream()
                 .map(correction -> CorrectionResponseDTO.CorrectionItem.builder()
@@ -97,7 +137,6 @@ public class CorrectionService {
                 .corrections(correctionItems)
                 .page(page)
                 .size(size)
-                .totalCount((int) corrections.getTotalElements())
                 .hasNext(corrections.hasNext())
                 .build();
     }
