@@ -9,7 +9,13 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class CreateResponseDTO {
+    public static class DiaryCorrectionsResponseDto{
+
+    }
+
+    @Getter
+    @Builder
+    public static class CorrectionDetailDTO {
         private Long correctionId;
         private Long diaryId;
         private String createdAt;
