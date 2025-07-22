@@ -55,7 +55,7 @@ public class CorrectionService {
                         .likeCount(correction.getLikeCount())
                         .commentCount(correction.getCommentCount())
                         .isLikedByMe(likedIds.contains(correction.getId()))
-                        .author(CorrectionResponseDTO.AuthorDTO.builder()
+                        .member(CorrectionResponseDTO.MemberDTO.builder()
                                 .memberId(correction.getAuthor().getId())
                                 .userId(correction.getAuthor().getUsername())
                                 .nickname(correction.getAuthor().getNickname())
@@ -102,7 +102,7 @@ public class CorrectionService {
                 .likeCount(saved.getLikeCount())
                 .commentCount(saved.getCommentCount())
                 .isLikedByMe(false)
-                .author(CorrectionResponseDTO.AuthorDTO.builder()
+                .member(CorrectionResponseDTO.MemberDTO.builder()
                         .memberId(author.getId())
                         .userId(author.getUsername())
                         .nickname(author.getNickname())
@@ -131,7 +131,7 @@ public class CorrectionService {
                 .toList();
 
         return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
-                .member(CorrectionResponseDTO.AuthorDTO.builder()
+                .member(CorrectionResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
                         .userId(member.getUsername())
                         .nickname(member.getNickname())
