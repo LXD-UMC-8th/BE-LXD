@@ -9,8 +9,11 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class DiaryCorrectionsResponseDto{
-
+    public static class DiaryCorrectionsResponseDTO{
+        private Long diaryId;
+        private int totalCount; // 전체 교정 수
+        private boolean hasNext; // 다음 페이지 존재 여부
+        private List<CorrectionDetailDTO> corrections;
     }
 
     @Getter

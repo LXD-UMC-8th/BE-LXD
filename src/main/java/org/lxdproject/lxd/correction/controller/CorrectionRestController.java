@@ -19,7 +19,7 @@ public class CorrectionRestController implements CorrectionApi {
     private final CorrectionService correctionService;
 
     @Override
-    public ApiResponse<Slice<CorrectionResponseDTO.CorrectionDetailDTO>> getDiaryCorrections(
+    public ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             Long diaryId, int page, int size, Member member) {
         return ApiResponse.onSuccess(correctionService.getCorrectionsByDiaryId(diaryId, page, size, member));
     }

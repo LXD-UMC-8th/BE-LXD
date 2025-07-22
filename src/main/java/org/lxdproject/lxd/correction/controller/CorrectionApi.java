@@ -26,7 +26,7 @@ public interface CorrectionApi {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 일기 ID")
             }
     )
-    ApiResponse<Slice<CorrectionResponseDTO.CorrectionDetailDTO>> getDiaryCorrections(
+    ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             @PathVariable Long diaryId,
             @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size,

@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +28,9 @@ public class CorrectionService {
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
 
     @Transactional(readOnly = true)
-    public Slice<CorrectionResponseDTO.CorrectionDetailDTO> getCorrectionsByDiaryId(Long diaryId, int page, int size, Member currentMember) {
+    public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(
+            Long diaryId, int page, int size, Member currentMember) {
+
         if (!diaryRepository.existsById(diaryId)) {
             throw new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND);
         }
@@ -40,33 +39,49 @@ public class CorrectionService {
 
         Slice<Correction> correctionSlice = correctionRepository.findByDiaryId(diaryId, pageable);
 
+        if (correctionSlice.isEmpty()) {
+            return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
+                    .diaryId(diaryId)
+                    .totalCount(0)
+                    .hasNext(false)
+                    .corrections(Collections.emptyList())
+                    .build();
+        }
+
         List<Long> correctionIds = correctionSlice.getContent().stream()
                 .map(Correction::getId)
                 .toList();
 
-        // 좋아요한 correctionId 리스트 가져오기
         Set<Long> likedIds = new HashSet<>(
                 memberSavedCorrectionRepository.findLikedCorrectionIdsByMember(currentMember, correctionIds)
         );
 
-        return correctionSlice.map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
-                .correctionId(correction.getId())
-                .diaryId(correction.getDiary().getId())
-                .createdAt(formatDate(correction.getCreatedAt()))
-                .original(correction.getOriginalText())
-                .corrected(correction.getCorrected())
-                .commentText(correction.getCommentText())
-                .likeCount(correction.getLikeCount())
-                .commentCount(correction.getCommentCount())
-                .isLikedByMe(likedIds.contains(correction.getId()))
-                .author(CorrectionResponseDTO.AuthorDTO.builder()
-                        .memberId(correction.getAuthor().getId())
-                        .userId(correction.getAuthor().getUsername())
-                        .nickname(correction.getAuthor().getNickname())
-                        .profileImageUrl(correction.getAuthor().getProfileImg())
+        List<CorrectionResponseDTO.CorrectionDetailDTO> correctionDetailList = correctionSlice.stream()
+                .map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
+                        .correctionId(correction.getId())
+                        .diaryId(correction.getDiary().getId())
+                        .createdAt(formatDate(correction.getCreatedAt()))
+                        .original(correction.getOriginalText())
+                        .corrected(correction.getCorrected())
+                        .commentText(correction.getCommentText())
+                        .likeCount(correction.getLikeCount())
+                        .commentCount(correction.getCommentCount())
+                        .isLikedByMe(likedIds.contains(correction.getId()))
+                        .author(CorrectionResponseDTO.AuthorDTO.builder()
+                                .memberId(correction.getAuthor().getId())
+                                .userId(correction.getAuthor().getUsername())
+                                .nickname(correction.getAuthor().getNickname())
+                                .profileImageUrl(correction.getAuthor().getProfileImg())
+                                .build())
                         .build())
-                .build()
-        );
+                .toList();
+
+        return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
+                .diaryId(diaryId)
+                .totalCount(correctionDetailList.size())
+                .hasNext(correctionSlice.hasNext())
+                .corrections(correctionDetailList)
+                .build();
     }
 
     @Transactional
