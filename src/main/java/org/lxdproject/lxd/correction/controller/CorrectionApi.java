@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/corrections")
 public interface CorrectionApi {
 
-    @GetMapping("/{diaryId}/corrections")
+    @GetMapping("/diary/{diaryId}")
     @Operation(
             summary = "일기 상세 내 교정 목록 조회",
             description = "특정 일기에 작성된 교정 리스트를 최신순으로 조회합니다.",
