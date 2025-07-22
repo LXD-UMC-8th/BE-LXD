@@ -36,25 +36,13 @@ public class CorrectionService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
         Slice<Correction> correctionSlice = correctionRepository.findByDiaryId(diaryId, pageable);
 
         if (correctionSlice.isEmpty()) {
-            return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
-                    .diaryId(diaryId)
-                    .totalCount(0)
-                    .hasNext(false)
-                    .corrections(Collections.emptyList())
-                    .build();
+            return emptyDiaryCorrectionsResponse(diaryId);
         }
 
-        List<Long> correctionIds = correctionSlice.getContent().stream()
-                .map(Correction::getId)
-                .toList();
-
-        Set<Long> likedIds = new HashSet<>(
-                memberSavedCorrectionRepository.findLikedCorrectionIdsByMember(currentMember, correctionIds)
-        );
+        Set<Long> likedIds = findLikedCorrectionIds(currentMember, correctionSlice.getContent());
 
         List<CorrectionResponseDTO.CorrectionDetailDTO> correctionDetailList = correctionSlice.stream()
                 .map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
@@ -154,6 +142,24 @@ public class CorrectionService {
                 .size(size)
                 .hasNext(corrections.hasNext())
                 .build();
+    }
+
+    private CorrectionResponseDTO.DiaryCorrectionsResponseDTO emptyDiaryCorrectionsResponse(Long diaryId) {
+        return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
+                .diaryId(diaryId)
+                .totalCount(0)
+                .hasNext(false)
+                .corrections(Collections.emptyList())
+                .build();
+    }
+
+    private Set<Long> findLikedCorrectionIds(Member member, List<Correction> corrections) {
+        List<Long> correctionIds = corrections.stream()
+                .map(Correction::getId)
+                .toList();
+
+        return new HashSet<>(memberSavedCorrectionRepository
+                .findLikedCorrectionIdsByMember(member, correctionIds));
     }
 
     private String formatDate(LocalDateTime dateTime) {
