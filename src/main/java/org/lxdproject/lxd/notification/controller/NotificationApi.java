@@ -6,7 +6,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.notification.dto.NotificationMessageDTO;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEventDTO;
+import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -26,5 +32,13 @@ public interface NotificationApi {
 
     @Operation(summary = "테스트 알림 전송", description = "Redis로 테스트 알림 메시지를 전송합니다.")
     @PostMapping("/test")
-    public ResponseEntity<Void> testSend(@RequestBody NotificationMessageDTO messageDTO);
+    public ApiResponse<String> testSend(@RequestBody NotificationRequestDTO requestDTO);
+
+    @Operation(summary = "알림 목록 조회", description = "나의 알림 목록을 조회합니다.")
+    @GetMapping("")
+    ApiResponse<Page<NotificationResponseDTO>> getNotifications(
+            @RequestParam(required = false) Boolean isRead,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    );
+
 }
