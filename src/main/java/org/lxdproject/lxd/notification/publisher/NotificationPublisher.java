@@ -2,7 +2,7 @@ package org.lxdproject.lxd.notification.publisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.lxdproject.lxd.notification.dto.NotificationMessageDTO;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEventDTO;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -17,10 +17,10 @@ public class NotificationPublisher {
     private final RedisTemplate<String, Object> jsonRedisTemplate;
     private final ChannelTopic notificationTopic;
 
-    public void publish(NotificationMessageDTO message) {
+    public void publish(NotificationPublishEventDTO message) {
         String topic = notificationTopic.getTopic();
-        log.info("[Redis Publish] 알림 발행 시작 - topic: {}, receiverId: {}, title: {}",
-                topic, message.getReceiverId(), message.getTitle());
+        log.info("[Redis Publish] 알림 발행 시작 - topic: {}, receiverId: {}, notificationId: {}",
+                topic, message.getReceiverId(), message.getNotificationId());
 
         try {
             Long subscriberCount = jsonRedisTemplate.convertAndSend(topic, message);

@@ -10,22 +10,20 @@ import org.lxdproject.lxd.notification.entity.enums.TargetType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class NotificationMessageDTO {
+public class NotificationPublishEventDTO {
+    private Long notificationId;
     private Long receiverId;
     private Long senderId;
     private NotificationType notificationType;
-    private String title;
-    private String body;
     private TargetType targetType;
     private Long targetId;
 
-    public static NotificationMessageDTO from(Notification notification) {
-        return NotificationMessageDTO.builder()
+    public static NotificationPublishEventDTO from(Notification notification) {
+        return NotificationPublishEventDTO.builder()
+                .notificationId(notification.getId())
                 .receiverId(notification.getReceiver().getId())
-                .senderId(notification.getSender() != null ? notification.getSender().getId() : null)
+                .senderId(notification.getSender().getId())
                 .notificationType(notification.getNotificationType())
-                .title(notification.getTitle())
-                .body(notification.getBody())
                 .targetType(notification.getTargetType())
                 .targetId(notification.getTargetId())
                 .build();
