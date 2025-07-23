@@ -30,7 +30,6 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요 (JWT 누락 또는 만료)", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    @PreAuthorize("isAuthenticated()")
     public ApiResponse<DiaryDetailResponseDTO> createDiary( @Valid @RequestBody DiaryRequestDTO request);
 
     @GetMapping("/{id}")
