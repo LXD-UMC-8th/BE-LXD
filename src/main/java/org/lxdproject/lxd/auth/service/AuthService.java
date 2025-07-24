@@ -9,11 +9,14 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
+import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
+import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -124,4 +127,23 @@ public class AuthService {
     }
 
 
+    public AuthResponseDTO.SocialLoginResponseDTO socialLogin(OAuthUserInfo oAuthUserInfo) {
+
+        String email = oAuthUserInfo.getEmail();
+
+        // 새로운 유저 -> 회원가입 페이지로 이동시키기
+        if(memberRepository.existsByEmail(email).equals(Boolean.FALSE)) {
+            return AuthResponseDTO.SocialLoginResponseDTO.builder()
+                    .isNewMember(Boolean.FALSE)
+                    .accessToken(null)
+                    .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
+                            .email(email)
+                            .build())
+                    .build();
+        }
+        // 기존 유저 -> jwt 토큰 반환 시키기
+
+        return null;
+
+    }
 }
