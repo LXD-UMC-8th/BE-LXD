@@ -2,6 +2,7 @@ package org.lxdproject.lxd.correction.entity.mapping;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.member.entity.Member;
 
@@ -10,7 +11,7 @@ import org.lxdproject.lxd.member.entity.Member;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MemberSavedCorrection {
+public class MemberSavedCorrection extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

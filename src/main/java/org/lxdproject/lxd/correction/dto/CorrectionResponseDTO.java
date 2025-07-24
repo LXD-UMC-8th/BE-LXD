@@ -9,11 +9,20 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class CreateResponseDTO {
+    public static class DiaryCorrectionsResponseDTO{
+        private Long diaryId;
+        private int totalCount; // 전체 교정 수
+        private boolean hasNext; // 다음 페이지 존재 여부
+        private List<CorrectionDetailDTO> corrections;
+    }
+
+    @Getter
+    @Builder
+    public static class CorrectionDetailDTO {
         private Long correctionId;
         private Long diaryId;
         private String createdAt;
-        private AuthorDTO author;
+        private MemberDTO member;
         private String original;
         private String corrected;
         private String commentText;
@@ -24,7 +33,7 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class AuthorDTO {
+    public static class MemberDTO {
         private Long memberId;
         private String userId;
         private String nickname;
@@ -47,7 +56,7 @@ public class CorrectionResponseDTO {
     @Getter
     @Builder
     public static class ProvidedCorrectionsResponseDTO {
-        private AuthorDTO member;
+        private MemberDTO member;
         private List<CorrectionItem> corrections;
         private int page;
         private int size;
