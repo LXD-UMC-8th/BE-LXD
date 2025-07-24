@@ -9,6 +9,8 @@ import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.CORRECTION_NOT_FOUND;
 import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.INVALID_CORRECTION_MEMO;
 
@@ -29,7 +31,8 @@ public class MemberSavedCorrectionService {
         entity.setMemo(request.getMemo());
         return MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO.builder()
                 .correctionId(entity.getId())
-                .createdAt(entity.getUpdatedAt())
+                .createdMemo(request.getMemo())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 

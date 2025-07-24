@@ -15,6 +15,7 @@ public class MemberSavedCorrectionResponseDTO {
     public static class CreateMemoResponseDTO {
 
         private Long correctionId;
+        private String createdMemo;
         private LocalDateTime createdAt;
     }
 
