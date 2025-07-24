@@ -10,6 +10,7 @@ import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.DiarySliceResponseDto;
 import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
@@ -102,7 +103,7 @@ public class DiaryService {
         return imageUrls;
     }
 
-    public Slice<DiarySummaryResponseDto> getMyDiaries(int page, int size, Boolean likedOnly) {
+    public DiarySliceResponseDto getMyDiaries(int page, int size, Boolean likedOnly) {
         Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
         Pageable pageable = PageRequest.of(page - 1, size);
         return diaryRepository.findMyDiaries(userId, likedOnly, pageable);

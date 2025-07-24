@@ -10,12 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageResponseDto;
-import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
+import org.lxdproject.lxd.diary.dto.*;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
-import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -94,7 +91,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<Slice<DiarySummaryResponseDto>> getMyDiaries(
+    ApiResponse<DiarySliceResponseDto> getMyDiaries(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean likedOnly
