@@ -1,12 +1,15 @@
 package org.lxdproject.lxd.auth.dto.oauth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.lxdproject.lxd.member.entity.enums.LoginType;
 
 public class GoogleUserInfo implements OAuthUserInfo{
 
     private String id;
     private String email;
     private String name;
+
+    private final LoginType provider = LoginType.GOOGLE;
 
     @JsonProperty("picture")
     private String profileImage;
@@ -24,5 +27,10 @@ public class GoogleUserInfo implements OAuthUserInfo{
     @Override
     public String getProfileImage() {
         return profileImage;
+    }
+
+    @Override
+    public LoginType getLoginType() {
+        return provider;
     }
 }
