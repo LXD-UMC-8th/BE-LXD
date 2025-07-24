@@ -57,4 +57,9 @@ public class AuthRestController {
         authService.verifyEmailTokenAndRedirect(token, response);
     }
 
+    @PostMapping("/google/login")
+    public ApiResponse<AuthResponseDTO.GoogleLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.loginWithGoogleRequestDTO loginWithGoogleRequestDTO) {
+
+        return null;
+    }
 }

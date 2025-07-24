@@ -23,4 +23,12 @@ public class AuthRequestDTO {
         @NotBlank(message = "이메일은 필수입니다.")
         private String email;
     }
+
+    @Getter
+    @Setter
+    public static class loginWithGoogleRequestDTO{
+        @NotBlank(message = "구글 로그인 후 받은 Oauth2 code")
+        private String code;
+    }
+
 }
