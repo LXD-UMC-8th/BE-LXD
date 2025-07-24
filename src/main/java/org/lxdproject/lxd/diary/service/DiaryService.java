@@ -102,7 +102,6 @@ public class DiaryService {
         return imageUrls;
     }
 
-
     public Slice<DiarySummaryResponseDto> getMyDiaries(int page, int size, Boolean likedOnly) {
         Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
         Pageable pageable = PageRequest.of(page - 1, size);
