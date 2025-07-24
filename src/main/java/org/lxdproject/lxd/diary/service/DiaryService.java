@@ -9,11 +9,16 @@ import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
-import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,6 +98,13 @@ public class DiaryService {
             imageUrls.add(matcher.group(1)); // src 값만 추출
         }
         return imageUrls;
+    }
+
+
+    public Slice<DiarySummaryResponseDto> getMyDiaries(int page, int size, Boolean likedOnly) {
+        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
     }
 
 }
