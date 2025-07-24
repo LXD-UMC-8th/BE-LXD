@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
+import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.auth.service.oauth.GoogleOAuthClient;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
@@ -63,6 +64,7 @@ public class AuthRestController {
     public ApiResponse<AuthResponseDTO.GoogleLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.loginWithGoogleRequestDTO loginWithGoogleRequestDTO) {
 
         String accessToken = googleOAuthClient.requestAccessToken(loginWithGoogleRequestDTO.getCode());
+        GoogleUserInfo googleUserInfo = googleOAuthClient.requestUserInfo(accessToken);
 
         return null;
     }
