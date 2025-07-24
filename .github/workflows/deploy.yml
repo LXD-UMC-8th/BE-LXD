@@ -86,6 +86,8 @@ jobs:
             AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
             AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
             S3_BUCKET=${{ secrets.S3_BUCKET }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             EOF
             
             sudo docker compose -f ~/deploy/docker-compose.yml down
