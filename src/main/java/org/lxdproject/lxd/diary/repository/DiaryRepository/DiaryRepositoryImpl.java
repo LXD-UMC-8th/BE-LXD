@@ -2,13 +2,12 @@ package org.lxdproject.lxd.diary.repository.DiaryRepository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.diary.dto.DiarySliceResponseDto;
 import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     QDiaryLike diaryLike = QDiaryLike.diaryLike;
 
     @Override
-    public Slice<DiarySummaryResponseDto> findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
+    public DiarySliceResponseDto findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
         List<Diary> diaries = queryFactory
                 .selectFrom(diary)
                 .leftJoin(diary.likes, diaryLike)
@@ -32,8 +31,13 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .distinct()
                 .orderBy(diary.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize() + 1) // +1로 hasNext 판별
                 .fetch();
+
+        boolean hasNext = diaries.size() > pageable.getPageSize();
+        if (hasNext) {
+            diaries = diaries.subList(0, pageable.getPageSize());
+        }
 
         List<DiarySummaryResponseDto> content = diaries.stream()
                 .map(d -> DiarySummaryResponseDto.builder()
@@ -50,10 +54,12 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .build())
                 .toList();
 
-        boolean hasNext = content.size() > pageable.getPageSize();
-        if (hasNext) content = content.subList(0, pageable.getPageSize());
-
-        return new SliceImpl<>(content, pageable, hasNext);
+        return DiarySliceResponseDto.builder()
+                .diaries(content)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
+                .hasNext(hasNext)
+                .build();
     }
 
     private String generatePreview(String content) {
@@ -61,4 +67,5 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         return content.length() <= 100 ? content : content.substring(0, 100);
     }
 }
+
 
