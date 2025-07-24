@@ -53,4 +53,11 @@ public class DiaryController implements DiaryApi{
         QuestionResponseDTO response = questionService.getRandomQuestion(language);
         return ApiResponse.onSuccess(response);
     }
+
+    @Override
+    public ApiResponse<DiaryDetailResponseDTO> updateDiary(Long id, @Valid @RequestBody DiaryRequestDTO request) {
+        DiaryDetailResponseDTO response = diaryService.updateDiary(id, request);
+        return ApiResponse.onSuccess(response);
+    }
+
 }

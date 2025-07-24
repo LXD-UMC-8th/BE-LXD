@@ -81,4 +81,20 @@ public interface DiaryApi {
     })
     ApiResponse<QuestionResponseDTO> getRandomQuestion(@RequestParam("language") Language language);
 
+    @PatchMapping("/{id}")
+    @Operation(summary = "일기 수정 API", description = "title, content, style, visibility, commentPermission, language, thumbImg 필드를 수정합니다.")
+    @Parameters({
+            @Parameter(name = "id", description = "수정할 일기의 ID", required = true)
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 수정 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiaryDetailResponseDTO> updateDiary(
+            @PathVariable Long id,
+            @Valid @RequestBody DiaryRequestDTO request
+    );
+
+
 }
