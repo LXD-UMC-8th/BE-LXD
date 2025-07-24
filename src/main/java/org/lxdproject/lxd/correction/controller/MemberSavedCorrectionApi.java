@@ -33,7 +33,7 @@ public interface MemberSavedCorrectionApi {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 저장 교정 ID")
             }
     )
-    @PutMapping("/memo")
+    @PatchMapping("/memo")
     ApiResponse<MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO> updateMemo(
             @RequestBody @Valid MemberSavedCorrectionRequestDTO.MemoRequestDTO request
     );
