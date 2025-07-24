@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/corrections")
-@Validated
 public class CorrectionRestController implements CorrectionApi {
 
     private final CorrectionService correctionService;
