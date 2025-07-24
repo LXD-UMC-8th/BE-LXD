@@ -1,8 +1,10 @@
 package org.lxdproject.lxd.diarycomment.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
@@ -100,6 +102,25 @@ public class DiaryCommentService {
                 .totalElements((int) parentComments.getTotalElements())
                 .build();
     }
+
+
+    //댓글삭제
+
+    @Transactional
+    public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
+        DiaryComment comment = diaryCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
+
+        if (!comment.getDiary().getId().equals(diaryId)) {
+            throw new IllegalArgumentException("일기 ID와 댓글이 일치하지 않습니다.");
+        }
+
+        comment.softDelete();  // 댓글 본문을 "삭제된 댓글입니다"로 바꾸고 isDeleted = true 처리
+
+        return DiaryCommentDeleteResponseDTO.from(comment);
+    }
+
+
 }
 
 

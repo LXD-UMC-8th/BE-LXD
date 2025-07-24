@@ -43,6 +43,16 @@ public class DiaryComment extends BaseEntity {   //baseentity상속
         this.likeCount = Math.max(this.likeCount - 1, 0);
     }
 
+    //soft delete
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
+
+    //soft delete method
+    public void softDelete() {
+        this.commentText = "삭제된 댓글입니다";
+        this.isDeleted = true;
+    }
+
 
 }
 
