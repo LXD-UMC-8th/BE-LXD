@@ -59,5 +59,4 @@ public class DiaryController implements DiaryApi{
         DiaryDetailResponseDTO response = diaryService.updateDiary(id, request);
         return ApiResponse.onSuccess(response);
     }
-
 }

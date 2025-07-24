@@ -15,6 +15,7 @@ import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,11 +98,17 @@ public class DiaryService {
     }
 
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
+
+        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        diary.update(request);
+        if (!diary.getMember().getId().equals(userId)) {
+            throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
+        }
 
+        diary.update(request);
         Diary updated = diaryRepository.save(diary);
         return DiaryDetailResponseDTO.from(updated);
     }
