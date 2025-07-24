@@ -19,7 +19,6 @@ import org.lxdproject.lxd.member.entity.Member;
 import java.util.ArrayList;
 import java.util.List;
 
-@Table(name = "일기")
 @Entity
 @Getter
 @NoArgsConstructor
