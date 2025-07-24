@@ -31,9 +31,7 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/auth/login",
             "/auth/emails/verification-requests",
-            "/auth/emails/verifications",
-            "/diaries/{id}",
-            "/diaries"
+            "/auth/emails/verifications"
     };
 
     private final JwtTokenProvider jwtTokenProvider;
