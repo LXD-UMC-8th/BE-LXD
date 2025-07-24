@@ -9,6 +9,7 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.service.AuthService;
+import org.lxdproject.lxd.auth.service.oauth.GoogleOAuthClient;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthRestController {
 
     private final AuthService authService;
+    private final GoogleOAuthClient googleOAuthClient;
 
     @PostMapping("/login")
     @Operation(summary = "로그인 API", description = "이메일과 비밀번호를 통해 로그인하고 JWT 토큰을 발급받습니다.", responses = {
@@ -59,6 +61,8 @@ public class AuthRestController {
 
     @PostMapping("/google/login")
     public ApiResponse<AuthResponseDTO.GoogleLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.loginWithGoogleRequestDTO loginWithGoogleRequestDTO) {
+
+        String accessToken = googleOAuthClient.requestAccessToken(loginWithGoogleRequestDTO.getCode());
 
         return null;
     }
