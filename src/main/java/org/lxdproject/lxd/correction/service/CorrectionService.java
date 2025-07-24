@@ -117,8 +117,8 @@ public class CorrectionService {
 
         Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
 
-        List<CorrectionResponseDTO.CorrectionItem> correctionItems = corrections.getContent().stream()
-                .map(correction -> CorrectionResponseDTO.CorrectionItem.builder()
+        List<CorrectionResponseDTO.SavedCorrectionItem> correctionItems = corrections.getContent().stream()
+                .map(correction -> CorrectionResponseDTO.SavedCorrectionItem.builder()
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
                         .diaryTitle(correction.getDiary().getTitle())
