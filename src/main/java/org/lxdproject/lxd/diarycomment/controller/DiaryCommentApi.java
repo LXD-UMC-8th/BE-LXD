@@ -31,7 +31,7 @@ public interface DiaryCommentApi {
 
     @Operation(summary = "댓글 삭제", description = "댓글 또는 대댓글을 소프트 삭제합니다.")
     @DeleteMapping("/{commentId}")
-    ResponseEntity<ApiResponse<DiaryCommentResponseDTO>> deleteComment(
+    ResponseEntity<ApiResponse<DiaryCommentDeleteResponseDTO>> deleteComment(
             @PathVariable Long diaryId,
             @PathVariable Long commentId
     );

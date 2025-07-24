@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,12 +43,15 @@ public class DiaryCommentController implements DiaryCommentApi {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<DiaryCommentResponseDTO>> deleteComment(
-            Long diaryId, Long commentId
+    public ResponseEntity<ApiResponse<DiaryCommentDeleteResponseDTO>> deleteComment(
+            @PathVariable Long diaryId,
+            @PathVariable Long commentId
     ) {
-        DiaryCommentResponseDTO response = diaryCommentService.deleteComment(diaryId, commentId);
+        DiaryCommentDeleteResponseDTO response = diaryCommentService.deleteComment(diaryId, commentId);
         return ResponseEntity.ok(ApiResponse.of(SuccessStatus._OK, response));
     }
+
+
 }
 
 

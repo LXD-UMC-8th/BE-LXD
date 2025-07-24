@@ -106,19 +106,16 @@ public class DiaryCommentService {
 
     //댓글삭제
 
-    @Transactional
     public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
         DiaryComment comment = diaryCommentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
 
-        if (!comment.getDiary().getId().equals(diaryId)) {
-            throw new IllegalArgumentException("일기 ID와 댓글이 일치하지 않습니다.");
-        }
+        comment.softDelete(); // 소프트 삭제 수행-> "삭제된 댓글입니다", isDeleted = true
+        diaryCommentRepository.save(comment); // 변경 저장
 
-        comment.softDelete();  // 댓글 본문을 "삭제된 댓글입니다"로 바꾸고 isDeleted = true 처리
-
-        return DiaryCommentDeleteResponseDTO.from(comment);
+        return DiaryCommentDeleteResponseDTO.from(comment); // DTO로 반환
     }
+
 
 
 }
