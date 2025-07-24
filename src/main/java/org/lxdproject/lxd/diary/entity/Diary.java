@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
 import org.lxdproject.lxd.common.entity.BaseEntity;
+import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
@@ -66,5 +67,16 @@ public class Diary extends BaseEntity {
     // 좋아요 연관관계
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryLike> likes = new ArrayList<>();
+
+    public void update(DiaryRequestDTO dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.style = dto.getStyle();
+        this.visibility = dto.getVisibility();
+        this.commentPermission = dto.getCommentPermission();
+        this.language = dto.getLanguage();
+        this.thumbImg = dto.getThumbImg();
+    }
+
 }
 

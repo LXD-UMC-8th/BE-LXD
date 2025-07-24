@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.InvalidPageException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.util.S3Uploader;
@@ -93,6 +94,16 @@ public class DiaryService {
             imageUrls.add(matcher.group(1)); // src 값만 추출
         }
         return imageUrls;
+    }
+
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
+        Diary diary = diaryRepository.findById(id)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
+        diary.update(request);
+
+        Diary updated = diaryRepository.save(diary);
+        return DiaryDetailResponseDTO.from(updated);
     }
 
 }
