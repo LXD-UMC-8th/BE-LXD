@@ -11,8 +11,6 @@ import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.auth.service.oauth.GoogleOAuthClient;
-import org.lxdproject.lxd.member.dto.MemberRequestDTO;
-import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,7 +59,7 @@ public class AuthRestController {
     }
 
     @PostMapping("/google/login")
-    public ApiResponse<AuthResponseDTO.GoogleLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.loginWithGoogleRequestDTO loginWithGoogleRequestDTO) {
+    public ApiResponse<AuthResponseDTO.SocialLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.loginWithGoogleRequestDTO loginWithGoogleRequestDTO) {
 
         String accessToken = googleOAuthClient.requestAccessToken(loginWithGoogleRequestDTO.getCode());
         GoogleUserInfo googleUserInfo = googleOAuthClient.requestUserInfo(accessToken);

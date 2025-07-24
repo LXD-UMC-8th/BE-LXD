@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 
 public class AuthResponseDTO {
 
@@ -56,7 +55,7 @@ public class AuthResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class GoogleLoginResponseDTO{
+    public static class SocialLoginResponseDTO {
 
         @Schema(description = "새로운 유저 여부")
         private Boolean isNewMember;
