@@ -8,10 +8,12 @@ import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
 import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.service.DiaryService;
 import org.lxdproject.lxd.diary.service.QuestionService;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -53,4 +55,10 @@ public class DiaryController implements DiaryApi{
         QuestionResponseDTO response = questionService.getRandomQuestion(language);
         return ApiResponse.onSuccess(response);
     }
+
+    @Override
+    public ApiResponse<Slice<DiarySummaryResponseDto>> getMyDiaries(int page, int size, Boolean likedOnly) {
+        return ApiResponse.onSuccess(diaryService.getMyDiaries(page, size, likedOnly));
+    }
+
 }
