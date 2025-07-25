@@ -36,6 +36,13 @@ public class DiaryComment extends BaseEntity {
         this.likeCount = Math.max(this.likeCount - 1, 0); // 음수 방지
     }
 
+    public String getCommentText() {
+        if (isDeleted()) {
+            return "삭제된 댓글입니다.";
+        }
+        return this.commentText;
+    }
+
 }
 
 

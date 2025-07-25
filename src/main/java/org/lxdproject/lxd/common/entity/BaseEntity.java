@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.web.service.annotation.DeleteExchange;
 
 import java.time.LocalDateTime;
 
@@ -19,4 +20,20 @@ public abstract class BaseEntity {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
+
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.deletedAt = null;
+    }
+
 }
