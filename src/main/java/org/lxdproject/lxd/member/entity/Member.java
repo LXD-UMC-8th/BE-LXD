@@ -2,6 +2,7 @@ package org.lxdproject.lxd.member.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.lxdproject.lxd.diary.entity.Diary;
@@ -22,6 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @DynamicUpdate
 @DynamicInsert
+@Where(clause = "deleted_at IS NULL")
 public class Member extends BaseEntity {
 
     // 고유번호

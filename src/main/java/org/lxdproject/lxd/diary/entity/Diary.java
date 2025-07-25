@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
+import org.hibernate.annotations.Where;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
@@ -24,6 +25,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Where(clause = "deleted_at IS NULL")
 public class Diary extends BaseEntity {
 
     @Id
