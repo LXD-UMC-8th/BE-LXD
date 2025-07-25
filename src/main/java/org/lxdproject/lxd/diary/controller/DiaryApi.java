@@ -10,10 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageResponseDto;
-import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.*;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
-import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -96,5 +95,22 @@ public interface DiaryApi {
             @Valid @RequestBody DiaryRequestDTO request
     );
 
+
+    @GetMapping("/my")
+    @Operation(summary = "내가 작성한 일기 목록 조회 API", description = "현재 로그인한 사용자가 작성한 일기 목록을 조회합니다. likedOnly=true 시 좋아요 누른 내 일기만 조회됩니다.")
+    @Parameters({
+            @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
+            @Parameter(name = "size", description = "페이지 크기", example = "10"),
+            @Parameter(name = "likedOnly", description = "true일 경우 내가 좋아요 누른 내 일기만 필터링")
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiarySliceResponseDto> getMyDiaries(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Boolean likedOnly
+    );
 
 }
