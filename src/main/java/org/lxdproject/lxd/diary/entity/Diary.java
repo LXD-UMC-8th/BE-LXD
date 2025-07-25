@@ -77,5 +77,30 @@ public class Diary extends BaseEntity {
         this.thumbImg = dto.getThumbImg();
     }
 
+    public void increaseCommentCount() {
+        this.commentCount++;
+    }
+
+    public void increaseCorrectionCount() {
+        this.correctionCount++;
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
+
+    public void decreaseLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
+
+
 }
 

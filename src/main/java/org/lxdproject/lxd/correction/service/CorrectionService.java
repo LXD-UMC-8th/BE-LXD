@@ -137,6 +137,7 @@ public class CorrectionService {
                 .build();
 
         Correction saved = correctionRepository.save(correction);
+        diary.increaseCorrectionCount();
 
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
                 .correctionId(saved.getId())
