@@ -4,15 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.diarycomment.api.DiaryCommentApi;
 import org.lxdproject.lxd.diarycomment.dto.*;
 import org.lxdproject.lxd.diarycomment.service.DiaryCommentService;
-import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,13 +31,15 @@ public class DiaryCommentController implements DiaryCommentApi {
 
     @Override
     public ResponseEntity<ApiResponse<DiaryCommentResponseDTO.CommentList>> getComments(
-            Long diaryId, int page, int size, @AuthenticationPrincipal Member currentMember
+            Long diaryId, int page, int size
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Long memberId = SecurityUtil.getCurrentMemberId();
         DiaryCommentResponseDTO.CommentList response =
-                diaryCommentService.getComments(diaryId, currentMember.getId(), pageable);
+                diaryCommentService.getComments(diaryId, memberId, pageable);
         return ResponseEntity.ok(ApiResponse.of(SuccessStatus._OK, response));
     }
+
 
     @Override
     public ResponseEntity<ApiResponse<DiaryCommentDeleteResponseDTO>> deleteComment(
@@ -50,8 +49,6 @@ public class DiaryCommentController implements DiaryCommentApi {
         DiaryCommentDeleteResponseDTO response = diaryCommentService.deleteComment(diaryId, commentId);
         return ResponseEntity.ok(ApiResponse.of(SuccessStatus._OK, response));
     }
-
-
 }
 
 
