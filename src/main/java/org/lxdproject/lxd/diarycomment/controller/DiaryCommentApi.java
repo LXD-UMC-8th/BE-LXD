@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/diaries/{diaryId}/comments")
 public interface DiaryCommentApi {
 
-    @Operation(summary = "댓글 작성", description = "일기에 댓글을 작성합니다.")
+    @Operation(summary = "일기 댓글 작성", description = "일기에 댓글을 작성합니다.")
     @PostMapping
     ApiResponse<DiaryCommentResponseDTO> writeComment(
             @PathVariable Long diaryId,
             @RequestBody DiaryCommentRequestDTO request
     );
 
-    @Operation(summary = "댓글 조회", description = "해당 일기의 댓글들을 생성일 기준으로 조회합니다.")
+    @Operation(summary = "일기 댓글 조회", description = "해당 일기의 댓글들을 생성일 기준으로 조회합니다.")
     @GetMapping
     ApiResponse<DiaryCommentResponseDTO.CommentList> getComments(
             @PathVariable Long diaryId,
@@ -25,7 +25,7 @@ public interface DiaryCommentApi {
             @RequestParam(defaultValue = "10") int size
     );
 
-    @Operation(summary = "댓글 삭제", description = "댓글 또는 대댓글을 소프트 삭제합니다.")
+    @Operation(summary = "일기 댓글 삭제", description = "댓글 또는 대댓글을 소프트 삭제합니다.")
     @DeleteMapping("/{commentId}")
     ApiResponse<DiaryCommentDeleteResponseDTO> deleteComment(
             @PathVariable Long diaryId,
