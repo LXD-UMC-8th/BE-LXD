@@ -54,6 +54,7 @@ public class AuthService {
 
         // 인증 완료 후, 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getEmail(), member.getRole().name());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId(), member.getEmail(), member.getRole().name());
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,

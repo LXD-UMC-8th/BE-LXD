@@ -38,6 +38,19 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String generateRefreshToken(Long memberId, String email, String role) {
+
+        return Jwts.builder()
+                .setSubject(String.valueOf(memberId))
+                .claim("role", role)
+                .claim("email", email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshToken().getExpiration()))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
