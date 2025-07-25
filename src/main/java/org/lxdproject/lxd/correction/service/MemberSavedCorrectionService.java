@@ -3,6 +3,7 @@ package org.lxdproject.lxd.correction.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.*;
@@ -56,7 +58,7 @@ public class MemberSavedCorrectionService {
     @Transactional
     public MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO createMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberSavedCorrection entity = getCorrectionOrThrow(request.getMemberSavedCorrectionId());
+        MemberSavedCorrection entity = getSavedCorrectionOrThrow(request.getMemberSavedCorrectionId());
 
         validateMemberAccess(entity, currentMemberId);
 
@@ -75,7 +77,7 @@ public class MemberSavedCorrectionService {
     @Transactional
     public MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO updateMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberSavedCorrection entity = getCorrectionOrThrow(request.getMemberSavedCorrectionId());
+        MemberSavedCorrection entity = getSavedCorrectionOrThrow(request.getMemberSavedCorrectionId());
 
         validateMemberAccess(entity, currentMemberId);
 
@@ -93,7 +95,7 @@ public class MemberSavedCorrectionService {
     @Transactional
     public MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO deleteMemo(Long memberSavedCorrectionId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberSavedCorrection entity = getCorrectionOrThrow(memberSavedCorrectionId);
+        MemberSavedCorrection entity = getSavedCorrectionOrThrow(memberSavedCorrectionId);
 
         validateMemberAccess(entity, currentMemberId);
 
@@ -107,9 +109,13 @@ public class MemberSavedCorrectionService {
     }
 
     private MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem toSavedCorrectionDTO(MemberSavedCorrection entity) {
-        Correction correction = entity.getCorrection();
+        Correction correction = Optional.ofNullable(entity.getCorrection())
+                .orElseThrow(() -> new CorrectionHandler(CORRECTION_NOT_FOUND));
+
         Member member = correction.getAuthor();
-        Diary diary = correction.getDiary();
+
+        Diary diary = Optional.ofNullable(correction.getDiary())
+                .orElseThrow(() -> new DiaryHandler(DIARY_NOT_FOUND));
 
         return MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.builder()
                 .savedCorrectionId(entity.getId())
@@ -137,7 +143,7 @@ public class MemberSavedCorrectionService {
                 .build();
     }
 
-    private MemberSavedCorrection getCorrectionOrThrow(Long id) {
+    private MemberSavedCorrection getSavedCorrectionOrThrow(Long id) {
         return memberSavedCorrectionRepository.findById(id)
                 .orElseThrow(() -> new CorrectionHandler(CORRECTION_NOT_FOUND));
     }
