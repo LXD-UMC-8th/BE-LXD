@@ -25,18 +25,15 @@ public class Notification extends BaseEntity {
 
     // 알림 발신자, 보낸 사람
     @ManyToOne(fetch = FetchType.LAZY) // 회원과 n:1 연관관계
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "sender_id", nullable = false)
     private Member sender;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationType notificationType;
 
-    @Column(nullable = false)
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String body;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String message;
 
     @Column(nullable = false)
     @Builder.Default
@@ -53,4 +50,7 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private boolean isDelivered = false;
+
+    @Column(nullable = false)
+    private String redirectUrl;
 }

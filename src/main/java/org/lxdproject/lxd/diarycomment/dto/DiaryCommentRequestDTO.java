@@ -1,10 +1,13 @@
 package org.lxdproject.lxd.diarycomment.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class DiaryCommentRequestDTO {
+    private Long parentId; // 대댓글일 경우 필요
     private String commentText;
-    private Long parentId; // null이면 일반 댓글
 }
+
 

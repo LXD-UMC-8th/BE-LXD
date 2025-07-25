@@ -2,7 +2,6 @@ package org.lxdproject.lxd.auth.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
@@ -10,11 +9,14 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
+import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
+import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,11 @@ public class AuthService {
 
         // 비밀번호 검사
         if(!passwordEncoder.matches(loginRequestDTO.getPassword(), member.getPassword())) {
+            throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
+        }
+
+        // 일반 로그인인지 검사
+        if(member.getLoginType() != LoginType.LOCAL) {
             throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
         }
 
@@ -121,6 +128,45 @@ public class AuthService {
             log.error("redirect에 실패했습니다");
             throw new RuntimeException("리다이렉트 실패", e);
         }
+
+    }
+
+
+    public AuthResponseDTO.SocialLoginResponseDTO socialLogin(OAuthUserInfo oAuthUserInfo) {
+
+
+        String email = oAuthUserInfo.getEmail();
+        Member member = memberRepository.findByEmail(email).orElse(null);
+
+        System.out.println(member);
+
+        // 새로운 유저 -> 회원가입 페이지로 이동시키기
+        if(member == null) {
+            return AuthResponseDTO.SocialLoginResponseDTO.builder()
+                    .isNewMember(Boolean.TRUE) // 새로운 유저
+                    .accessToken(null)
+                    .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
+                            .email(email)
+                            .loginType(oAuthUserInfo.getLoginType()) // 로그인 방법도 response에 포함
+                            .build())
+                    .build();
+        }
+
+        // 기존 유저 -> 로그인 후 jwt 토큰 발급
+        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+
+        return AuthResponseDTO.SocialLoginResponseDTO.builder()
+                .isNewMember(Boolean.FALSE) // 기존 유저
+                .accessToken(accessToken)
+                .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
+                        .memberId(member.getId())
+                        .username(member.getUsername())
+                        .profileImg(member.getProfileImg())
+                        .nickname(member.getNickname())
+                        .language(member.getLanguage().name())
+                        .loginType(oAuthUserInfo.getLoginType())
+                        .build())
+                .build();
 
     }
 }
