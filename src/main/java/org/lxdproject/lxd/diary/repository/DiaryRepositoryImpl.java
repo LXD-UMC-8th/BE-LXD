@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.diary.repository.DiaryRepository;
+package org.lxdproject.lxd.diary.repository;
 
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;

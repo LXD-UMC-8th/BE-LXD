@@ -17,7 +17,7 @@ import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Service;
 

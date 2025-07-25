@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.diary.repository.DiaryRepository;
+package org.lxdproject.lxd.diary.repository;
 
 import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;

@@ -13,7 +13,7 @@ import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
-import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
