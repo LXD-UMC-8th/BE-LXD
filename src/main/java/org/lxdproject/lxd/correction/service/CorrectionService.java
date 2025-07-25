@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
+import org.lxdproject.lxd.correction.util.DateFormatUtil;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class CorrectionService {
                 .map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
-                        .createdAt(formatDate(correction.getCreatedAt()))
+                        .createdAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
                         .original(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
@@ -95,7 +96,7 @@ public class CorrectionService {
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
                 .correctionId(saved.getId())
                 .diaryId(saved.getDiary().getId())
-                .createdAt(formatDate(saved.getCreatedAt()))
+                .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .original(saved.getOriginalText())
                 .corrected(saved.getCorrected())
                 .commentText(saved.getCommentText())
@@ -122,8 +123,8 @@ public class CorrectionService {
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
                         .diaryTitle(correction.getDiary().getTitle())
-                        .diaryCreatedAt(formatDate(correction.getDiary().getCreatedAt()))
-                        .createdAt(formatDate(correction.getCreatedAt()))
+                        .diaryCreatedAt(DateFormatUtil.formatDate(correction.getDiary().getCreatedAt()))
+                        .createdAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
                         .original(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
@@ -160,9 +161,5 @@ public class CorrectionService {
 
         return new HashSet<>(memberSavedCorrectionRepository
                 .findLikedCorrectionIdsByMember(member, correctionIds));
-    }
-
-    private String formatDate(LocalDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ofPattern("yyyy. MM. dd a hh:mm", Locale.KOREA));
     }
 }
