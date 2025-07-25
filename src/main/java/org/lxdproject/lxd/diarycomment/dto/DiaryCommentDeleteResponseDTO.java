@@ -20,7 +20,7 @@ public class DiaryCommentDeleteResponseDTO {
                 comment.getId(),
                 comment.isDeleted(),
                 comment.getCommentText(),
-                comment.getUpdatedAt()  // BaseEntity에서 상속
+                comment.getDeletedAt()
         );
     }
 }

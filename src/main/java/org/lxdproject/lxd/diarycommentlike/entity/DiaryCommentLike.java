@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
+import org.lxdproject.lxd.member.entity.Member;
 
 @Entity
 @Table(name = "diary_comment_like",
@@ -18,11 +19,13 @@ public class DiaryCommentLike extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
     private DiaryComment comment;
+
 }
 

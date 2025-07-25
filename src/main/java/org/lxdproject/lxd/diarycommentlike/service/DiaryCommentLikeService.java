@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static org.lxdproject.lxd.member.entity.QMember.member;
+
 @Service
 @RequiredArgsConstructor
 public class DiaryCommentLikeService {
@@ -34,13 +36,18 @@ public class DiaryCommentLikeService {
             comment.decreaseLikeCount(); // likeCount 감소
             liked = false;
         } else {
-            likeRepository.save(DiaryCommentLike.builder()
-                    .memberId(memberId)
-                    .comment(comment)
-                    .build());
+            likeRepository.save(
+                    DiaryCommentLike.builder()
+                            //.member(memberEntity)
+                            .comment(comment)
+                            .build()
+            );
             comment.increaseLikeCount(); // likeCount 증가
             liked = true;
         }
+
+
+
 
         return DiaryCommentLikeResponseDTO.builder()
                 .commentId(commentId)

@@ -47,6 +47,9 @@ public enum ErrorStatus implements BaseErrorCode {
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),
+
+    //댓글 관련 에러 추가하기
+
     ;
 
     private final HttpStatus httpStatus;
