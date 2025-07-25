@@ -1,6 +1,11 @@
 package org.lxdproject.lxd.diarycomment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
@@ -28,14 +33,14 @@ public class DiaryCommentService {
 
     public DiaryCommentResponseDTO writeComment(Long memberId, Long diaryId, DiaryCommentRequestDTO request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일기입니다."));
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
             parent = diaryCommentRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 댓글입니다."));
+                    .orElseThrow(() -> new CommentHandler(ErrorStatus.PARENT_COMMENT_NOT_FOUND));
         }
 
         DiaryComment comment = DiaryComment.builder()
@@ -60,8 +65,9 @@ public class DiaryCommentService {
                 .build();
     }
 
-    public DiaryCommentResponseDTO.CommentList getComments(Long diaryId, Long memberId, Pageable pageable) {
+    public DiaryCommentResponseDTO.CommentList getComments(Long diaryId, Pageable pageable) {
         Page<DiaryComment> parentComments = diaryCommentRepository.findByDiaryIdAndParentIsNull(diaryId, pageable);
+        Long memberId = SecurityUtil.getCurrentMemberId();
 
         List<DiaryCommentResponseDTO.Comment> commentDTOs = parentComments.getContent().stream().map(parent -> {
             // 대댓글 가져오기
@@ -104,21 +110,15 @@ public class DiaryCommentService {
 
 
     //댓글삭제
-
     public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
         DiaryComment comment = diaryCommentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
-        comment.softDelete(); // 소프트 삭제 수행-> "삭제된 댓글입니다", isDeleted = true
-        diaryCommentRepository.save(comment); // 변경 저장
+        comment.softDelete();
+
+        // Todo diary.decreaseCommentCount();
 
         return DiaryCommentDeleteResponseDTO.from(comment); // DTO로 반환
     }
 
-
-
 }
-
-//handler추가 후 변경하기
-
-
