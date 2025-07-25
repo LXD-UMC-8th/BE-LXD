@@ -9,12 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.ImageResponseDto;
+import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.diary.dto.*;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.lxdproject.lxd.diary.entity.enums.Language;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,7 +59,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미지 파일이 유효하지 않음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ApiResponse<ImageResponseDto> uploadDiaryImage(
+    public ApiResponse<ImageResponseDTO> uploadDiaryImage(
             @Parameter(
                     description = "업로드할 이미지 파일",
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -93,7 +91,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<DiarySliceResponseDto> getMyDiaries(
+    ApiResponse<DiarySliceResponseDTO> getMyDiaries(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean likedOnly
@@ -126,7 +124,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 통계 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<List<DiaryStatsResponseDto>> getDiaryStats(
+    ApiResponse<List<DiaryStatsResponseDTO>> getDiaryStats(
             @RequestParam int year,
             @RequestParam int month
     );

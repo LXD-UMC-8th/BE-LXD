@@ -3,7 +3,7 @@ package org.lxdproject.lxd.diary.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.ImageResponseDto;
+import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.diary.dto.*;
@@ -43,8 +43,8 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<ImageResponseDto> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
-        ImageResponseDto response = imageService.uploadImage(image, ImageDir.DIARY);
+    public ApiResponse<ImageResponseDTO> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
+        ImageResponseDTO response = imageService.uploadImage(image, ImageDir.DIARY);
         return ApiResponse.onSuccess(response);
     }
 
@@ -55,7 +55,7 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<DiarySliceResponseDto> getMyDiaries(int page, int size, Boolean likedOnly) {
+    public ApiResponse<DiarySliceResponseDTO> getMyDiaries(int page, int size, Boolean likedOnly) {
         return ApiResponse.onSuccess(diaryService.getMyDiaries(page, size, likedOnly));
     }
 
@@ -73,7 +73,7 @@ public class DiaryController implements DiaryApi{
 
 
     @Override
-    public ApiResponse<List<DiaryStatsResponseDto>> getDiaryStats(int year, int month) {
+    public ApiResponse<List<DiaryStatsResponseDTO>> getDiaryStats(int year, int month) {
         return ApiResponse.onSuccess(diaryService.getDiaryStats(year, month));
     }
 }

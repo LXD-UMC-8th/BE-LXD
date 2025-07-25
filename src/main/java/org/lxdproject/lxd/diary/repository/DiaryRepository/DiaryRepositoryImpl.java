@@ -3,9 +3,9 @@ package org.lxdproject.lxd.diary.repository.DiaryRepository;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.diary.dto.DiarySliceResponseDto;
-import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDto;
-import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
+import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
+import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
+import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
@@ -24,7 +24,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     QDiaryLike diaryLike = QDiaryLike.diaryLike;
 
     @Override
-    public DiarySliceResponseDto findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
+    public DiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
         List<Diary> diaries = queryFactory
                 .selectFrom(diary)
                 .leftJoin(diary.likes, diaryLike)
@@ -43,8 +43,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
             diaries = diaries.subList(0, pageable.getPageSize());
         }
 
-        List<DiarySummaryResponseDto> content = diaries.stream()
-                .map(d -> DiarySummaryResponseDto.builder()
+        List<DiarySummaryResponseDTO> content = diaries.stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
                         .createdAt(d.getCreatedAt())
                         .title(d.getTitle())
@@ -58,7 +58,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .build())
                 .toList();
 
-        return DiarySliceResponseDto.builder()
+        return DiarySliceResponseDTO.builder()
                 .diaries(content)
                 .page(pageable.getPageNumber())
                 .size(pageable.getPageSize())
@@ -73,7 +73,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 
     @Override
-    public List<DiaryStatsResponseDto> getDiaryStatsByMonth(Long userId, int year, int month) {
+    public List<DiaryStatsResponseDTO> getDiaryStatsByMonth(Long userId, int year, int month) {
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = YearMonth.of(year, month).atEndOfMonth();
 
@@ -97,7 +97,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                             ? ((java.sql.Date) dateObj).toLocalDate().toString()
                             : dateObj.toString();
 
-                    return new DiaryStatsResponseDto(date, tuple.get(diary.count()));
+                    return new DiaryStatsResponseDTO(date, tuple.get(diary.count()));
                 })
                 .toList();
     }

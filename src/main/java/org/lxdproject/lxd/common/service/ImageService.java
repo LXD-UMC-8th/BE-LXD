@@ -1,7 +1,7 @@
 package org.lxdproject.lxd.common.service;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.common.dto.ImageResponseDto;
+import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.common.entity.Image;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.repository.ImageRepository;
@@ -18,7 +18,7 @@ public class ImageService {
     private final S3Uploader s3Uploader;
     private final ImageRepository imageRepository;
 
-    public ImageResponseDto uploadImage(MultipartFile file, ImageDir dirName) {
+    public ImageResponseDTO uploadImage(MultipartFile file, ImageDir dirName) {
         try {
             String url = s3Uploader.upload(file, dirName.getDirName());
             Image saved = imageRepository.save(
@@ -27,7 +27,7 @@ public class ImageService {
                             .dir(dirName) // enum 자체 저장
                             .build()
             );
-            return new ImageResponseDto(url);
+            return new ImageResponseDTO(url);
         } catch (IOException e) {
             throw new RuntimeException("S3 업로드 실패", e);
         }

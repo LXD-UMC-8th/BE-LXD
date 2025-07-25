@@ -3,16 +3,14 @@ package org.lxdproject.lxd.diary.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.InvalidPageException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.DiarySliceResponseDto;
-import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDto;
-import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
+import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
+import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
@@ -20,8 +18,6 @@ import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,7 +100,7 @@ public class DiaryService {
         return imageUrls;
     }
 
-    public DiarySliceResponseDto getMyDiaries(int page, int size, Boolean likedOnly) {
+    public DiarySliceResponseDTO getMyDiaries(int page, int size, Boolean likedOnly) {
         Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
         Pageable pageable = PageRequest.of(page - 1, size);
         return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
@@ -132,7 +128,7 @@ public class DiaryService {
 //        return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
 //    }
 
-    public List<DiaryStatsResponseDto> getDiaryStats(int year, int month) {
+    public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
         Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
         return diaryRepository.getDiaryStatsByMonth(userId, year, month);
     }

@@ -7,8 +7,8 @@ import java.util.List;
 
 @Getter
 @Builder
-public class DiarySliceResponseDto {
-    private List<DiarySummaryResponseDto> diaries;
+public class DiarySliceResponseDTO {
+    private List<DiarySummaryResponseDTO> diaries;
     private int page;
     private int size;
     private boolean hasNext;

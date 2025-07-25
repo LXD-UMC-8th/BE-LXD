@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class DiaryStatsResponseDto {
+public class DiaryStatsResponseDTO {
     private String date;
     private long count;
 }
