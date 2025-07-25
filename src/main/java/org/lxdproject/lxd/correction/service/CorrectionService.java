@@ -16,8 +16,6 @@ import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -56,7 +54,7 @@ public class CorrectionService {
                         .likeCount(correction.getLikeCount())
                         .commentCount(correction.getCommentCount())
                         .isLikedByMe(likedIds.contains(correction.getId()))
-                        .member(CorrectionResponseDTO.MemberDTO.builder()
+                        .member(CorrectionResponseDTO.MemberInfo.builder()
                                 .memberId(correction.getAuthor().getId())
                                 .userId(correction.getAuthor().getUsername())
                                 .nickname(correction.getAuthor().getNickname())
@@ -103,7 +101,7 @@ public class CorrectionService {
                 .likeCount(saved.getLikeCount())
                 .commentCount(saved.getCommentCount())
                 .isLikedByMe(false)
-                .member(CorrectionResponseDTO.MemberDTO.builder()
+                .member(CorrectionResponseDTO.MemberInfo.builder()
                         .memberId(author.getId())
                         .userId(author.getUsername())
                         .nickname(author.getNickname())
@@ -118,8 +116,8 @@ public class CorrectionService {
 
         Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
 
-        List<CorrectionResponseDTO.SavedCorrectionItem> correctionItems = corrections.getContent().stream()
-                .map(correction -> CorrectionResponseDTO.SavedCorrectionItem.builder()
+        List<CorrectionResponseDTO.ProvidedCorrectionItem> correctionItems = corrections.getContent().stream()
+                .map(correction -> CorrectionResponseDTO.ProvidedCorrectionItem.builder()
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
                         .diaryTitle(correction.getDiary().getTitle())
@@ -132,7 +130,7 @@ public class CorrectionService {
                 .toList();
 
         return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
-                .member(CorrectionResponseDTO.MemberDTO.builder()
+                .member(CorrectionResponseDTO.MemberInfo.builder()
                         .memberId(member.getId())
                         .userId(member.getUsername())
                         .nickname(member.getNickname())

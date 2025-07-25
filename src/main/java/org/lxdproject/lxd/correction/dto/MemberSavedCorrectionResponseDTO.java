@@ -24,7 +24,7 @@ public class MemberSavedCorrectionResponseDTO {
             private String memo;
             private CorrectionInfo correction;
             private DiaryInfo diary;
-            private AuthorInfo author;
+            private MemberInfo author;
 
             @Getter
             @Builder
@@ -46,7 +46,7 @@ public class MemberSavedCorrectionResponseDTO {
 
             @Getter
             @Builder
-            public static class AuthorInfo {
+            public static class MemberInfo {
                 private Long memberId;
                 private String userId;
                 private String nickname;
@@ -75,7 +75,6 @@ public class MemberSavedCorrectionResponseDTO {
     @Getter
     @Builder
     public static class DeleteMemoResponseDTO {
-
         private Long memberSavedCorrectionId;
         private LocalDateTime deletedAt;
         private String message;

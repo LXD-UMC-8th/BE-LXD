@@ -108,7 +108,7 @@ public class MemberSavedCorrectionService {
 
     private MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem toSavedCorrectionDTO(MemberSavedCorrection entity) {
         Correction correction = entity.getCorrection();
-        Member author = correction.getAuthor();
+        Member member = correction.getAuthor();
         Diary diary = correction.getDiary();
 
         return MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.builder()
@@ -126,11 +126,11 @@ public class MemberSavedCorrectionService {
                         .diaryTitle(diary.getTitle())
                         .diaryCreatedAt(DateFormatUtil.formatDate(diary.getCreatedAt()))
                         .build())
-                .author(MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.AuthorInfo.builder()
-                        .memberId(author.getId())
-                        .userId(author.getUsername())
-                        .nickname(author.getNickname())
-                        .profileImageUrl(author.getProfileImg())
+                .author(MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.MemberInfo.builder()
+                        .memberId(member.getId())
+                        .userId(member.getUsername())
+                        .nickname(member.getNickname())
+                        .profileImageUrl(member.getProfileImg())
                         .build())
                 .build();
     }
