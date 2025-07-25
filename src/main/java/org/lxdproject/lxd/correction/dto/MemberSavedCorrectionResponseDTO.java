@@ -24,7 +24,7 @@ public class MemberSavedCorrectionResponseDTO {
             private String memo;
             private CorrectionInfo correction;
             private DiaryInfo diary;
-            private MemberInfo author;
+            private MemberInfo member;
 
             @Getter
             @Builder

@@ -126,7 +126,7 @@ public class MemberSavedCorrectionService {
                         .diaryTitle(diary.getTitle())
                         .diaryCreatedAt(DateFormatUtil.formatDate(diary.getCreatedAt()))
                         .build())
-                .author(MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.MemberInfo.builder()
+                .member(MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.MemberInfo.builder()
                         .memberId(member.getId())
                         .userId(member.getUsername())
                         .nickname(member.getNickname())
