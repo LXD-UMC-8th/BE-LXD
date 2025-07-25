@@ -70,7 +70,7 @@ public class MemberSavedCorrectionService {
         return MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO.builder()
                 .memberSavedCorrectionId(entity.getId())
                 .createdMemo(request.getMemo())
-                .createdAt(LocalDateTime.now())
+                .createdAt(DateFormatUtil.formatDate(LocalDateTime.now()))
                 .build();
     }
 
@@ -88,7 +88,7 @@ public class MemberSavedCorrectionService {
         entity.setMemo(request.getMemo());
         return MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO.builder()
                 .updatedMemo(request.getMemo())
-                .updatedAt(entity.getUpdatedAt())
+                .updatedAt(DateFormatUtil.formatDate(entity.getUpdatedAt()))
                 .build();
     }
 
@@ -103,7 +103,7 @@ public class MemberSavedCorrectionService {
 
         return MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO.builder()
                 .memberSavedCorrectionId(entity.getId())
-                .deletedAt(LocalDateTime.now())
+                .deletedAt(DateFormatUtil.formatDate(LocalDateTime.now()))
                 .message("메모가 성공적으로 삭제되었습니다.")
                 .build();
     }

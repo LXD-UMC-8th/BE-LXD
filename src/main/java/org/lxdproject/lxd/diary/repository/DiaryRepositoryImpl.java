@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.repository;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.correction.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDTO;
@@ -46,7 +47,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         List<DiarySummaryResponseDTO> content = diaries.stream()
                 .map(d -> DiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
-                        .createdAt(d.getCreatedAt())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
                         .visibility(d.getVisibility())
                         .thumbnailUrl(d.getThumbImg())

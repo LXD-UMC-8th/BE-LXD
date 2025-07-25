@@ -63,7 +63,7 @@ public class MemberSavedCorrectionResponseDTO {
 
         private Long memberSavedCorrectionId;
         private String createdMemo;
-        private LocalDateTime createdAt;
+        private String createdAt;
     }
 
     @Getter
@@ -71,14 +71,14 @@ public class MemberSavedCorrectionResponseDTO {
     public static class UpdateMemoResponseDTO {
 
         private String updatedMemo;
-        private LocalDateTime updatedAt;
+        private String updatedAt;
     }
 
     @Getter
     @Builder
     public static class DeleteMemoResponseDTO {
         private Long memberSavedCorrectionId;
-        private LocalDateTime deletedAt;
+        private String deletedAt;
         private String message;
     }
 }

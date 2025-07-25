@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class DiarySummaryResponseDTO {
     private Long diaryId;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private String title;
     private Visibility visibility;
     private String thumbnailUrl;
