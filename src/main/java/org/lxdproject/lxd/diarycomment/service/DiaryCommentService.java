@@ -19,6 +19,7 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class DiaryCommentService {
     private final DiaryRepository diaryRepository;
     private final DiaryCommentLikeRepository likeRepository;
 
+    @Transactional
     public DiaryCommentResponseDTO writeComment(Long memberId, Long diaryId, DiaryCommentRequestDTO request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -52,6 +54,7 @@ public class DiaryCommentService {
                 .build();
 
         DiaryComment saved = diaryCommentRepository.save(comment);
+        diary.increaseCommentCount();
 
         return DiaryCommentResponseDTO.builder()
                 .commentId(saved.getId())
@@ -108,17 +111,18 @@ public class DiaryCommentService {
                 .build();
     }
 
-
-    //댓글삭제
+    @Transactional
     public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
         DiaryComment comment = diaryCommentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         comment.softDelete();
+        diary.decreaseCommentCount();
 
-        // Todo diary.decreaseCommentCount();
-
-        return DiaryCommentDeleteResponseDTO.from(comment); // DTO로 반환
+        return DiaryCommentDeleteResponseDTO.from(comment);
     }
 
 }
