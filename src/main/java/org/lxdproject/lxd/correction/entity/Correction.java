@@ -55,5 +55,4 @@ public class Correction extends BaseEntity {
     public void increaseLikeCount(){
         this.likeCount++;
     }
-
 }
