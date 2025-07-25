@@ -7,9 +7,6 @@ import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
-import org.lxdproject.lxd.member.entity.Member;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Correction API", description = "교정 관련 API입니다.")
@@ -29,8 +26,7 @@ public interface CorrectionApi {
     ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             @PathVariable Long diaryId,
             @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal Member member
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
     );
 
     @Operation(
@@ -45,8 +41,7 @@ public interface CorrectionApi {
     )
     @PostMapping
     ApiResponse<CorrectionResponseDTO.CorrectionDetailDTO> createCorrection(
-            @RequestBody @Valid CorrectionRequestDTO.CreateRequestDTO requestDto,
-            @AuthenticationPrincipal Member member
+            @RequestBody @Valid CorrectionRequestDTO.CreateRequestDTO requestDto
     );
 
     @Operation(
@@ -73,7 +68,6 @@ public interface CorrectionApi {
     )
     @GetMapping("/provided")
     ApiResponse<CorrectionResponseDTO.ProvidedCorrectionsResponseDTO> getMyProvidedCorrections(
-            @AuthenticationPrincipal Member member,
 
             @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
