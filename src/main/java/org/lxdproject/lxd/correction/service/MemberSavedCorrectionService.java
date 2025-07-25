@@ -58,7 +58,7 @@ public class MemberSavedCorrectionService {
     @Transactional
     public MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO createMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberSavedCorrection entity = getSavedCorrectionOrThrow(request.getMemberSavedCorrectionId());
+        MemberSavedCorrection entity = getSavedCorrectionOrThrow(request.getSavedCorrectionId());
 
         validateMemberAccess(entity, currentMemberId);
 
@@ -77,7 +77,7 @@ public class MemberSavedCorrectionService {
     @Transactional
     public MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO updateMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberSavedCorrection entity = getSavedCorrectionOrThrow(request.getMemberSavedCorrectionId());
+        MemberSavedCorrection entity = getSavedCorrectionOrThrow(request.getSavedCorrectionId());
 
         validateMemberAccess(entity, currentMemberId);
 
