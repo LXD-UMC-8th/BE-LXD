@@ -10,6 +10,7 @@ import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.dto.DiarySliceResponseDto;
+import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDto;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
@@ -119,5 +120,10 @@ public class DiaryService {
         Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
         Pageable pageable = PageRequest.of(page - 1, size);
         return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
+    }
+
+    public List<DiaryStatsResponseDto> getDiaryStats(int year, int month) {
+        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+        return diaryRepository.getDiaryStatsByMonth(userId, year, month);
     }
 }
