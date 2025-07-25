@@ -101,19 +101,19 @@ public class DiaryService {
     }
 
     public DiarySliceResponseDTO getMyDiaries(int page, int size, Boolean likedOnly) {
-        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+        Long memberId = SecurityUtil.getCurrentMemberId();
         Pageable pageable = PageRequest.of(page - 1, size);
-        return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
+        return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
     }
 
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
 
-        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+        Long memberId = SecurityUtil.getCurrentMemberId();
 
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        if (!diary.getMember().getId().equals(userId)) {
+        if (!diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
@@ -123,13 +123,13 @@ public class DiaryService {
     }
 
 //    public DiarySliceResponseDto getMyDiaries(int page, int size, Boolean likedOnly) {
-//        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+//        Long memberId = SecurityUtil.getCurrentMemberId();
 //        Pageable pageable = PageRequest.of(page - 1, size);
-//        return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
+//        return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
 //    }
 
     public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
-        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
-        return diaryRepository.getDiaryStatsByMonth(userId, year, month);
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return diaryRepository.getDiaryStatsByMonth(memberId, year, month);
     }
 }
