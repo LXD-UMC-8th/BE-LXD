@@ -3,6 +3,8 @@ package org.lxdproject.lxd.diarycomment.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
+import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.member.entity.Member;
 
 @Entity
 @Table(name = "diary_comment")
@@ -10,33 +12,50 @@ import org.lxdproject.lxd.common.entity.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class DiaryComment extends BaseEntity {
+public class DiaryComment extends BaseEntity {   //baseentity상속
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
-    private Long diaryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "diary_id", nullable = false)
+    private Diary diary;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private DiaryComment parent; // 대댓글용 자기 참조
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String commentText;
 
-    private Long parentId; // 일반 댓글이면 null
-
     private int likeCount;
 
-    // DiaryComment.java (Entity)
     public void increaseLikeCount() {
         this.likeCount += 1;
     }
 
     public void decreaseLikeCount() {
-        this.likeCount = Math.max(this.likeCount - 1, 0); // 음수 방지
+        this.likeCount = Math.max(this.likeCount - 1, 0);
     }
 
+    //soft delete
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
+
+    //soft delete method
+    public void softDelete() {
+        this.commentText = "삭제된 댓글입니다";
+        this.isDeleted = true;
+    }
+
+
 }
+
 
 
 

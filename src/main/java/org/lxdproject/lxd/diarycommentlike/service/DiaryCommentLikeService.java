@@ -22,7 +22,7 @@ public class DiaryCommentLikeService {
         DiaryComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
-        if (!comment.getDiaryId().equals(diaryId)) {
+        if (!comment.getDiary().getId().equals(diaryId)) {
             throw new IllegalArgumentException("해당 댓글은 지정된 일기에 속하지 않습니다.");
         }
 
@@ -50,4 +50,5 @@ public class DiaryCommentLikeService {
                 .build();
     }
 }
+
 
