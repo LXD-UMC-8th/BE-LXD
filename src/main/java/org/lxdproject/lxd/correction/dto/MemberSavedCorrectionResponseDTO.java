@@ -14,7 +14,7 @@ public class MemberSavedCorrectionResponseDTO {
     @Builder
     public static class CreateMemoResponseDTO {
 
-        private Long correctionId;
+        private Long memberSavedCorrectionId;
         private String createdMemo;
         private LocalDateTime createdAt;
     }
@@ -31,7 +31,7 @@ public class MemberSavedCorrectionResponseDTO {
     @Builder
     public static class DeleteMemoResponseDTO {
 
-        private Long correctionId;
+        private Long memberSavedCorrectionId;
         private LocalDateTime deletedAt;
         private String message;
     }

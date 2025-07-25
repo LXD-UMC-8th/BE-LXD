@@ -11,8 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.CORRECTION_NOT_FOUND;
-import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.INVALID_CORRECTION_MEMO;
+import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class MemberSavedCorrectionService {
 
     @Transactional
     public MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO createMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
-        MemberSavedCorrection entity = getCorrectionOrThrow(request.getCorrectionId());
+        MemberSavedCorrection entity = getCorrectionOrThrow(request.getMemberSavedCorrectionId());
 
         if (entity.getMemo() != null && !entity.getMemo().isBlank()) {
             throw new CorrectionHandler(INVALID_CORRECTION_MEMO);
@@ -30,7 +29,7 @@ public class MemberSavedCorrectionService {
 
         entity.setMemo(request.getMemo());
         return MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO.builder()
-                .correctionId(entity.getId())
+                .memberSavedCorrectionId(entity.getId())
                 .createdMemo(request.getMemo())
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -38,7 +37,11 @@ public class MemberSavedCorrectionService {
 
     @Transactional
     public MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO updateMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
-        MemberSavedCorrection entity = getCorrectionOrThrow(request.getCorrectionId());
+        MemberSavedCorrection entity = getCorrectionOrThrow(request.getMemberSavedCorrectionId());
+
+        if (entity.getMemo() == null || entity.getMemo().isBlank()) {
+            throw new CorrectionHandler(MEMO_NOT_FOUND);
+        }
 
         entity.setMemo(request.getMemo());
         return MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO.builder()
@@ -48,13 +51,13 @@ public class MemberSavedCorrectionService {
     }
 
     @Transactional
-    public MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO deleteMemo(Long correctionId) {
-        MemberSavedCorrection entity = getCorrectionOrThrow(correctionId);
+    public MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO deleteMemo(Long memberSavedCorrectionId) {
+        MemberSavedCorrection entity = getCorrectionOrThrow(memberSavedCorrectionId);
         entity.setMemo(null);
 
         return MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO.builder()
-                .correctionId(entity.getId())
-                .deletedAt(entity.getUpdatedAt())
+                .memberSavedCorrectionId(entity.getId())
+                .deletedAt(LocalDateTime.now())
                 .message("메모가 성공적으로 삭제되었습니다.")
                 .build();
     }

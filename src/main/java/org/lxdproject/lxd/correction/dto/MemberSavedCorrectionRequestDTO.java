@@ -15,12 +15,12 @@ public class MemberSavedCorrectionRequestDTO {
     @Schema(description = "메모 요청 DTO")
     public static class MemoRequestDTO {
 
-        @NotNull(message = "correctionId는 필수입니다.")
-        @Schema(description = "저장 교정 ID", example = "42")
-        private Long correctionId;
+        @NotNull(message = "memberSavedCorrectionId는 필수입니다.")
+        @Schema(description = "회원이 저장한 교정 ID", example = "812")
+        private Long memberSavedCorrectionId;
 
         @NotBlank(message = "메모는 비어 있을 수 없습니다.")
-        @Schema(description = "저장 교정 내 메모 내용", example = "ex) 이 부분 잊지말자!")
+        @Schema(description = "저장 교정 내 메모 내용", example = "이 부분 잊지말자!")
         private String memo;
     }
 }

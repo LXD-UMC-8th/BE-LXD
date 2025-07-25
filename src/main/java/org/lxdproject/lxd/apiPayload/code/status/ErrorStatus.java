@@ -38,6 +38,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 교정 관련 에러
     CORRECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "CORRECTION4400", "교정을 찾을 수 없습니다."),
     INVALID_CORRECTION_MEMO(HttpStatus.NOT_FOUND, "CORRECTION4401", "이미 메모가 존재하는 교정입니다."),
+    MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "CORRECTION4402", "메모가 생성되어있지 않습니다. 업데이트가 아닌 메모 생성을 해야합니다."),
 
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
