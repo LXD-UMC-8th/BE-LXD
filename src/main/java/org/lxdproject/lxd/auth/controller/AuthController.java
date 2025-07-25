@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 @Validated
-public class AuthRestController {
+public class AuthController {
 
     private final AuthService authService;
     private final GoogleOAuthClient googleOAuthClient;
