@@ -26,8 +26,8 @@ public class AuthRequestDTO {
 
     @Getter
     @Setter
-    public static class loginWithGoogleRequestDTO{
-        @NotBlank(message = "구글 로그인 후 받은 Oauth2 code")
+    public static class SocialLoginRequestDTO {
+        @NotBlank(message = "소셜 로그인 후 받은 Oauth2 code")
         private String code;
     }
 
