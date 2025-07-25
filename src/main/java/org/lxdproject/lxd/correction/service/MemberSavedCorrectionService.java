@@ -119,6 +119,8 @@ public class MemberSavedCorrectionService {
                         .originalText(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
+                        .likeCount(correction.getLikeCount())
+                        .commentCount(correction.getCommentCount())
                         .correctionCreatedAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
                         .build())
                 .diary(MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.DiaryInfo.builder()

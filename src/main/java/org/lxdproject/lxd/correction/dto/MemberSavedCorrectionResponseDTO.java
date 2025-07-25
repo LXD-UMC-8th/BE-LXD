@@ -34,6 +34,8 @@ public class MemberSavedCorrectionResponseDTO {
                 private String corrected;
                 private String commentText;
                 private String correctionCreatedAt;
+                private Integer commentCount;
+                private Integer likeCount;
             }
 
             @Getter

@@ -51,6 +51,8 @@ public class CorrectionResponseDTO {
         private String originalText;
         private String corrected;
         private String commentText;
+        private Integer commentCount;
+        private Integer likeCount;
     }
 
     @Getter

@@ -126,6 +126,8 @@ public class CorrectionService {
                         .originalText(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
+                        .likeCount(correction.getLikeCount())
+                        .commentCount(correction.getCommentCount())
                         .build())
                 .toList();
 
