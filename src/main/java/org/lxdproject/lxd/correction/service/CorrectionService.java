@@ -39,9 +39,9 @@ public class CorrectionService {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        if (!diaryRepository.existsById(diaryId)) {
-            throw new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND);
-        }
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Slice<Correction> correctionSlice = correctionRepository.findByDiaryId(diaryId, pageable);
@@ -123,7 +123,7 @@ public class CorrectionService {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Diary diary = diaryRepository.findById(requestDto.getDiaryId())
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(requestDto.getDiaryId())
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Correction correction = Correction.builder()
