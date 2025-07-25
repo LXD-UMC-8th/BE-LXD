@@ -47,6 +47,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 댓글 관련 에러
     PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4001","존재하지 않는 부모 댓글입니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4002","댓글을 찾을 수 없습니다."),
+    COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
 
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),

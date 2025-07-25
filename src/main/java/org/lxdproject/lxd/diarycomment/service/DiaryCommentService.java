@@ -49,6 +49,10 @@ public class DiaryCommentService {
         if (request.getParentId() != null) {
             parent = diaryCommentRepository.findById(request.getParentId())
                     .orElseThrow(() -> new CommentHandler(ErrorStatus.PARENT_COMMENT_NOT_FOUND));
+
+            if (parent.getParent() != null) {
+                throw new CommentHandler(ErrorStatus.COMMENT_DEPTH_EXCEEDED);
+            }
         }
 
         DiaryComment comment = DiaryComment.builder()
