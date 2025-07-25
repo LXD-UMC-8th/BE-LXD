@@ -123,7 +123,7 @@ public class CorrectionService {
                         .diaryTitle(correction.getDiary().getTitle())
                         .diaryCreatedAt(DateFormatUtil.formatDate(correction.getDiary().getCreatedAt()))
                         .createdAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
-                        .original(correction.getOriginalText())
+                        .originalText(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
                         .build())

@@ -48,7 +48,7 @@ public class CorrectionResponseDTO {
         private String diaryTitle;
         private String diaryCreatedAt;
         private String createdAt;
-        private String original;
+        private String originalText;
         private String corrected;
         private String commentText;
     }
