@@ -2,6 +2,7 @@ package org.lxdproject.lxd.infra.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -16,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 public class RedisService {
+
+    @Qualifier("redisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     // TTL(유효시간) 없이 key-value 저장

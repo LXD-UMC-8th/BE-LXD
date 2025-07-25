@@ -36,6 +36,9 @@ public enum ErrorStatus implements BaseErrorCode {
     // 메일 관련 에러
     UNABLE_TO_SEND_EMAIL(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL 4301", "이메일을 보낼 수 없습니다."),
 
+    // 알림 관련 에러
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTIFICATION4001","알림을 찾을 수 없습니다."),
+
     // 교정 관련 에러
     CORRECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "CORRECTION4400", "교정을 찾을 수 없습니다."),
     INVALID_CORRECTION_MEMO(HttpStatus.NOT_FOUND, "CORRECTION4401", "이미 메모가 존재하는 교정입니다."),
