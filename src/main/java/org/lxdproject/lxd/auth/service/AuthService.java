@@ -55,6 +55,11 @@ public class AuthService {
             throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
         }
 
+        // 일반 로그인인지 검사
+        if(member.getLoginType() != LoginType.LOCAL) {
+            throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
+        }
+
         // 인증 완료 후, 토큰 생성
         String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
 
@@ -130,9 +135,10 @@ public class AuthService {
     public AuthResponseDTO.SocialLoginResponseDTO socialLogin(OAuthUserInfo oAuthUserInfo) {
 
         String email = oAuthUserInfo.getEmail();
+        Member member = memberRepository.findByEmail(email).orElse(null);
 
         // 새로운 유저 -> 회원가입 페이지로 이동시키기
-        if(memberRepository.existsByEmail(email).equals(Boolean.FALSE)) {
+        if(member == null) {
             return AuthResponseDTO.SocialLoginResponseDTO.builder()
                     .isNewMember(Boolean.FALSE)
                     .accessToken(null)
@@ -142,18 +148,18 @@ public class AuthService {
                     .build();
         }
 
-        // 기존 유저 -> jwt 토큰 반환 시키기
-        AuthResponseDTO.LoginResponseDTO loginResponseDTO = login(new AuthRequestDTO.LoginRequestDTO(email, oAuthUserInfo.getLoginType().name() +"_" + oAuthUserInfo.getName()));
+        // 기존 유저 -> 로그인 후 jwt 토큰 발급
+        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
 
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
                 .isNewMember(Boolean.TRUE)
-                .accessToken(loginResponseDTO.getAccessToken())
+                .accessToken(accessToken)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
-                        .memberId(loginResponseDTO.getMember().getMemberId())
-                        .username(loginResponseDTO.getMember().getUsername())
-                        .profileImg(loginResponseDTO.getMember().getProfileImg())
-                        .nickname(loginResponseDTO.getMember().getNickname())
-                        .language(loginResponseDTO.getMember().getLanguage())
+                        .memberId(member.getId())
+                        .username(member.getUsername())
+                        .profileImg(member.getProfileImg())
+                        .nickname(member.getNickname())
+                        .language(member.getLanguage().name())
                         .build())
                 .build();
 
