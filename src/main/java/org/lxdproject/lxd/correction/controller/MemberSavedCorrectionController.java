@@ -14,17 +14,22 @@ public class MemberSavedCorrectionController implements MemberSavedCorrectionApi
     private final MemberSavedCorrectionService memberSavedCorrectionService;
 
     @Override
+    public ApiResponse<MemberSavedCorrectionResponseDTO.SavedListResponseDTO> getSavedCorrections(int page, int size) {
+        return ApiResponse.onSuccess(memberSavedCorrectionService.getMySavedCorrections(page, size));
+    }
+
+    @Override
     public ApiResponse<MemberSavedCorrectionResponseDTO.CreateMemoResponseDTO> createMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
-        return  ApiResponse.onSuccess(memberSavedCorrectionService.createMemo(request));
+        return ApiResponse.onSuccess(memberSavedCorrectionService.createMemo(request));
     }
 
     @Override
     public ApiResponse<MemberSavedCorrectionResponseDTO.UpdateMemoResponseDTO> updateMemo(MemberSavedCorrectionRequestDTO.MemoRequestDTO request) {
-        return  ApiResponse.onSuccess(memberSavedCorrectionService.updateMemo(request));
+        return ApiResponse.onSuccess(memberSavedCorrectionService.updateMemo(request));
     }
 
     @Override
-    public ApiResponse<MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO> deleteMemo(Long correctionId) {
-        return ApiResponse.onSuccess(memberSavedCorrectionService.deleteMemo(correctionId));
+    public ApiResponse<MemberSavedCorrectionResponseDTO.DeleteMemoResponseDTO> deleteMemo(Long savedCorrectionId) {
+        return ApiResponse.onSuccess(memberSavedCorrectionService.deleteMemo(savedCorrectionId));
     }
 }
