@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class DiaryController implements DiaryApi{
@@ -62,5 +64,16 @@ public class DiaryController implements DiaryApi{
     public ApiResponse<DiaryDetailResponseDTO> updateDiary(Long id, @Valid @RequestBody DiaryRequestDTO request) {
         DiaryDetailResponseDTO response = diaryService.updateDiary(id, request);
         return ApiResponse.onSuccess(response);
+    }
+
+//    @Override
+//    public ApiResponse<DiarySliceResponseDto> getMyDiaries(int page, int size, Boolean likedOnly) {
+//        return ApiResponse.onSuccess(diaryService.getMyDiaries(page, size, likedOnly));
+//    }
+
+
+    @Override
+    public ApiResponse<List<DiaryStatsResponseDto>> getDiaryStats(int year, int month) {
+        return ApiResponse.onSuccess(diaryService.getDiaryStats(year, month));
     }
 }

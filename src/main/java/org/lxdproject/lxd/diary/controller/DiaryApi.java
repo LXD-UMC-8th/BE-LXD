@@ -18,6 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name = "Diary API", description = "일기 관련 API 입니다.")
 @RequestMapping("/diaries")
 public interface DiaryApi {
@@ -112,5 +114,21 @@ public interface DiaryApi {
             @Valid @RequestBody DiaryRequestDTO request
     );
 
+
+
+    @GetMapping("/stats")
+    @Operation(summary = "날짜별 일기 작성 개수 조회 API", description = "로그인한 사용자의 월별 일기 작성 개수를 날짜별로 조회합니다.")
+    @Parameters({
+            @Parameter(name = "year", description = "연도 (예: 2025)", example = "2025"),
+            @Parameter(name = "month", description = "월 (1~12)", example = "7")
+    })
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 통계 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<List<DiaryStatsResponseDto>> getDiaryStats(
+            @RequestParam int year,
+            @RequestParam int month
+    );
 
 }

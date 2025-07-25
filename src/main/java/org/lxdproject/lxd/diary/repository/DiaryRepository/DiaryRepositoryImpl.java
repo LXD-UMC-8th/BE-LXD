@@ -91,10 +91,14 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .orderBy(dateExpression.asc())
                 .fetch()
                 .stream()
-                .map(tuple -> new DiaryStatsResponseDto(
-                        tuple.get(dateExpression),   // yyyy-MM-dd
-                        tuple.get(diary.count())
-                ))
+                .map(tuple -> {
+                    Object dateObj = tuple.get(dateExpression);
+                    String date = (dateObj instanceof java.sql.Date)
+                            ? ((java.sql.Date) dateObj).toLocalDate().toString()
+                            : dateObj.toString();
+
+                    return new DiaryStatsResponseDto(date, tuple.get(diary.count()));
+                })
                 .toList();
     }
 }
