@@ -32,11 +32,11 @@ public class DiaryCommentController implements DiaryCommentApi {
 
     @Override
     public ApiResponse<DiaryCommentResponseDTO.CommentList> getComments(
-            Long diaryId, int page, int size, @AuthenticationPrincipal Member currentMember
+            Long diaryId, int page, int size
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         DiaryCommentResponseDTO.CommentList response =
-                diaryCommentService.getComments(diaryId, currentMember.getId(), pageable);
+                diaryCommentService.getComments(diaryId, pageable);
         return ApiResponse.of(SuccessStatus._OK, response);
     }
 
