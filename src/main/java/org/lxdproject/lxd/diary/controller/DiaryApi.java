@@ -30,7 +30,6 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요 (JWT 누락 또는 만료)", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    @PreAuthorize("isAuthenticated()")
     public ApiResponse<DiaryDetailResponseDTO> createDiary( @Valid @RequestBody DiaryRequestDTO request);
 
     @GetMapping("/{id}")
@@ -47,7 +46,7 @@ public interface DiaryApi {
     public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long id);
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다.")
+    @Operation(summary = "일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다. 해당하는 이미지 또한 S3 버킷에서 삭제합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "일기 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -81,5 +80,21 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<QuestionResponseDTO> getRandomQuestion(@RequestParam("language") Language language);
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "일기 수정 API", description = "title, content, style, visibility, commentPermission, language, thumbImg 필드를 수정합니다.")
+    @Parameters({
+            @Parameter(name = "id", description = "수정할 일기의 ID", required = true)
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 수정 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiaryDetailResponseDTO> updateDiary(
+            @PathVariable Long id,
+            @Valid @RequestBody DiaryRequestDTO request
+    );
+
 
 }

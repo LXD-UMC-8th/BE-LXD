@@ -20,6 +20,8 @@ public class AwsS3Config {
 
     @Value("${cloud.aws.region.static}")
     private String region;
+    //    @Value("${aws.region}")
+    //    private String region;
 
     @Bean
     public S3Client s3Client() {
