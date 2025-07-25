@@ -51,7 +51,3 @@ public class DiaryComment extends BaseEntity {   //baseentity상속
     }
 
 }
-
-
-
-

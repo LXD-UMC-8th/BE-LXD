@@ -8,6 +8,7 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.converter.DiaryCommentConverter;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
@@ -21,7 +22,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -69,41 +75,33 @@ public class DiaryCommentService {
     }
 
     public DiaryCommentResponseDTO.CommentList getComments(Long diaryId, Pageable pageable) {
-        Page<DiaryComment> parentComments = diaryCommentRepository.findByDiaryIdAndParentIsNull(diaryId, pageable);
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        List<DiaryCommentResponseDTO.Comment> commentDTOs = parentComments.getContent().stream().map(parent -> {
-            // 대댓글 가져오기
-            List<DiaryComment> replies = diaryCommentRepository.findByParent(parent);
+        // 부모 댓글 조회
+        Page<DiaryComment> parentComments = diaryCommentRepository.findByDiaryIdAndParentIsNull(diaryId, pageable);
+        List<DiaryComment> parents = parentComments.getContent();
+        List<Long> parentIds = parents.stream().map(DiaryComment::getId).toList();
 
-            List<DiaryCommentResponseDTO.Comment> replyDTOs = replies.stream().map(reply -> {
-                return DiaryCommentResponseDTO.Comment.builder()
-                        .commentId(reply.getId())
-                        .parentId(parent.getId())
-                        .userId(reply.getMember().getId())
-                        .nickname(reply.getMember().getNickname())
-                        .profileImage(reply.getMember().getProfileImg())
-                        .content(reply.getCommentText())
-                        .likeCount(reply.getLikeCount())
-                        .isLiked(likeRepository.existsByCommentAndMemberId(reply, memberId))
-                        .createdAt(reply.getCreatedAt())
-                        .replies(List.of())
-                        .build();
-            }).toList();
+        // 자식 댓글 일괄 조회
+        List<DiaryComment> allReplies = parentIds.isEmpty() ? List.of() :
+                diaryCommentRepository.findByParentIdIn(parentIds);
 
-            return DiaryCommentResponseDTO.Comment.builder()
-                    .commentId(parent.getId())
-                    .parentId(null)
-                    .userId(parent.getMember().getId())
-                    .nickname(parent.getMember().getNickname())
-                    .profileImage(parent.getMember().getProfileImg())
-                    .content(parent.getCommentText())
-                    .likeCount(parent.getLikeCount())
-                    .isLiked(likeRepository.existsByCommentAndMemberId(parent, memberId))
-                    .createdAt(parent.getCreatedAt())
-                    .replies(replyDTOs)
-                    .build();
-        }).toList();
+        // 부모 + 자식 댓글 ID 리스트에 담기
+        List<Long> allCommentIds = Stream.concat(parents.stream(), allReplies.stream())
+                .map(DiaryComment::getId)
+                .toList();
+
+        // 부모 + 자식 댓글 ID의 좋아요 여부 일괄 조회
+        Set<Long> likedCommentIds = allCommentIds.isEmpty() ? Set.of()
+                : new HashSet<>(likeRepository.findLikedCommentIds(memberId, allCommentIds));
+
+        // 부모 + 자식 그룹핑
+        Map<Long, List<DiaryComment>> repliesGroupedByParent = allReplies.stream()
+                .collect(Collectors.groupingBy(reply -> reply.getParent().getId()));
+
+        // DTO 변환
+        List<DiaryCommentResponseDTO.Comment> commentDTOs =
+                DiaryCommentConverter.toCommentDtoTree(parents, repliesGroupedByParent, likedCommentIds);
 
         return DiaryCommentResponseDTO.CommentList.builder()
                 .content(commentDTOs)
