@@ -60,7 +60,7 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryDetailResponseDTO getDiaryDetail(Long id) {
-        Diary diary = diaryRepository.findById(id)
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         // 비공개 일기의 경우 작성자만 접근 가능(가시성 검증)
@@ -74,7 +74,7 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(Long diaryId) {
-        Diary diary = diaryRepository.findById(diaryId)
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -86,7 +86,7 @@ public class DiaryService {
         List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
         s3Uploader.deleteFiles(keys);
 
-        diaryRepository.delete(diary);
+        diary.softDelete();
     }
 
     private static final Pattern IMG_URL_PATTERN = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
@@ -110,7 +110,7 @@ public class DiaryService {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        Diary diary = diaryRepository.findById(id)
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         if (!diary.getMember().getId().equals(memberId)) {

@@ -31,6 +31,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .leftJoin(diary.likes, diaryLike)
                 .where(
                         diary.member.id.eq(userId),
+                        diary.deletedAt.isNull(),
                         likedOnly != null && likedOnly ? diaryLike.member.id.eq(userId) : null
                 )
                 .distinct()
@@ -86,6 +87,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .from(diary)
                 .where(
                         diary.member.id.eq(userId),
+                        diary.deletedAt.isNull(),
                         diary.createdAt.between(start.atStartOfDay(), end.atTime(23, 59, 59))
                 )
                 .groupBy(dateExpression)
