@@ -42,7 +42,7 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class CorrectionItem {
+    public static class SavedCorrectionItem {
         private Long correctionId;
         private Long diaryId;
         private String diaryTitle;
@@ -57,7 +57,7 @@ public class CorrectionResponseDTO {
     @Builder
     public static class ProvidedCorrectionsResponseDTO {
         private MemberDTO member;
-        private List<CorrectionItem> corrections;
+        private List<SavedCorrectionItem> corrections;
         private int page;
         private int size;
         private int totalCount;
