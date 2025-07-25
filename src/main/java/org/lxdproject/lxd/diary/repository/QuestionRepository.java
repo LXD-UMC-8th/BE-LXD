@@ -7,6 +7,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
-    @Query(value = "SELECT * FROM 질문 WHERE language = :language ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM question WHERE language = :language ORDER BY RAND() LIMIT 1", nativeQuery = true)
     Question findRandomQuestionByLanguage(@Param("language") String language);
 }
