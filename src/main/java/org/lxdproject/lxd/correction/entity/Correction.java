@@ -1,10 +1,7 @@
 package org.lxdproject.lxd.correction.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.diary.entity.Diary;
@@ -50,4 +47,13 @@ public class Correction extends BaseEntity {
 
     @OneToMany(mappedBy = "correction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberSavedCorrection> savedByMembers = new ArrayList<>();
+
+    public void decreaseLikeCount(){
+        if (this.likeCount > 0) this.likeCount--;
+    }
+
+    public void increaseLikeCount(){
+        this.likeCount++;
+    }
+
 }
