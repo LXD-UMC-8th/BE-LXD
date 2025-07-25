@@ -3,7 +3,7 @@ package org.lxdproject.lxd.diarycomment.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;

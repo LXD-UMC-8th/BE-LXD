@@ -9,7 +9,7 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class DiaryCorrectionsResponseDTO{
+    public static class DiaryCorrectionsResponseDTO {
         private Long diaryId;
         private int totalCount; // 전체 교정 수
         private boolean hasNext; // 다음 페이지 존재 여부
@@ -64,5 +64,15 @@ public class CorrectionResponseDTO {
         private int size;
         private int totalCount;
         private boolean hasNext;
+    }
+
+
+    @Getter
+    @Builder
+    public static class CorrectionLikeResponseDTO {
+        private Long correctionId;
+        private Long memberId;
+        private Integer likeCount;
+        private Boolean liked;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberSavedCorrectionRepository extends JpaRepository<MemberSavedCorrection, Long> {
 
@@ -20,5 +21,6 @@ public interface MemberSavedCorrectionRepository extends JpaRepository<MemberSav
     );
 
     Slice<MemberSavedCorrection> findByMember_Id(Long memberId, Pageable pageable);
+    Optional<MemberSavedCorrection> findByCorrectionIdAndMember_Id(Long correctionId, Long memberId);
 }
 

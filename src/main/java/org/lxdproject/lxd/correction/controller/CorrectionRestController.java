@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
+import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.correction.service.CorrectionService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.data.domain.Slice;
@@ -20,6 +21,12 @@ public class CorrectionRestController implements CorrectionApi {
     public ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             Long diaryId, int page, int size, Member member) {
         return ApiResponse.onSuccess(correctionService.getCorrectionsByDiaryId(diaryId, page, size, member));
+    }
+
+    @Override
+    public ApiResponse<CorrectionResponseDTO.CorrectionLikeResponseDTO> updateCorrectionLike(
+            Long correctionId) {
+        return ApiResponse.onSuccess(correctionService.toggleLikeCorrection(correctionId));
     }
 
     @Override
