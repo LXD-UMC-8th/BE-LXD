@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.InvalidPageException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.util.S3Uploader;
@@ -14,6 +15,7 @@ import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,6 +95,22 @@ public class DiaryService {
             imageUrls.add(matcher.group(1)); // src 값만 추출
         }
         return imageUrls;
+    }
+
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
+
+        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+
+        Diary diary = diaryRepository.findById(id)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
+        if (!diary.getMember().getId().equals(userId)) {
+            throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
+        }
+
+        diary.update(request);
+        Diary updated = diaryRepository.save(diary);
+        return DiaryDetailResponseDTO.from(updated);
     }
 
 }

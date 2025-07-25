@@ -31,6 +31,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 일기 관련 에러
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),
     TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST,"DIARY4002","이미지는 최대 5개까지만 첨부할 수 있습니다."),
+    FORBIDDEN_DIARY_UPDATE(HttpStatus.FORBIDDEN, "DIARY4003", "작성자 본인만 수정할 수 있습니다."),
 
     // 메일 관련 에러
     UNABLE_TO_SEND_EMAIL(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL 4301", "이메일을 보낼 수 없습니다."),
