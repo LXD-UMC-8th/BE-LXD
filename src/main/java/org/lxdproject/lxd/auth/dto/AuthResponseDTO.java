@@ -18,9 +18,8 @@ public class AuthResponseDTO {
         @Schema(description = "액세스 토큰")
         private String accessToken;
 
-        // TODO refresh 토큰 구현 시 해당 부분 주석 제거하기
-        /*@Schema(description = "리프레쉬 토큰")
-        private String refreshToken;*/
+        @Schema(description = "리프레쉬 토큰")
+        private String refreshToken;
 
         @Schema(description = "로그인한 멤버 정보")
         private MemberDTO member;

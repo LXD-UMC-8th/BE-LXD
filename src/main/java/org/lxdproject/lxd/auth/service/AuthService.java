@@ -58,6 +58,7 @@ public class AuthService {
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
+                refreshToken,
                 member
         );
     }
