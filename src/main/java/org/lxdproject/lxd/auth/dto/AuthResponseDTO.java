@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.lxdproject.lxd.member.entity.enums.LoginType;
 
 public class AuthResponseDTO {
 
@@ -92,6 +93,10 @@ public class AuthResponseDTO {
 
             @Schema(description = "선택 언어 (KO, ENG 등)")
             private String language;
+
+            // 새로운 소셜 로그인 시, 회원가입을 위해 로그인 방법 정보 제공
+            @Schema(description = "로그인 방법 (ex GOOGLE)")
+            private LoginType loginType;
         }
 
 

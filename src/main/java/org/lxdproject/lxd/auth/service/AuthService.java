@@ -134,16 +134,20 @@ public class AuthService {
 
     public AuthResponseDTO.SocialLoginResponseDTO socialLogin(OAuthUserInfo oAuthUserInfo) {
 
+
         String email = oAuthUserInfo.getEmail();
         Member member = memberRepository.findByEmail(email).orElse(null);
+
+        System.out.println(member);
 
         // 새로운 유저 -> 회원가입 페이지로 이동시키기
         if(member == null) {
             return AuthResponseDTO.SocialLoginResponseDTO.builder()
-                    .isNewMember(Boolean.FALSE)
+                    .isNewMember(Boolean.TRUE) // 새로운 유저
                     .accessToken(null)
                     .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                             .email(email)
+                            .loginType(oAuthUserInfo.getLoginType()) // 로그인 방법도 response에 포함
                             .build())
                     .build();
         }
@@ -152,7 +156,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
 
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
-                .isNewMember(Boolean.TRUE)
+                .isNewMember(Boolean.FALSE) // 기존 유저
                 .accessToken(accessToken)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
@@ -160,6 +164,7 @@ public class AuthService {
                         .profileImg(member.getProfileImg())
                         .nickname(member.getNickname())
                         .language(member.getLanguage().name())
+                        .loginType(oAuthUserInfo.getLoginType())
                         .build())
                 .build();
 
