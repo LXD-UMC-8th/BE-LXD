@@ -21,7 +21,6 @@ public class DiaryCommentDeleteResponseDTO {
                 comment.isDeleted(),
                 comment.getCommentText(),
                 comment.getDeletedAt()
-
         );
     }
 }

@@ -9,7 +9,7 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class DiaryCorrectionsResponseDTO{
+    public static class DiaryCorrectionsResponseDTO {
         private Long diaryId;
         private int totalCount; // 전체 교정 수
         private boolean hasNext; // 다음 페이지 존재 여부
@@ -22,7 +22,7 @@ public class CorrectionResponseDTO {
         private Long correctionId;
         private Long diaryId;
         private String createdAt;
-        private MemberDTO member;
+        private MemberInfo member;
         private String original;
         private String corrected;
         private String commentText;
@@ -33,7 +33,7 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class MemberDTO {
+    public static class MemberInfo {
         private Long memberId;
         private String userId;
         private String nickname;
@@ -42,25 +42,37 @@ public class CorrectionResponseDTO {
 
     @Getter
     @Builder
-    public static class CorrectionItem {
+    public static class ProvidedCorrectionItem {
         private Long correctionId;
         private Long diaryId;
         private String diaryTitle;
         private String diaryCreatedAt;
         private String createdAt;
-        private String original;
+        private String originalText;
         private String corrected;
         private String commentText;
+        private Integer commentCount;
+        private Integer likeCount;
     }
 
     @Getter
     @Builder
     public static class ProvidedCorrectionsResponseDTO {
-        private MemberDTO member;
-        private List<CorrectionItem> corrections;
+        private MemberInfo member;
+        private List<ProvidedCorrectionItem> corrections;
         private int page;
         private int size;
         private int totalCount;
         private boolean hasNext;
+    }
+
+
+    @Getter
+    @Builder
+    public static class CorrectionLikeResponseDTO {
+        private Long correctionId;
+        private Long memberId;
+        private Integer likeCount;
+        private Boolean liked;
     }
 }

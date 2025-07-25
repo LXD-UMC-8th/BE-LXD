@@ -31,7 +31,7 @@ public class MemberConverter {
                 .password(encryptedPassword)
                 .email(joinRequestDTO.getEmail())
                 .nickname(joinRequestDTO.getNickname())
-                .loginType(LoginType.LOCAL)
+                .loginType(joinRequestDTO.getLoginType())
                 .isPrivacyAgreed(joinRequestDTO.getIsPrivacyAgreed())
                 .profileImg(joinRequestDTO.getProfileImg())
                 .status(Status.ACTIVE)

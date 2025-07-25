@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.lxdproject.lxd.diary.entity.enums.Language;
+import org.lxdproject.lxd.member.entity.enums.LoginType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,6 +51,10 @@ public class MemberRequestDTO {
         @NotNull(message = "학습언어는 필수입니다.")
         @Schema(description = "사용 언어 (예: ENG, KO)")
         private Language language;
+
+        @NotNull(message = "로그인 방식을 지정해주어야 합니다.")
+        @Schema(description = "로그인 방식", example = "GOOGLE")
+        private LoginType loginType;
 
     }
 
