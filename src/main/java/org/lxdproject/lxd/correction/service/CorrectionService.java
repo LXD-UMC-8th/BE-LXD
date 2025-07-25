@@ -106,6 +106,7 @@ public class CorrectionService {
 
         return CorrectionResponseDTO.CorrectionLikeResponseDTO.builder()
                 .correctionId(correction.getId())
+                .memberId(member.getId())
                 .liked(liked[0])
                 .likeCount(correction.getLikeCount())
                 .build();
