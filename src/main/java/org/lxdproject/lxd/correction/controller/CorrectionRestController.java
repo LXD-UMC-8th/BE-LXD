@@ -4,11 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.correction.service.CorrectionService;
-import org.lxdproject.lxd.member.entity.Member;
-import org.springframework.data.domain.Slice;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,8 +15,8 @@ public class CorrectionRestController implements CorrectionApi {
 
     @Override
     public ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
-            Long diaryId, int page, int size, Member member) {
-        return ApiResponse.onSuccess(correctionService.getCorrectionsByDiaryId(diaryId, page, size, member));
+            Long diaryId, int page, int size) {
+        return ApiResponse.onSuccess(correctionService.getCorrectionsByDiaryId(diaryId, page, size));
     }
 
     @Override
@@ -31,16 +27,15 @@ public class CorrectionRestController implements CorrectionApi {
 
     @Override
     public ApiResponse<CorrectionResponseDTO.CorrectionDetailDTO> createCorrection(
-            CorrectionRequestDTO.CreateRequestDTO requestDto,
-            Member member
+            CorrectionRequestDTO.CreateRequestDTO requestDto
     ) {
-        return ApiResponse.onSuccess(correctionService.createCorrection(requestDto, member));
+        return ApiResponse.onSuccess(correctionService.createCorrection(requestDto));
     }
 
     @Override
     public ApiResponse<CorrectionResponseDTO.ProvidedCorrectionsResponseDTO> getMyProvidedCorrections(
-            Member member, int page, int size
+           int page, int size
     ) {
-        return ApiResponse.onSuccess(correctionService.getMyProvidedCorrections(member, page, size));
+        return ApiResponse.onSuccess(correctionService.getMyProvidedCorrections(page, size));
     }
 }

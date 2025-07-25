@@ -34,7 +34,10 @@ public class CorrectionService {
 
     @Transactional(readOnly = true)
     public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(
-            Long diaryId, int page, int size, Member currentMember) {
+            Long diaryId, int page, int size) {
+
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (!diaryRepository.existsById(diaryId)) {
             throw new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND);
@@ -47,7 +50,7 @@ public class CorrectionService {
             return emptyDiaryCorrectionsResponse(diaryId);
         }
 
-        Set<Long> likedIds = findLikedCorrectionIds(currentMember, correctionSlice.getContent());
+        Set<Long> likedIds = findLikedCorrectionIds(member, correctionSlice.getContent());
 
         List<CorrectionResponseDTO.CorrectionDetailDTO> correctionDetailList = correctionSlice.stream()
                 .map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
@@ -115,15 +118,17 @@ public class CorrectionService {
 
     @Transactional
     public CorrectionResponseDTO.CorrectionDetailDTO createCorrection(
-            CorrectionRequestDTO.CreateRequestDTO requestDto,
-            Member author
-    ) {
+            CorrectionRequestDTO.CreateRequestDTO requestDto
+            ) {
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
         Diary diary = diaryRepository.findById(requestDto.getDiaryId())
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Correction correction = Correction.builder()
                 .diary(diary)
-                .author(author)
+                .author(member)
                 .originalText(requestDto.getOriginal())
                 .corrected(requestDto.getCorrected())
                 .commentText(requestDto.getCommentText())
@@ -144,16 +149,18 @@ public class CorrectionService {
                 .commentCount(saved.getCommentCount())
                 .isLikedByMe(false)
                 .member(CorrectionResponseDTO.MemberInfo.builder()
-                        .memberId(author.getId())
-                        .userId(author.getUsername())
-                        .nickname(author.getNickname())
-                        .profileImageUrl(author.getProfileImg())
+                        .memberId(member.getId())
+                        .userId(member.getUsername())
+                        .nickname(member.getNickname())
+                        .profileImageUrl(member.getProfileImg())
                         .build())
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public CorrectionResponseDTO.ProvidedCorrectionsResponseDTO getMyProvidedCorrections(Member member, int page, int size) {
+    public CorrectionResponseDTO.ProvidedCorrectionsResponseDTO getMyProvidedCorrections(int page, int size) {
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
