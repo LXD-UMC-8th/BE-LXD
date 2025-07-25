@@ -59,6 +59,14 @@ public class AuthRestController {
     }
 
     @PostMapping("/google/login")
+    @Operation(summary = "구글 로그인 API", description = "구글 로그인 후 발급받은 code로 소셜 로그인 또는 회원가입을 진행합니다", responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공, 토큰 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패 또는 파라미터 오류"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "구글 accessToken 요청 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "사용자 정보 요청 실패"),
+
+
+    })
     public ApiResponse<AuthResponseDTO.SocialLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.SocialLoginRequestDTO SocialLoginRequestDTO) {
 
         String accessToken = googleOAuthClient.requestAccessToken(SocialLoginRequestDTO.getCode());
@@ -66,6 +74,6 @@ public class AuthRestController {
 
         AuthResponseDTO.SocialLoginResponseDTO socialLoginResponseDTO = authService.socialLogin(googleUserInfo);
 
-        return null;
+        return ApiResponse.onSuccess(socialLoginResponseDTO);
     }
 }
