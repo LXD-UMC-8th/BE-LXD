@@ -141,9 +141,21 @@ public class AuthService {
                             .build())
                     .build();
         }
-        // 기존 유저 -> jwt 토큰 반환 시키기
 
-        return null;
+        // 기존 유저 -> jwt 토큰 반환 시키기
+        AuthResponseDTO.LoginResponseDTO loginResponseDTO = login(new AuthRequestDTO.LoginRequestDTO(email, oAuthUserInfo.getLoginType().name() +"_" + oAuthUserInfo.getName()));
+
+        return AuthResponseDTO.SocialLoginResponseDTO.builder()
+                .isNewMember(Boolean.TRUE)
+                .accessToken(loginResponseDTO.getAccessToken())
+                .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
+                        .memberId(loginResponseDTO.getMember().getMemberId())
+                        .username(loginResponseDTO.getMember().getUsername())
+                        .profileImg(loginResponseDTO.getMember().getProfileImg())
+                        .nickname(loginResponseDTO.getMember().getNickname())
+                        .language(loginResponseDTO.getMember().getLanguage())
+                        .build())
+                .build();
 
     }
 }
