@@ -160,6 +160,7 @@ public class AuthService {
                 .accessToken(accessToken)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
+                        .email(member.getEmail())
                         .username(member.getUsername())
                         .profileImg(member.getProfileImg())
                         .nickname(member.getNickname())
