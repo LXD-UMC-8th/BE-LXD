@@ -32,13 +32,13 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long id) {
-        return ApiResponse.onSuccess(diaryService.getDiaryDetail(id));
+    public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable("diaryId") Long diaryId) {
+        return ApiResponse.onSuccess(diaryService.getDiaryDetail(diaryId));
     }
 
     @Override
-    public ApiResponse<Boolean> deleteDiary(@PathVariable Long id) {
-        diaryService.deleteDiary(id);
+    public ApiResponse<Boolean> deleteDiary(@PathVariable("diaryId") Long diaryId) {
+        diaryService.deleteDiary(diaryId);
         return ApiResponse.onSuccess(Boolean.TRUE);
     }
 
@@ -61,8 +61,11 @@ public class DiaryController implements DiaryApi{
 
 
     @Override
-    public ApiResponse<DiaryDetailResponseDTO> updateDiary(Long id, @Valid @RequestBody DiaryRequestDTO request) {
-        DiaryDetailResponseDTO response = diaryService.updateDiary(id, request);
+    public ApiResponse<DiaryDetailResponseDTO> updateDiary(
+            @PathVariable("diaryId") Long diaryId,
+            @Valid @RequestBody DiaryRequestDTO request
+    ) {
+        DiaryDetailResponseDTO response = diaryService.updateDiary(diaryId, request);
         return ApiResponse.onSuccess(response);
     }
 
