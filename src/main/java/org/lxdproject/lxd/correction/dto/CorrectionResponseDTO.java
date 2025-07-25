@@ -65,4 +65,13 @@ public class CorrectionResponseDTO {
         private int totalCount;
         private boolean hasNext;
     }
+
+
+    @Getter
+    @Builder
+    public static class CorrectionLikeResponseDTO {
+        private Long correctionId;
+        private Integer likeCount;
+        private Boolean liked;
+    }
 }

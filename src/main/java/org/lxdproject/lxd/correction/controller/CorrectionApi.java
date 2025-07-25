@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
+import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public interface CorrectionApi {
 
     @GetMapping("/diary/{diaryId}")
     @Operation(
-            summary = "일기 상세 내 교정 목록 조회",
+            summary = "일기 상세 내 교정 목록 조회 API",
             description = "특정 일기에 작성된 교정 리스트를 최신순으로 조회합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -49,7 +50,21 @@ public interface CorrectionApi {
     );
 
     @Operation(
-            summary = "내가 제공한 교정 목록 조회",
+            summary = "교정 저장(좋아요) API ",
+            description = "일기 내 교정 중 좋아요를 눌러 저장합니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "좋아요 등록 성공"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 교정 ID")
+            }
+    )
+    @PostMapping("/{correctionId}/likes")
+    ApiResponse<CorrectionResponseDTO.CorrectionLikeResponseDTO> updateCorrectionLike(
+            @PathVariable Long correctionId
+    );
+
+    @Operation(
+            summary = "내가 제공한 교정 목록 조회 API",
             description = "현재 로그인한 사용자가 다른 사람의 일기에 작성한 교정 리스트를 반환합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),

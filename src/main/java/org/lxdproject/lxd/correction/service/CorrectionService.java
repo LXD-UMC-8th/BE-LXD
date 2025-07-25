@@ -1,7 +1,12 @@
 package org.lxdproject.lxd.correction.service;
 
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
 import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +30,7 @@ public class CorrectionService {
     private final CorrectionRepository correctionRepository;
     private final DiaryRepository diaryRepository;
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
     public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(
@@ -70,6 +76,41 @@ public class CorrectionService {
                 .corrections(correctionDetailList)
                 .build();
     }
+
+    @Transactional
+    public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(
+            Long correctionId
+    ) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Correction correction = correctionRepository.findByIdWithPessimisticLock(correctionId).orElseThrow(()
+                -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(()
+                -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        final boolean[] liked = new boolean[1];
+
+        memberSavedCorrectionRepository.findByCorrectionIdAndMember_Id(correctionId, currentMemberId)
+                .ifPresentOrElse(existing -> {
+                    memberSavedCorrectionRepository.delete(existing);
+                    correction.decreaseLikeCount();
+                    liked[0] = false;
+                }, () -> {
+                    memberSavedCorrectionRepository.save(MemberSavedCorrection.builder()
+                            .member(member)
+                            .correction(correction)
+                            .memo(null)
+                            .build());
+                    correction.increaseLikeCount();
+                    liked[0] = true;
+                });
+
+        return CorrectionResponseDTO.CorrectionLikeResponseDTO.builder()
+                .correctionId(correction.getId())
+                .liked(liked[0])
+                .likeCount(correction.getLikeCount())
+                .build();
+    }
+
 
     @Transactional
     public CorrectionResponseDTO.CorrectionDetailDTO createCorrection(
