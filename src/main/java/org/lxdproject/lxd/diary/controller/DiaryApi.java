@@ -10,14 +10,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageResponseDto;
-import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
+import org.lxdproject.lxd.diary.dto.*;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
-import org.lxdproject.lxd.diary.dto.QuestionResponseDTO;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Tag(name = "Diary API", description = "일기 관련 API 입니다.")
 @RequestMapping("/diaries")
@@ -80,5 +81,54 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<QuestionResponseDTO> getRandomQuestion(@RequestParam("language") Language language);
+
+    @GetMapping("/my")
+    @Operation(summary = "내가 작성한 일기 목록 조회 API", description = "현재 로그인한 사용자가 작성한 일기 목록을 조회합니다. likedOnly=true 시 좋아요 누른 내 일기만 조회됩니다.")
+    @Parameters({
+            @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
+            @Parameter(name = "size", description = "페이지 크기", example = "10"),
+            @Parameter(name = "likedOnly", description = "true일 경우 내가 좋아요 누른 내 일기만 필터링")
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiarySliceResponseDto> getMyDiaries(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Boolean likedOnly
+    );
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "일기 수정 API", description = "title, content, style, visibility, commentPermission, language, thumbImg 필드를 수정합니다.")
+    @Parameters({
+            @Parameter(name = "id", description = "수정할 일기의 ID", required = true)
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 수정 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiaryDetailResponseDTO> updateDiary(
+            @PathVariable Long id,
+            @Valid @RequestBody DiaryRequestDTO request
+    );
+
+
+
+    @GetMapping("/stats")
+    @Operation(summary = "날짜별 일기 작성 개수 조회 API", description = "로그인한 사용자의 월별 일기 작성 개수를 날짜별로 조회합니다.")
+    @Parameters({
+            @Parameter(name = "year", description = "연도 (예: 2025)", example = "2025"),
+            @Parameter(name = "month", description = "월 (1~12)", example = "7")
+    })
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 통계 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<List<DiaryStatsResponseDto>> getDiaryStats(
+            @RequestParam int year,
+            @RequestParam int month
+    );
 
 }

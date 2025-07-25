@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 
 @Entity
-@Table(name = "질문")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,6 +1,12 @@
 package org.lxdproject.lxd.correction.service;
 
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
+import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +17,10 @@ import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -26,6 +30,7 @@ public class CorrectionService {
     private final CorrectionRepository correctionRepository;
     private final DiaryRepository diaryRepository;
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
     public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(
@@ -48,14 +53,14 @@ public class CorrectionService {
                 .map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
-                        .createdAt(formatDate(correction.getCreatedAt()))
+                        .createdAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
                         .original(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
                         .likeCount(correction.getLikeCount())
                         .commentCount(correction.getCommentCount())
                         .isLikedByMe(likedIds.contains(correction.getId()))
-                        .member(CorrectionResponseDTO.MemberDTO.builder()
+                        .member(CorrectionResponseDTO.MemberInfo.builder()
                                 .memberId(correction.getAuthor().getId())
                                 .userId(correction.getAuthor().getUsername())
                                 .nickname(correction.getAuthor().getNickname())
@@ -71,6 +76,42 @@ public class CorrectionService {
                 .corrections(correctionDetailList)
                 .build();
     }
+
+    @Transactional
+    public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(
+            Long correctionId
+    ) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Correction correction = correctionRepository.findByIdWithPessimisticLock(correctionId).orElseThrow(()
+                -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(()
+                -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        final boolean[] liked = new boolean[1];
+
+        memberSavedCorrectionRepository.findByCorrectionIdAndMember_Id(correctionId, currentMemberId)
+                .ifPresentOrElse(existing -> {
+                    memberSavedCorrectionRepository.delete(existing);
+                    correction.decreaseLikeCount();
+                    liked[0] = false;
+                }, () -> {
+                    memberSavedCorrectionRepository.save(MemberSavedCorrection.builder()
+                            .member(member)
+                            .correction(correction)
+                            .memo(null)
+                            .build());
+                    correction.increaseLikeCount();
+                    liked[0] = true;
+                });
+
+        return CorrectionResponseDTO.CorrectionLikeResponseDTO.builder()
+                .correctionId(correction.getId())
+                .memberId(currentMemberId)
+                .liked(liked[0])
+                .likeCount(correction.getLikeCount())
+                .build();
+    }
+
 
     @Transactional
     public CorrectionResponseDTO.CorrectionDetailDTO createCorrection(
@@ -95,14 +136,14 @@ public class CorrectionService {
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
                 .correctionId(saved.getId())
                 .diaryId(saved.getDiary().getId())
-                .createdAt(formatDate(saved.getCreatedAt()))
+                .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .original(saved.getOriginalText())
                 .corrected(saved.getCorrected())
                 .commentText(saved.getCommentText())
                 .likeCount(saved.getLikeCount())
                 .commentCount(saved.getCommentCount())
                 .isLikedByMe(false)
-                .member(CorrectionResponseDTO.MemberDTO.builder()
+                .member(CorrectionResponseDTO.MemberInfo.builder()
                         .memberId(author.getId())
                         .userId(author.getUsername())
                         .nickname(author.getNickname())
@@ -117,21 +158,23 @@ public class CorrectionService {
 
         Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
 
-        List<CorrectionResponseDTO.CorrectionItem> correctionItems = corrections.getContent().stream()
-                .map(correction -> CorrectionResponseDTO.CorrectionItem.builder()
+        List<CorrectionResponseDTO.ProvidedCorrectionItem> correctionItems = corrections.getContent().stream()
+                .map(correction -> CorrectionResponseDTO.ProvidedCorrectionItem.builder()
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
                         .diaryTitle(correction.getDiary().getTitle())
-                        .diaryCreatedAt(formatDate(correction.getDiary().getCreatedAt()))
-                        .createdAt(formatDate(correction.getCreatedAt()))
-                        .original(correction.getOriginalText())
+                        .diaryCreatedAt(DateFormatUtil.formatDate(correction.getDiary().getCreatedAt()))
+                        .createdAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
+                        .originalText(correction.getOriginalText())
                         .corrected(correction.getCorrected())
                         .commentText(correction.getCommentText())
+                        .likeCount(correction.getLikeCount())
+                        .commentCount(correction.getCommentCount())
                         .build())
                 .toList();
 
         return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
-                .member(CorrectionResponseDTO.MemberDTO.builder()
+                .member(CorrectionResponseDTO.MemberInfo.builder()
                         .memberId(member.getId())
                         .userId(member.getUsername())
                         .nickname(member.getNickname())
@@ -160,9 +203,5 @@ public class CorrectionService {
 
         return new HashSet<>(memberSavedCorrectionRepository
                 .findLikedCorrectionIdsByMember(member, correctionIds));
-    }
-
-    private String formatDate(LocalDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ofPattern("yyyy. MM. dd a hh:mm", Locale.KOREA));
     }
 }
