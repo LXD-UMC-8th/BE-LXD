@@ -16,20 +16,30 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    database-platform: org.hibernate.dialect.MySQL8Dialect
 
-cloud:
-  aws:
-    region:
-      static: ap-northeast-2
-    stack:
-      auto: false
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    s3:
-      bucket: ${AWS_BUCKET}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
+aws:
+  s3:
+    bucket: ${S3_BUCKET}
+  credentials:
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+  region: ap-northeast-2
 
 jwt:
   secret: ${JWT_SECRET_KEY}
@@ -40,3 +50,12 @@ jwt:
 
 server:
   port: 8080
+
+urls:
+  frontend: http://localhost:3000
+  backend: http://43.202.178.60:8080
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+  client-secret: ${GOOGLE_CLIENT_SECRET}
+  redirect-uri: ${GOOGLE_REDIRECT_URI}
