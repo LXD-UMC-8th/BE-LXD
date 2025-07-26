@@ -54,3 +54,8 @@ server:
 urls:
   frontend: http://localhost:3000
   backend: http://43.202.178.60:8080
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+  client-secret: ${GOOGLE_CLIENT_SECRET}
+  redirect-uri: https://developers.google.com/oauthplayground
