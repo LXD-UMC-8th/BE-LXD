@@ -1,9 +1,14 @@
 package org.lxdproject.lxd.diarycomment.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.converter.DiaryCommentConverter;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
@@ -15,8 +20,14 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +38,21 @@ public class DiaryCommentService {
     private final DiaryRepository diaryRepository;
     private final DiaryCommentLikeRepository likeRepository;
 
+    @Transactional
     public DiaryCommentResponseDTO writeComment(Long memberId, Long diaryId, DiaryCommentRequestDTO request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일기입니다."));
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
             parent = diaryCommentRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 댓글입니다."));
+                    .orElseThrow(() -> new CommentHandler(ErrorStatus.PARENT_COMMENT_NOT_FOUND));
+
+            if (parent.getParent() != null) {
+                throw new CommentHandler(ErrorStatus.COMMENT_DEPTH_EXCEEDED);
+            }
         }
 
         DiaryComment comment = DiaryComment.builder()
@@ -48,6 +64,7 @@ public class DiaryCommentService {
                 .build();
 
         DiaryComment saved = diaryCommentRepository.save(comment);
+        diary.increaseCommentCount();
 
         return DiaryCommentResponseDTO.builder()
                 .commentId(saved.getId())
@@ -61,41 +78,34 @@ public class DiaryCommentService {
                 .build();
     }
 
-    public DiaryCommentResponseDTO.CommentList getComments(Long diaryId, Long memberId, Pageable pageable) {
+    public DiaryCommentResponseDTO.CommentList getComments(Long diaryId, Pageable pageable) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        // 부모 댓글 조회
         Page<DiaryComment> parentComments = diaryCommentRepository.findByDiaryIdAndParentIsNull(diaryId, pageable);
+        List<DiaryComment> parents = parentComments.getContent();
+        List<Long> parentIds = parents.stream().map(DiaryComment::getId).toList();
 
-        List<DiaryCommentResponseDTO.Comment> commentDTOs = parentComments.getContent().stream().map(parent -> {
-            // 대댓글 가져오기
-            List<DiaryComment> replies = diaryCommentRepository.findByParent(parent);
+        // 자식 댓글 일괄 조회
+        List<DiaryComment> allReplies = parentIds.isEmpty() ? List.of() :
+                diaryCommentRepository.findByParentIdIn(parentIds);
 
-            List<DiaryCommentResponseDTO.Comment> replyDTOs = replies.stream().map(reply -> {
-                return DiaryCommentResponseDTO.Comment.builder()
-                        .commentId(reply.getId())
-                        .parentId(parent.getId())
-                        .userId(reply.getMember().getId())
-                        .nickname(reply.getMember().getNickname())
-                        .profileImage(reply.getMember().getProfileImg())
-                        .content(reply.getCommentText())
-                        .likeCount(reply.getLikeCount())
-                        .isLiked(likeRepository.existsByCommentAndMemberId(reply, memberId))
-                        .createdAt(reply.getCreatedAt())
-                        .replies(List.of())
-                        .build();
-            }).toList();
+        // 부모 + 자식 댓글 ID 리스트에 담기
+        List<Long> allCommentIds = Stream.concat(parents.stream(), allReplies.stream())
+                .map(DiaryComment::getId)
+                .toList();
 
-            return DiaryCommentResponseDTO.Comment.builder()
-                    .commentId(parent.getId())
-                    .parentId(null)
-                    .userId(parent.getMember().getId())
-                    .nickname(parent.getMember().getNickname())
-                    .profileImage(parent.getMember().getProfileImg())
-                    .content(parent.getCommentText())
-                    .likeCount(parent.getLikeCount())
-                    .isLiked(likeRepository.existsByCommentAndMemberId(parent, memberId))
-                    .createdAt(parent.getCreatedAt())
-                    .replies(replyDTOs)
-                    .build();
-        }).toList();
+        // 부모 + 자식 댓글 ID의 좋아요 여부 일괄 조회
+        Set<Long> likedCommentIds = allCommentIds.isEmpty() ? Set.of()
+                : new HashSet<>(likeRepository.findLikedCommentIds(memberId, allCommentIds));
+
+        // 부모 + 자식 그룹핑
+        Map<Long, List<DiaryComment>> repliesGroupedByParent = allReplies.stream()
+                .collect(Collectors.groupingBy(reply -> reply.getParent().getId()));
+
+        // DTO 변환
+        List<DiaryCommentResponseDTO.Comment> commentDTOs =
+                DiaryCommentConverter.toCommentDtoTree(parents, repliesGroupedByParent, likedCommentIds);
 
         return DiaryCommentResponseDTO.CommentList.builder()
                 .content(commentDTOs)
@@ -103,23 +113,18 @@ public class DiaryCommentService {
                 .build();
     }
 
-
-    //댓글삭제
-
+    @Transactional
     public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
         DiaryComment comment = diaryCommentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
-        comment.softDelete(); // 소프트 삭제 수행-> "삭제된 댓글입니다", isDeleted = true
-        diaryCommentRepository.save(comment); // 변경 저장
+        comment.softDelete();
+        diary.decreaseCommentCount();
 
-        return DiaryCommentDeleteResponseDTO.from(comment); // DTO로 반환
+        return DiaryCommentDeleteResponseDTO.from(comment);
     }
 
-
-
 }
-
-//handler추가 후 변경하기
-
-

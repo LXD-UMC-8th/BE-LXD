@@ -3,7 +3,7 @@ package org.lxdproject.lxd.diary.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.ImageResponseDto;
+import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.diary.dto.*;
@@ -32,19 +32,19 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long id) {
-        return ApiResponse.onSuccess(diaryService.getDiaryDetail(id));
+    public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable("diaryId") Long diaryId) {
+        return ApiResponse.onSuccess(diaryService.getDiaryDetail(diaryId));
     }
 
     @Override
-    public ApiResponse<Boolean> deleteDiary(@PathVariable Long id) {
-        diaryService.deleteDiary(id);
+    public ApiResponse<Boolean> deleteDiary(@PathVariable("diaryId") Long diaryId) {
+        diaryService.deleteDiary(diaryId);
         return ApiResponse.onSuccess(Boolean.TRUE);
     }
 
     @Override
-    public ApiResponse<ImageResponseDto> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
-        ImageResponseDto response = imageService.uploadImage(image, ImageDir.DIARY);
+    public ApiResponse<ImageResponseDTO> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
+        ImageResponseDTO response = imageService.uploadImage(image, ImageDir.DIARY);
         return ApiResponse.onSuccess(response);
     }
 
@@ -55,14 +55,17 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<DiarySliceResponseDto> getMyDiaries(int page, int size, Boolean likedOnly) {
+    public ApiResponse<DiarySliceResponseDTO> getMyDiaries(int page, int size, Boolean likedOnly) {
         return ApiResponse.onSuccess(diaryService.getMyDiaries(page, size, likedOnly));
     }
 
 
     @Override
-    public ApiResponse<DiaryDetailResponseDTO> updateDiary(Long id, @Valid @RequestBody DiaryRequestDTO request) {
-        DiaryDetailResponseDTO response = diaryService.updateDiary(id, request);
+    public ApiResponse<DiaryDetailResponseDTO> updateDiary(
+            @PathVariable("diaryId") Long diaryId,
+            @Valid @RequestBody DiaryRequestDTO request
+    ) {
+        DiaryDetailResponseDTO response = diaryService.updateDiary(diaryId, request);
         return ApiResponse.onSuccess(response);
     }
 
@@ -73,7 +76,7 @@ public class DiaryController implements DiaryApi{
 
 
     @Override
-    public ApiResponse<List<DiaryStatsResponseDto>> getDiaryStats(int year, int month) {
+    public ApiResponse<List<DiaryStatsResponseDTO>> getDiaryStats(int year, int month) {
         return ApiResponse.onSuccess(diaryService.getDiaryStats(year, month));
     }
 }

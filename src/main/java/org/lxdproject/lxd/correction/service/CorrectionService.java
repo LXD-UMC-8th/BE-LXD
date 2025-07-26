@@ -17,7 +17,7 @@ import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +39,9 @@ public class CorrectionService {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        if (!diaryRepository.existsById(diaryId)) {
-            throw new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND);
-        }
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Slice<Correction> correctionSlice = correctionRepository.findByDiaryId(diaryId, pageable);
@@ -123,7 +123,7 @@ public class CorrectionService {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Diary diary = diaryRepository.findById(requestDto.getDiaryId())
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(requestDto.getDiaryId())
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Correction correction = Correction.builder()
@@ -137,6 +137,7 @@ public class CorrectionService {
                 .build();
 
         Correction saved = correctionRepository.save(correction);
+        diary.increaseCorrectionCount();
 
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
                 .correctionId(saved.getId())

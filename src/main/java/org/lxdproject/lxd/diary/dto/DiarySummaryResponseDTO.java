@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class DiarySummaryResponseDto {
+public class DiarySummaryResponseDTO {
     private Long diaryId;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private String title;
     private Visibility visibility;
     private String thumbnailUrl;

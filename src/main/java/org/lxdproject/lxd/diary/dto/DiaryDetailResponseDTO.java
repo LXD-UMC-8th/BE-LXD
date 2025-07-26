@@ -2,6 +2,7 @@ package org.lxdproject.lxd.diary.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.lxdproject.lxd.correction.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -20,7 +21,7 @@ public class DiaryDetailResponseDTO {
     private String profileImg;
     private String writerNickName;
     private String writerUserName;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private int commentCount;
     private int likeCount;
     private int correctCount;
@@ -39,7 +40,7 @@ public class DiaryDetailResponseDTO {
                 member.getProfileImg(),
                 member.getNickname(),
                 member.getUsername(),
-                diary.getCreatedAt(),
+                DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
                 diary.getCorrectionCount(),

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
+import org.hibernate.annotations.Where;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
@@ -76,6 +77,31 @@ public class Diary extends BaseEntity {
         this.language = dto.getLanguage();
         this.thumbImg = dto.getThumbImg();
     }
+
+    public void increaseCommentCount() {
+        this.commentCount++;
+    }
+
+    public void increaseCorrectionCount() {
+        this.correctionCount++;
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
+
+    public void decreaseLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
+
 
 }
 

@@ -44,6 +44,11 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_CORRECTION_MEMO(HttpStatus.NOT_FOUND, "CORRECTION4401", "이미 메모가 존재하는 교정입니다."),
     MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "CORRECTION4402", "메모가 생성되어있지 않습니다. 업데이트가 아닌 메모 생성을 해야합니다."),
 
+    // 댓글 관련 에러
+    PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4001","존재하지 않는 부모 댓글입니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4002","댓글을 찾을 수 없습니다."),
+    COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
+
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),

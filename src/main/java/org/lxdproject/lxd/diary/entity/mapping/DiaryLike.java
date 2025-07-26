@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
 
-@Table(name = "일기_좋아요")
 @Entity
 @Getter
 @NoArgsConstructor

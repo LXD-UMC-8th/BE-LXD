@@ -3,25 +3,21 @@ package org.lxdproject.lxd.diary.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.InvalidPageException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.DiarySliceResponseDto;
-import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDto;
-import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDto;
+import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
+import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
-import org.lxdproject.lxd.diary.repository.DiaryRepository.DiaryRepository;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +60,7 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryDetailResponseDTO getDiaryDetail(Long id) {
-        Diary diary = diaryRepository.findById(id)
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         // 비공개 일기의 경우 작성자만 접근 가능(가시성 검증)
@@ -78,7 +74,7 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(Long diaryId) {
-        Diary diary = diaryRepository.findById(diaryId)
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -90,7 +86,7 @@ public class DiaryService {
         List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
         s3Uploader.deleteFiles(keys);
 
-        diaryRepository.delete(diary);
+        diary.softDelete();
     }
 
     private static final Pattern IMG_URL_PATTERN = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
@@ -104,20 +100,20 @@ public class DiaryService {
         return imageUrls;
     }
 
-    public DiarySliceResponseDto getMyDiaries(int page, int size, Boolean likedOnly) {
-        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+    public DiarySliceResponseDTO getMyDiaries(int page, int size, Boolean likedOnly) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
         Pageable pageable = PageRequest.of(page - 1, size);
-        return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
+        return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
     }
 
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
 
-        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+        Long memberId = SecurityUtil.getCurrentMemberId();
 
-        Diary diary = diaryRepository.findById(id)
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        if (!diary.getMember().getId().equals(userId)) {
+        if (!diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
@@ -127,13 +123,13 @@ public class DiaryService {
     }
 
 //    public DiarySliceResponseDto getMyDiaries(int page, int size, Boolean likedOnly) {
-//        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+//        Long memberId = SecurityUtil.getCurrentMemberId();
 //        Pageable pageable = PageRequest.of(page - 1, size);
-//        return diaryRepository.findMyDiaries(userId, likedOnly, pageable);
+//        return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
 //    }
 
-    public List<DiaryStatsResponseDto> getDiaryStats(int year, int month) {
-        Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
-        return diaryRepository.getDiaryStatsByMonth(userId, year, month);
+    public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        return diaryRepository.getDiaryStatsByMonth(memberId, year, month);
     }
 }

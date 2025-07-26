@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-public class CorrectionRestController implements CorrectionApi {
+public class CorrectionController implements CorrectionApi {
 
     private final CorrectionService correctionService;
 

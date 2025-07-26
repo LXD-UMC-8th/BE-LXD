@@ -1,9 +1,6 @@
 package org.lxdproject.lxd.diarycomment.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 import java.time.LocalDateTime;
@@ -21,7 +18,6 @@ public class DiaryCommentResponseDTO {
     private Long parentId; // nullable
     private LocalDateTime createdAt;
 
-    // 댓글 단일 응답용 DTO (조회용)
     @Getter
     @Builder
     @AllArgsConstructor
@@ -38,12 +34,8 @@ public class DiaryCommentResponseDTO {
         private LocalDateTime createdAt;
         private List<Comment> replies;
 
-        public void setReplies(List<Comment> replies) {
-            this.replies = replies;  //setter제한
-        }
     }
 
-    // 댓글 목록 응답용 DTO
     @Getter
     @Builder
     @AllArgsConstructor
@@ -53,12 +45,4 @@ public class DiaryCommentResponseDTO {
         private int totalElements;
     }
 
-
 }
-
-
-
-
-
-
-
