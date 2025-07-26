@@ -1,7 +1,6 @@
 package org.lxdproject.lxd.diarycommentlike.repository;
 
-import io.lettuce.core.dynamic.annotation.Param;
-import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
+import org.springframework.data.repository.query.Param;
 import org.lxdproject.lxd.diarycommentlike.entity.DiaryCommentLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
