@@ -90,6 +90,7 @@ jobs:
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             EOF
             
             sudo docker compose -f ~/deploy/docker-compose.yml down
