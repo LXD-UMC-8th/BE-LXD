@@ -9,7 +9,7 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
-import org.lxdproject.lxd.notification.dto.NotificationPublishEventDTO;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.lxdproject.lxd.notification.service.SseEmitterService;
@@ -32,7 +32,7 @@ public class NotificationSubscriber implements MessageListener {
         try {
             // Redis 메시지 수신
             String body = new String(message.getBody());
-            NotificationPublishEventDTO dto = objectMapper.readValue(body, NotificationPublishEventDTO.class);
+            NotificationPublishEvent dto = objectMapper.readValue(body, NotificationPublishEvent.class);
 
             log.debug("[RedisSubscriber] 메시지 수신: {}", dto);
 

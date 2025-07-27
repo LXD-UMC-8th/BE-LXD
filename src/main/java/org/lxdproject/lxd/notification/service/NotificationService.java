@@ -7,18 +7,14 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
-import org.lxdproject.lxd.notification.dto.NotificationPublishEventDTO;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
-import org.lxdproject.lxd.notification.entity.enums.NotificationType;
-import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -53,7 +49,7 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         // Notification을 기반으로 Redis에 발행되는 메시지 생성
-        NotificationPublishEventDTO publishEventDTO = NotificationPublishEventDTO.from(notification);
+        NotificationPublishEvent publishEventDTO = NotificationPublishEvent.from(notification);
 
         // Redis에 publish
         notificationPublisher.publish(publishEventDTO);
