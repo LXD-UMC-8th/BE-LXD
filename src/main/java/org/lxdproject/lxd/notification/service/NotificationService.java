@@ -12,6 +12,7 @@ import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationPublisher notificationPublisher;
     private final MemberRepository memberRepository;
+    private final NotificationMessageResolverManager messageResolverManager;
 
     public void saveAndPublishNotification(NotificationRequestDTO dto) {
 
@@ -36,8 +38,7 @@ public class NotificationService {
         Member sender = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // Todo. NotificationType 별로 메시지 규격화 하기
-        String message = "알림 메시지";
+        String message = messageResolverManager.resolve(dto, sender, sender.getNativeLanguage().toLocale());
 
         // Notification 저장
         Notification notification = Notification.builder()
@@ -57,7 +58,6 @@ public class NotificationService {
 
         // Redis에 publish
         notificationPublisher.publish(publishEventDTO);
-        log.info("[알림 발행] to memberId: {}, notificationType: {}, message: {}", dto.getReceiverId(), dto.getNotificationType(), message);
     }
 
     public NotificationCursorResponseDTO getNotifications(Boolean isRead, Long lastId, int size) {
