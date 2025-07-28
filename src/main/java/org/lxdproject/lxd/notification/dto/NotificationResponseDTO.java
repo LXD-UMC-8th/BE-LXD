@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class NotificationResponseDTO {
+    private Long id; // 커서 기준
     private String profileImg;
     private String nickname;
     private String username;

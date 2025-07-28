@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.notification.dto.NotificationCursorResponseDTO;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.service.NotificationService;
 import org.lxdproject.lxd.notification.service.SseEmitterService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -17,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class NotificationController implements NotificationApi {
 
     private final SseEmitterService emitterService;
@@ -34,9 +37,8 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<Page<NotificationResponseDTO>> getNotifications(Boolean isRead, Pageable pageable) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        Page<NotificationResponseDTO> result = notificationService.getNotifications(memberId, isRead, pageable);
-        return ApiResponse.onSuccess(result);
+    public ApiResponse<NotificationCursorResponseDTO> getNotifications(Long lastId, int size, Boolean isRead) {
+        NotificationCursorResponseDTO dto = notificationService.getNotifications(isRead, lastId, size);
+        return ApiResponse.onSuccess(dto);
     }
 }
