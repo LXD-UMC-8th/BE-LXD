@@ -15,6 +15,9 @@ public enum ErrorStatus implements BaseErrorCode {
     _UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"COMMON401","인증이 필요합니다."),
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
+    // 유효성 검사 에러(메시지는 @interface의 message로 처리)
+    VALIDATOR_ERROR(HttpStatus.BAD_REQUEST,"VALID400",null),
+
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
@@ -30,7 +33,6 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 일기 관련 에러
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),
-    TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST,"DIARY4002","이미지는 최대 5개까지만 첨부할 수 있습니다."),
     FORBIDDEN_DIARY_UPDATE(HttpStatus.FORBIDDEN, "DIARY4003", "작성자 본인만 수정할 수 있습니다."),
 
     // 메일 관련 에러
