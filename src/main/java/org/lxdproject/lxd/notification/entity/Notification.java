@@ -29,7 +29,7 @@ public class Notification extends BaseEntity {
     private Member sender;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "notification_type", nullable = false, length = 30)
     private NotificationType notificationType;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -40,7 +40,7 @@ public class Notification extends BaseEntity {
     private boolean isRead = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "target_type", length = 30, nullable = false)
     private TargetType targetType;
 
     @Column(nullable = false)
