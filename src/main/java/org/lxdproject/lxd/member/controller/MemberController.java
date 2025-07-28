@@ -14,18 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/members")
 @Validated
-public class MemberController {
+public class MemberController implements MemberApi {
 
     private final MemberService memberService;
 
-    @PostMapping("/join")
-    @Operation(summary = "회원가입 api", description = "계정 생성", responses = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패, 파라미터 오류 등"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일, 닉네임 중복")
-    })
+    @Override
     public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(@RequestBody @Valid MemberRequestDTO.JoinRequestDTO joinRequestDTO) {
 
         Member member = memberService.join(joinRequestDTO);
