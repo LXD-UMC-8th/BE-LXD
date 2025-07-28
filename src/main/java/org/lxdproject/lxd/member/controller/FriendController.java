@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/friends")
 @RequiredArgsConstructor
-public class FriendController {
+public class FriendController implements FriendApi {
 
     private final FriendService friendService;
 
-    @GetMapping
+    @Override
     public ApiResponse<FriendListResponseDTO> getFriendList() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         FriendListResponseDTO response = friendService.getFriendList(currentMemberId);
