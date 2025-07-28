@@ -42,8 +42,16 @@ public class MemberResponseDTO {
             @Schema(description = "선택 언어 (KO, ENG 등)")
             private String language;
         }
+    }
 
-
+    @Builder
+    @Getter
+    public static class MemberInfoDTO{
+        private Long memberId;
+        private String username; // 아이디
+        private String email; // 가입 이메일
+        private String nickname;
+        private String profileImg;
     }
 
 
