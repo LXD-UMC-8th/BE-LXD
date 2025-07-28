@@ -51,11 +51,13 @@ public enum ErrorStatus implements BaseErrorCode {
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4002","댓글을 찾을 수 없습니다."),
     COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
 
+    // 알림 관련 에러
+    TARGET_TYPE_UNSUPPORTED(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4001","지원하지 않는 알림 TargetType 입니다."),
+    TARGET_TYPE_MISMATCH(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4002","알림 TargetType이 올바르지 않습니다."),
+
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),
-
-    //댓글 관련 에러 추가하기
 
     ;
 
