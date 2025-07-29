@@ -7,6 +7,7 @@ import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.service.FriendService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -48,6 +49,13 @@ public class FriendController implements FriendApi {
     public ApiResponse<FriendRequestListResponseDTO> getFriendRequestList() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId);
+        return ApiResponse.onSuccess(response);
+    }
+
+    @Override
+    public ApiResponse<FriendDetailResponseDTO> getFriendDetail(@PathVariable Long friendId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        FriendDetailResponseDTO response = friendService.getFriendDetail(currentMemberId, friendId);
         return ApiResponse.onSuccess(response);
     }
 }
