@@ -63,7 +63,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        // 비공개 일기의 경우 작성자만 접근 가능(가시성 검증)
+        // 비공개 일기의 경우 작성자만 접근 가능
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         if (diary.getVisibility() == Visibility.PRIVATE && !diary.getMember().getId().equals(currentMemberId)) {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
@@ -122,14 +122,12 @@ public class DiaryService {
         return DiaryDetailResponseDTO.from(updated);
     }
 
-//    public DiarySliceResponseDto getMyDiaries(int page, int size, Boolean likedOnly) {
-//        Long memberId = SecurityUtil.getCurrentMemberId();
-//        Pageable pageable = PageRequest.of(page - 1, size);
-//        return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
-//    }
-
     public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         return diaryRepository.getDiaryStatsByMonth(memberId, year, month);
+    }
+
+    public DiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
+        return diaryRepository.findDiariesOfFriends(userId, pageable);
     }
 }
