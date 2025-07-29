@@ -10,6 +10,7 @@ import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
@@ -131,5 +132,10 @@ public class DiaryService {
     public DiarySliceResponseDTO getLikedDiaries(Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         return diaryRepository.findLikedDiariesOfFriends(currentMemberId, pageable);
+    }
+
+    public DiarySliceResponseDTO getExploreDiaries(Pageable pageable, Language language) {
+        Long userId = SecurityUtil.getCurrentMemberId();
+        return diaryRepository.findExploreDiaries(userId, language, pageable);
     }
 }
