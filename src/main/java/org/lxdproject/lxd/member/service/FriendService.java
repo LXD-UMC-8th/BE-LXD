@@ -3,7 +3,7 @@ package org.lxdproject.lxd.member.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDTO;
+import org.lxdproject.lxd.diary.dto.MyDiarySummaryResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.dto.*;
@@ -145,8 +145,8 @@ public class FriendService {
 
         List<Diary> diaries = diaryRepository.findByMemberIdAndVisibilityForViewer(friendId, isFriend);
 
-        List<DiarySummaryResponseDTO> diaryDtos = diaries.stream()
-                .map(d -> DiarySummaryResponseDTO.builder()
+        List<MyDiarySummaryResponseDTO> diaryDtos = diaries.stream()
+                .map(d -> MyDiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
                         .createdAt(d.getCreatedAt().toString())
                         .title(d.getTitle())

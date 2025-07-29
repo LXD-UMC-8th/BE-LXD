@@ -9,7 +9,7 @@ import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
+import org.lxdproject.lxd.diary.dto.MyDiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
@@ -18,7 +18,6 @@ import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,7 +99,7 @@ public class DiaryService {
         return imageUrls;
     }
 
-    public DiarySliceResponseDTO getMyDiaries(int page, int size, Boolean likedOnly) {
+    public MyDiarySliceResponseDTO getMyDiaries(int page, int size, Boolean likedOnly) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Pageable pageable = PageRequest.of(page - 1, size);
         return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
@@ -127,7 +126,7 @@ public class DiaryService {
         return diaryRepository.getDiaryStatsByMonth(memberId, year, month);
     }
 
-    public DiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
+    public MyDiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
         return diaryRepository.findDiariesOfFriends(userId, pageable);
     }
 }

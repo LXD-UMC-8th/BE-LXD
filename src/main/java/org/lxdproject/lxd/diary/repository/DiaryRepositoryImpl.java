@@ -5,9 +5,9 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.correction.util.DateFormatUtil;
-import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
+import org.lxdproject.lxd.diary.dto.MyDiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDTO;
+import org.lxdproject.lxd.diary.dto.MyDiarySummaryResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
@@ -30,7 +30,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     QDiaryLike diaryLike = QDiaryLike.diaryLike;
 
     @Override
-    public DiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
+    public MyDiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
         List<Diary> diaries = queryFactory
                 .selectFrom(diary)
                 .leftJoin(diary.likes, diaryLike)
@@ -50,8 +50,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
             diaries = diaries.subList(0, pageable.getPageSize());
         }
 
-        List<DiarySummaryResponseDTO> content = diaries.stream()
-                .map(d -> DiarySummaryResponseDTO.builder()
+        List<MyDiarySummaryResponseDTO> content = diaries.stream()
+                .map(d -> MyDiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
@@ -65,7 +65,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .build())
                 .toList();
 
-        return DiarySliceResponseDTO.builder()
+        return MyDiarySliceResponseDTO.builder()
                 .diaries(content)
                 .page(pageable.getPageNumber())
                 .size(pageable.getPageSize())
@@ -131,7 +131,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
+    public MyDiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
         QDiary diary = QDiary.diary;
         QFriendship friendship = QFriendship.friendship;
 
@@ -172,8 +172,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         }
 
         // 4. DTO 변환
-        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
-                .map(d -> DiarySummaryResponseDTO.builder()
+        List<MyDiarySummaryResponseDTO> dtoList = diaries.stream()
+                .map(d -> MyDiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
                         .createdAt(d.getCreatedAt().toString())
                         .title(d.getTitle())
@@ -187,7 +187,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .build())
                 .toList();
 
-        return DiarySliceResponseDTO.builder()
+        return MyDiarySliceResponseDTO.builder()
                 .diaries(dtoList)
                 .page(pageable.getPageNumber() + 1)
                 .size(pageable.getPageSize())

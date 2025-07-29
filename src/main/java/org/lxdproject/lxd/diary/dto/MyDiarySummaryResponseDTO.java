@@ -6,12 +6,10 @@ import lombok.Getter;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 
-import java.time.LocalDateTime;
-
 @Getter
 @AllArgsConstructor
 @Builder
-public class DiarySummaryResponseDTO {
+public class MyDiarySummaryResponseDTO {
     private Long diaryId;
     private String createdAt;
     private String title;

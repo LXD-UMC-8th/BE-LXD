@@ -3,7 +3,6 @@ package org.lxdproject.lxd.diary.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -93,7 +92,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<DiarySliceResponseDTO> getMyDiaries(
+    ApiResponse<MyDiarySliceResponseDTO> getMyDiaries(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean likedOnly
@@ -141,7 +140,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
                     description = "친구 일기 조회 성공",
-                    content = @Content(schema = @Schema(implementation = DiarySliceResponseDTO.class))
+                    content = @Content(schema = @Schema(implementation = MyDiarySliceResponseDTO.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "401",
@@ -154,7 +153,7 @@ public interface DiaryApi {
                     content = @Content(schema = @Schema(implementation = ApiResponse.class))
             )
     })
-    ApiResponse<DiarySliceResponseDTO> getFriendDiaries(
+    ApiResponse<MyDiarySliceResponseDTO> getFriendDiaries(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size
     );
