@@ -9,10 +9,7 @@ import org.lxdproject.lxd.diary.entity.enums.Visibility;
 @Getter
 @AllArgsConstructor
 @Builder
-public class DiarySummaryResponseDTO {
-    private String writerUsername;
-    private String writerNickname;
-    private String writerProfileImg;
+public class MyDiarySummaryResponseDTO {
     private Long diaryId;
     private String createdAt;
     private String title;

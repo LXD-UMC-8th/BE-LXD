@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.diary.dto.*;
@@ -91,7 +92,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<DiarySliceResponseDTO> getMyDiaries(
+    ApiResponse<MyDiarySliceResponseDTO> getMyDiaries(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean likedOnly
@@ -125,8 +126,67 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<List<DiaryStatsResponseDTO>> getDiaryStats(
-            @RequestParam int year,
-            @RequestParam int month
+            @RequestParam @Min(1) int year,
+            @RequestParam @Min(1) int month
     );
 
+    @GetMapping("/friends")
+    @Operation(summary = "친구 일기 조회 API", description = "로그인한 사용자의 친구들이 작성한 일기를 조회합니다.")
+    @Parameters({
+            @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
+            @Parameter(name = "size", description = "페이지 크기", example = "10")
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "친구 일기 조회 성공",
+                    content = @Content(schema = @Schema(implementation = DiarySliceResponseDTO.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "로그인 필요",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            )
+    })
+    ApiResponse<DiarySliceResponseDTO> getFriendDiaries(
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size
+    );
+
+    @GetMapping("/liked")
+    @Operation(summary = "좋아요 누른 일기 목록 조회 API", description = "로그인한 사용자가 좋아요한 일기 중 자신의 글 제외 + 공개 또는 친구공개 글만 조회합니다.")
+    @Parameters({
+            @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
+            @Parameter(name = "size", description = "페이지 크기", example = "10")
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiarySliceResponseDTO> getLikedDiaries(
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size
+    );
+
+    @GetMapping("/explore")
+    @Operation(summary = "탐색 일기 조회 API", description = "로그인한 사용자가 볼 수 있는 모든 일기를 조회합니다. 언어 필터링이 가능합니다.")
+    @Parameters({
+            @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
+            @Parameter(name = "size", description = "페이지 크기", example = "10"),
+            @Parameter(name = "language", description = "언어 필터링 (예: KO, EN)", example = "KO")
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐색 일기 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiarySliceResponseDTO> getExploreDiaries(
+            @RequestParam(defaultValue = "1") @Min(1)  int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size,
+            @RequestParam(required = false) Language language
+    );
 }
