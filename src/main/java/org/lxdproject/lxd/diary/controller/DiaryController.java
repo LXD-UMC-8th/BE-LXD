@@ -91,4 +91,10 @@ public class DiaryController implements DiaryApi{
         return ApiResponse.onSuccess(response);
     }
 
+    @Override
+    public ApiResponse<DiarySliceResponseDTO> getExploreDiaries(int page, int size, Language language) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        DiarySliceResponseDTO result = diaryService.getExploreDiaries(pageable, language);
+        return ApiResponse.onSuccess(result);
+    }
 }

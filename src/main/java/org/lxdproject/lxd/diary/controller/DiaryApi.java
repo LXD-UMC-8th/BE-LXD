@@ -172,4 +172,21 @@ public interface DiaryApi {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     );
+
+    @GetMapping("/explore")
+    @Operation(summary = "탐색 일기 조회 API", description = "로그인한 사용자가 볼 수 있는 모든 일기를 조회합니다. 언어 필터링이 가능합니다.")
+    @Parameters({
+            @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
+            @Parameter(name = "size", description = "페이지 크기", example = "10"),
+            @Parameter(name = "language", description = "언어 필터링 (예: KO, EN)", example = "KO")
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐색 일기 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    ApiResponse<DiarySliceResponseDTO> getExploreDiaries(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Language language
+    );
 }
