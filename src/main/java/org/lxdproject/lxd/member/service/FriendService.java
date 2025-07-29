@@ -107,4 +107,26 @@ public class FriendService {
         friendRepository.softDeleteFriendship(current, target);
     }
 
+    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId) {
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        List<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING);
+        List<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING);
+
+        List<FriendResponseDTO> sentDtos = sent.stream()
+                .map(req -> {
+                    Member target = req.getReceiver();
+                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname());
+                }).toList();
+
+        List<FriendResponseDTO> receivedDtos = received.stream()
+                .map(req -> {
+                    Member target = req.getRequester();
+                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname());
+                }).toList();
+
+        return new FriendRequestListResponseDTO(sentDtos.size(), receivedDtos.size(), sentDtos, receivedDtos);
+    }
+
 }
