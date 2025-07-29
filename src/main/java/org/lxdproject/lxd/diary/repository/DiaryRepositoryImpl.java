@@ -197,6 +197,94 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .build();
     }
 
+    @Override
+    public DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable) {
+        QDiaryLike diaryLike = QDiaryLike.diaryLike;
+        QDiary diary = QDiary.diary;
+        QMember member = QMember.member;
+        QFriendship friendship = QFriendship.friendship;
+
+        // 1. 내가 좋아요 누른 일기 중
+        List<Long> likedDiaryIds = queryFactory
+                .select(diaryLike.diary.id)
+                .from(diaryLike)
+                .where(diaryLike.member.id.eq(userId))
+                .fetch();
+
+        if (likedDiaryIds.isEmpty()) {
+            return DiarySliceResponseDTO.builder()
+                    .diaries(List.of())
+                    .page(pageable.getPageNumber() + 1)
+                    .size(pageable.getPageSize())
+                    .hasNext(false)
+                    .build();
+        }
+
+        // 2. 친구 목록
+        List<Long> sentFriendIds = queryFactory
+                .select(friendship.receiver.id)
+                .from(friendship)
+                .where(friendship.requester.id.eq(userId), friendship.deletedAt.isNull())
+                .fetch();
+
+        List<Long> receivedFriendIds = queryFactory
+                .select(friendship.requester.id)
+                .from(friendship)
+                .where(friendship.receiver.id.eq(userId), friendship.deletedAt.isNull())
+                .fetch();
+
+        Set<Long> friendIds = new HashSet<>();
+        friendIds.addAll(sentFriendIds);
+        friendIds.addAll(receivedFriendIds);
+
+        // 3. 조건 필터링된 일기 조회
+        List<Diary> diaries = queryFactory
+                .selectFrom(diary)
+                .join(diary.member, member).fetchJoin()
+                .where(
+                        diary.id.in(likedDiaryIds),
+                        diary.member.id.ne(userId),
+                        diary.deletedAt.isNull(),
+                        diary.visibility.eq(Visibility.PUBLIC)
+                                .or(
+                                        diary.visibility.eq(Visibility.FRIENDS)
+                                                .and(diary.member.id.in(friendIds))
+                                )
+                )
+                .orderBy(diary.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = diaries.size() > pageable.getPageSize();
+        if (hasNext) diaries.remove(diaries.size() - 1);
+
+        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(d.getCreatedAt().toString())
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .language(d.getLanguage())
+                        .writerUsername(d.getMember().getUsername())
+                        .writerNickname(d.getMember().getNickname())
+                        .writerProfileImg(d.getMember().getProfileImg())
+                        .build()
+                )
+                .toList();
+
+        return DiarySliceResponseDTO.builder()
+                .diaries(dtoList)
+                .page(pageable.getPageNumber() + 1)
+                .size(pageable.getPageSize())
+                .hasNext(hasNext)
+                .build();
+    }
 }
 
 
