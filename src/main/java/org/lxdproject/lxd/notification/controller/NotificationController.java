@@ -7,11 +7,13 @@ import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.notification.dto.NotificationCursorResponseDTO;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
+import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
 import org.lxdproject.lxd.notification.service.NotificationService;
 import org.lxdproject.lxd.notification.service.SseEmitterService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -40,5 +42,10 @@ public class NotificationController implements NotificationApi {
     public ApiResponse<NotificationCursorResponseDTO> getNotifications(Long lastId, int size, Boolean isRead) {
         NotificationCursorResponseDTO dto = notificationService.getNotifications(isRead, lastId, size);
         return ApiResponse.onSuccess(dto);
+    }
+
+    @Override
+    public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable("notificationId") Long notificationId) {
+        return ApiResponse.onSuccess(notificationService.markAsReadAndSendSse(notificationId));
     }
 }

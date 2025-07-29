@@ -2,15 +2,14 @@ package org.lxdproject.lxd.notification.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
-import org.lxdproject.lxd.notification.dto.NotificationCursorResponseDTO;
-import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
-import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
-import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
+import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
@@ -18,6 +17,7 @@ import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +29,7 @@ public class NotificationService {
     private final NotificationPublisher notificationPublisher;
     private final MemberRepository memberRepository;
     private final NotificationMessageResolverManager messageResolverManager;
+    private final SseEmitterService sseEmitterService;
 
     public void saveAndPublishNotification(NotificationRequestDTO dto) {
 
@@ -72,5 +73,29 @@ public class NotificationService {
 
         return new NotificationCursorResponseDTO(content, nextCursor, hasNext);
     }
+
+    @Transactional
+    public ReadRedirectResponseDTO markAsReadAndSendSse(Long id) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
+
+        if (!notification.getReceiver().getId().equals(memberId)) {
+            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
+        }
+
+        if (!notification.isRead()) {
+            notification.markAsRead();
+            sseEmitterService.sendNotificationReadUpdate(notification);
+        }
+
+        return ReadRedirectResponseDTO.builder()
+                .notificationId(notification.getId())
+                .redirectUrl(notification.getRedirectUrl())
+                .isRead(true)
+                .build();
+    }
+
 }
 

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.notification.dto.NotificationCursorResponseDTO;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
 import org.lxdproject.lxd.validation.annotation.ValidPageSize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -36,5 +37,9 @@ public interface NotificationApi {
             @RequestParam(defaultValue = "20") @ValidPageSize int size, // 페이지 크기
             @RequestParam(required = false) Boolean isRead // 필터링 조건
     );
+
+    @Operation(summary = "알림 읽음과 리다이렉트", description = "알림을 읽음 처리하고 리다이렉트 url을 반환합니다.")
+    @PatchMapping("/{notificationId}/read-redirect")
+    public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable Long notificationId);
 
 }

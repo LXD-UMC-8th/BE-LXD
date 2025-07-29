@@ -3,6 +3,8 @@ package org.lxdproject.lxd.notification.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.notification.dto.NotificationReadUpdateDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -44,6 +46,25 @@ public class SseEmitterService {
             }
         } else {
             log.warn("[SSE] 알림 전송 실패: 연결 없음 - memberId: {}", memberId);
+        }
+    }
+
+    public void sendNotificationReadUpdate(Notification notification) {
+        Long receiverId = notification.getReceiver().getId();
+
+        NotificationReadUpdateDTO dto = new NotificationReadUpdateDTO(
+                notification.getId(), true
+        );
+
+        SseEmitter emitter = emitters.get(receiverId);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("notification-read")
+                        .data(dto));
+            } catch (IOException e) {
+                emitters.remove(receiverId);
+            }
         }
     }
 
