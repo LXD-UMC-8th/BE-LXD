@@ -40,4 +40,16 @@ public class FriendRepositoryImpl implements FriendRepository {
         sent.addAll(received);
         return sent;
     }
+
+    @Override
+    public boolean existsByRequesterAndReceiverOrReceiverAndRequester(Member m1, Member m2) {
+        return queryFactory
+                .selectOne()
+                .from(friendship)
+                .where(
+                        (friendship.requester.eq(m1).and(friendship.receiver.eq(m2)))
+                                .or(friendship.requester.eq(m2).and(friendship.receiver.eq(m1)))
+                )
+                .fetchFirst() != null;
+    }
 }
