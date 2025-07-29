@@ -23,17 +23,17 @@ public class FriendController implements FriendApi {
     }
 
     @Override
-    public ApiResponse<FriendRequestCreateResponseDTO> sendFriendRequest(@RequestBody FriendRequestCreateRequestDTO requestDto) {
+    public ApiResponse<FriendMessageResponseDTO> sendFriendRequest(@RequestBody FriendRequestCreateRequestDTO requestDto) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         friendService.sendFriendRequest(currentMemberId, requestDto);
-        return ApiResponse.onSuccess(new FriendRequestCreateResponseDTO("요청이 전송되었습니다."));
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("요청이 전송되었습니다."));
     }
 
     @Override
-    public ApiResponse<FriendRequestAcceptResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto) {
+    public ApiResponse<FriendMessageResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto) {
         Long receiverId = SecurityUtil.getCurrentMemberId();
         friendService.acceptFriendRequest(receiverId, requestDto);
-        return ApiResponse.onSuccess(new FriendRequestAcceptResponseDTO("친구 요청을 수락했습니다."));
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 수락했습니다."));
     }
 
 }

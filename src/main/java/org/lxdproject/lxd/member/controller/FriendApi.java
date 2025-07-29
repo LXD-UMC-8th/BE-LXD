@@ -29,23 +29,23 @@ public interface FriendApi {
     @Operation(summary = "친구 요청 보내기 API", description = "receiverId를 전달받아 친구 요청을 보냅니다. 상태는 PENDING으로 저장됩니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 요청 성공",
-                    content = @Content(schema = @Schema(implementation = FriendRequestCreateResponseDTO.class))),
+                    content = @Content(schema = @Schema(implementation = FriendMessageResponseDTO.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 요청을 보냈거나 친구 상태"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 인증 실패"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
     })
     @PostMapping("/request")
-    ApiResponse<FriendRequestCreateResponseDTO> sendFriendRequest(@RequestBody FriendRequestCreateRequestDTO requestDto);
+    ApiResponse<FriendMessageResponseDTO> sendFriendRequest(@RequestBody FriendRequestCreateRequestDTO requestDto);
 
     @Operation(summary = "친구 요청 수락 API", description = "친구 요청을 수락하고 친구 관계를 생성합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 요청 수락 성공",
-                    content = @Content(schema = @Schema(implementation = FriendRequestAcceptResponseDTO.class))),
+                    content = @Content(schema = @Schema(implementation = FriendMessageResponseDTO.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 또는 이미 처리됨"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "요청 내역 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/accept")
-    ApiResponse<FriendRequestAcceptResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto);
+    ApiResponse<FriendMessageResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto);
 
 }

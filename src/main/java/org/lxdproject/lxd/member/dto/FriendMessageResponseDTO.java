@@ -6,6 +6,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class FriendRequestAcceptResponseDTO {
+public class FriendMessageResponseDTO {
     private String message;
 }
