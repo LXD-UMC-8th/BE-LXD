@@ -55,7 +55,10 @@ public class FriendService {
 
         boolean alreadyRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 requester, receiver, FriendRequestStatus.PENDING);
-        if (alreadyRequested) {
+        // 양방향 친구 요청 확인 추가
+        boolean reverseRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
+                receiver, requester, FriendRequestStatus.PENDING);
+        if (alreadyRequested || reverseRequested) {
             throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_ALREADY_SENT);
         }
 
