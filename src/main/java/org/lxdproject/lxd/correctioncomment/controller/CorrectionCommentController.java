@@ -9,48 +9,40 @@ import org.lxdproject.lxd.correctioncomment.service.CorrectionCommentService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/corrections/{correctionId}/comments")
 public class CorrectionCommentController implements CorrectionCommentApi {
 
     private final CorrectionCommentService correctionCommentService;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<CorrectionCommentResponseDTO>> writeComment(
-            @PathVariable Long correctionId,
-            @RequestBody CorrectionCommentRequestDTO request
+    @Override
+    public ApiResponse<CorrectionCommentResponseDTO> writeComment(
+            Long correctionId,
+            CorrectionCommentRequestDTO request
     ) {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        CorrectionCommentResponseDTO response = correctionCommentService.createComment(correctionId, request, memberId);
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+        CorrectionCommentResponseDTO response = correctionCommentService.writeComment(memberId, correctionId, request);
+        return ApiResponse.of(SuccessStatus._OK, response);
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<CorrectionCommentPageResponseDTO>> getComments(
-            @PathVariable Long correctionId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+    @Override
+    public ApiResponse<CorrectionCommentPageResponseDTO> getComments(Long correctionId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Long userId = SecurityUtil.getCurrentMemberId();
         CorrectionCommentPageResponseDTO response = correctionCommentService.getComments(correctionId, userId, pageable);
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+        return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
 
-    @DeleteMapping("/{commentId}")
-    public ResponseEntity<ApiResponse<CorrectionCommentDeleteResponseDTO>> deleteComment(
-            @PathVariable Long correctionId, // 사용하지 않더라도 URL에 있으므로 필요
-            @PathVariable Long commentId
-    ) {
+    @Override
+    public ApiResponse<CorrectionCommentDeleteResponseDTO> deleteComment(Long correctionId, Long commentId) {
         Long userId = SecurityUtil.getCurrentMemberId();
         CorrectionCommentDeleteResponseDTO response = correctionCommentService.deleteComment(commentId, userId);
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+        return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
 }
+
 
 
 

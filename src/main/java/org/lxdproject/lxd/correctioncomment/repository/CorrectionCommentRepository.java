@@ -19,8 +19,9 @@ public interface CorrectionCommentRepository extends JpaRepository<CorrectionCom
     // 부모 댓글 페이징
     Page<CorrectionComment> findByCorrectionIdAndParentIsNull(Long correctionId, Pageable pageable);
 
-
     // 자식 댓글 일괄 조회
     List<CorrectionComment> findByCorrectionIdIn(List<Long> parentIds);
+
+    List<CorrectionComment> findByParentIdIn(List<Long> parentIds);
 }
 

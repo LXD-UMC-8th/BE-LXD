@@ -37,7 +37,7 @@ public class CorrectionComment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private DiaryComment parent; // 대댓글용 자기 참조
+    private CorrectionComment parent;
 
     // 좋아요 수
     @Column(name = "like_count", nullable = false)
