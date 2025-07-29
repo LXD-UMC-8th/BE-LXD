@@ -126,8 +126,8 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<List<DiaryStatsResponseDTO>> getDiaryStats(
-            @RequestParam int year,
-            @RequestParam int month
+            @RequestParam @Min(1) int year,
+            @RequestParam @Min(1) int month
     );
 
     @GetMapping("/friends")
@@ -169,8 +169,8 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<DiarySliceResponseDTO> getLikedDiaries(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size
     );
 
     @GetMapping("/explore")
@@ -185,8 +185,8 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<DiarySliceResponseDTO> getExploreDiaries(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "1") @Min(1)  int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size,
             @RequestParam(required = false) Language language
     );
 }
