@@ -10,6 +10,6 @@ import java.util.List;
 public interface DiaryRepositoryCustom {
     DiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable);
     List<DiaryStatsResponseDTO> getDiaryStatsByMonth(Long userId, int year, int month);
-    List<Diary> findByMemberIdAndVisibilityForFriend(Long friendId);
+    List<Diary> findByMemberIdAndVisibilityForViewer(Long memberId, boolean isFriend);
 }
 

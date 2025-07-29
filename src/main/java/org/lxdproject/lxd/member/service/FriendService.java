@@ -139,14 +139,11 @@ public class FriendService {
         }
 
         boolean isFriend = friendRepository.existsFriendRelation(currentUserId, friendId);
-        if (!isFriend) {
-            throw new FriendHandler(ErrorStatus.NOT_FRIEND);
-        }
 
         Member friend = memberRepository.findById(friendId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Diary> diaries = diaryRepository.findByMemberIdAndVisibilityForFriend(friendId);
+        List<Diary> diaries = diaryRepository.findByMemberIdAndVisibilityForViewer(friendId, isFriend);
 
         List<DiarySummaryResponseDTO> diaryDtos = diaries.stream()
                 .map(d -> DiarySummaryResponseDTO.builder()

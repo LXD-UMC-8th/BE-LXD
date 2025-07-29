@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diary.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -107,17 +108,25 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public List<Diary> findByMemberIdAndVisibilityForFriend(Long friendId) {
+    public List<Diary> findByMemberIdAndVisibilityForViewer(Long memberId, boolean isFriend) {
+        QDiary diary = QDiary.diary;
+
+        BooleanExpression visibilityCondition = diary.visibility.eq(Visibility.PUBLIC);
+        if (isFriend) {
+            visibilityCondition = visibilityCondition.or(diary.visibility.eq(Visibility.FRIENDS));
+        }
+
         return queryFactory
                 .selectFrom(diary)
                 .where(
-                        diary.member.id.eq(friendId),
+                        diary.member.id.eq(memberId),
                         diary.deletedAt.isNull(),
-                        diary.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS)
+                        visibilityCondition
                 )
                 .orderBy(diary.createdAt.desc())
                 .fetch();
     }
+
 }
 
 
