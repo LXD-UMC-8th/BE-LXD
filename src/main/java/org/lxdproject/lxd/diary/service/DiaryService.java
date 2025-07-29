@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.diary.service;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
@@ -125,5 +126,10 @@ public class DiaryService {
 
     public DiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
         return diaryRepository.findDiariesOfFriends(userId, pageable);
+    }
+
+    public DiarySliceResponseDTO getLikedDiaries(Pageable pageable) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return diaryRepository.findLikedDiariesOfFriends(currentMemberId, pageable);
     }
 }

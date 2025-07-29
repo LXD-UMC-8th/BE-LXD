@@ -82,4 +82,13 @@ public class DiaryController implements DiaryApi{
         DiarySliceResponseDTO response = diaryService.getDiariesOfFriends(currentUserId, pageable);
         return ApiResponse.onSuccess(response);
     }
+
+    @Override
+    public ApiResponse<DiarySliceResponseDTO> getLikedDiaries(@RequestParam(defaultValue = "1") int page,
+                                                              @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        DiarySliceResponseDTO response = diaryService.getLikedDiaries(pageable);
+        return ApiResponse.onSuccess(response);
+    }
+
 }
