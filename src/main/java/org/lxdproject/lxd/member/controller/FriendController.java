@@ -43,4 +43,11 @@ public class FriendController implements FriendApi {
         friendService.deleteFriend(currentMemberId, friendId);
         return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구가 삭제되었습니다."));
     }
+
+    @Override
+    public ApiResponse<FriendRequestListResponseDTO> getFriendRequestList() {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId);
+        return ApiResponse.onSuccess(response);
+    }
 }

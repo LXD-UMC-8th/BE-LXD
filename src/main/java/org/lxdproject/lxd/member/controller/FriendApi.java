@@ -54,4 +54,14 @@ public interface FriendApi {
     })
     @DeleteMapping("/{friendId}")
     ApiResponse<FriendMessageResponseDTO> deleteFriend(@PathVariable Long friendId);
+
+    @Operation(summary = "친구 요청 목록 조회 API", description = "보낸 친구 요청과 받은 친구 요청 목록을 각각 반환합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 요청 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = FriendRequestListResponseDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 인증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @GetMapping("/requests")
+    ApiResponse<FriendRequestListResponseDTO> getFriendRequestList();
 }
