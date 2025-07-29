@@ -10,11 +10,11 @@ import java.util.List;
 @Builder
 public class CorrectionCommentResponseDTO {
     private Long commentId;
-    private int memberId;
-    private Long parentId;
+    private int userId;
     private String nickname;
-    private String profileImage; 필요없음
+    private String profileImage;
     private String content;
+    private Long parentId;
     private int likeCount;
     private boolean isLiked;
     private LocalDateTime createdAt;

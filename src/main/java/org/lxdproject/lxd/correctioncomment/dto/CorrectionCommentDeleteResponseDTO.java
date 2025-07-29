@@ -12,4 +12,5 @@ public class CorrectionCommentDeleteResponseDTO {
     private boolean isDeleted;
     private String content;
     private LocalDateTime deletedAt;
+}
 

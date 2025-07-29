@@ -16,6 +16,7 @@ public class DiaryCommentResponseDTO {
     private String profileImage;
     private String commentText;
     private Long parentId; // nullable
+    private int likeCount;
     private boolean isLiked;
     private LocalDateTime createdAt;
 
