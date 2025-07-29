@@ -35,8 +35,8 @@ public class DiaryCommentNotificationMessageResolver implements NotificationMess
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         LocalizedMessageTemplate template = new LocalizedMessageTemplate(
-                "%s님이 \"%s\" 일기에 댓글을 작성했습니다",
-                "%s commented on your diary \"%s\""
+                "%s님이 %s 일기에 댓글을 작성했습니다.",
+                "%s commented on the %s diary entry."
         );
 
         return template.format(sender.getNickname(), comment.getDiary().getTitle(), locale);

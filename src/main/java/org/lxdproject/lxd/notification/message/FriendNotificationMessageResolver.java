@@ -21,11 +21,11 @@ public class FriendNotificationMessageResolver implements NotificationMessageRes
     public String resolveMessage(NotificationRequestDTO dto, Member sender, Locale locale) {
         LocalizedMessageTemplate template = switch (dto.getNotificationType()) {
             case FRIEND_REQUEST -> new LocalizedMessageTemplate(
-                    "%s님이 친구를 요청했습니다",
-                    "%s sent you a friend request");
+                    "%s님이 친구를 요청했습니다.",
+                    "You are now friends with %s");
             case FRIEND_ACCEPTED -> new LocalizedMessageTemplate(
-                    "%s님과 친구가 되었습니다",
-                    "%s became friends with you");
+                    "%s님과 친구가 되었습니다.",
+                    "%s sent you a friend request.");
             default -> throw new NotificationHandler(ErrorStatus.TARGET_TYPE_UNSUPPORTED);
         };
 

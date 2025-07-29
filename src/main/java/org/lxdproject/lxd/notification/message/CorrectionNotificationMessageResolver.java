@@ -37,8 +37,8 @@ public class CorrectionNotificationMessageResolver implements NotificationMessag
         String diaryTitle = correction.getDiary().getTitle();
 
         LocalizedMessageTemplate template = new LocalizedMessageTemplate(
-                "%s님이 \"%s\" 일기에 교정을 추가했습니다",
-                "%s suggested a correction to your diary \"%s\""
+                "%s님이 %s 일기에 교정을 추가했습니다.",
+                "%s added a correction to the %s diary entry."
         );
 
         return template.format(sender.getNickname(), diaryTitle, locale);

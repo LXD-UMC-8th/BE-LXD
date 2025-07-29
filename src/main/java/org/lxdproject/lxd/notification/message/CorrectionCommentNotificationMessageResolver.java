@@ -35,8 +35,8 @@ public class CorrectionCommentNotificationMessageResolver implements Notificatio
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         LocalizedMessageTemplate template = new LocalizedMessageTemplate(
-                "%s님이 \"%s\" 일기에 제공한 교정에 답글을 추가했습니다",
-                "%s replied to a correction in your diary \"%s\""
+                "%s님이 %s 일기에 제공한 교정에 답글을 추가했습니다.",
+                "%s replied to the correction on the %s diary entry."
         );
 
         return template.format(sender.getNickname(), comment.getCorrection().getDiary().getTitle(), locale);
