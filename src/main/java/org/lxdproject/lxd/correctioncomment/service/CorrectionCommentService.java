@@ -49,41 +49,52 @@ public class CorrectionCommentService {
     }
 
     public CorrectionCommentPageResponseDTO getComments(Long correctionId, Pageable pageable) {
-        Page<CorrectionComment> page = commentRepository.findAllByCorrectionId(correctionId, pageable);
-        List<CorrectionCommentResponseDTO> comments = page.stream().map(comment -> CorrectionCommentResponseDTO.builder()
-                .commentId(comment.getId())
-                .nickname(comment.getMember().getNickname())
-                .profileImage(comment.getMember().getProfileImg())
-                .content(comment.getCommentText())
-                .likeCount(comment.getLikeCount())
-                .isLiked(false)
-                .createdAt(comment.getCreatedAt())
-                .build()).toList();
+        Page<CorrectionComment> comments = CorrectionCommentRepository.findByCorrectionIdWithOldestFirst(correctionId, pageable);
+
+        List<CorrectionCommentResponseDTO> content = comments.getContent().stream()
+                .map(comment -> CorrectionCommentResponseDTO.builder()
+                        .commentId(comment.getId())
+                        .nickname(comment.getMember().getNickname())
+                        .profileImage(comment.getMember().getProfileImage())
+                        .content(comment.getCommentText())
+                        .likeCount(comment.getLikes().size())
+                        .isLiked(false) // 좋아요 여부는 일단 false 처리 (추후 로직 필요)
+                        .createdAt(comment.getCreatedAt())
+                        .build()
+                )
+                .toList();
 
         return CorrectionCommentPageResponseDTO.builder()
-                .comments(comments)
-                .totalElements(page.getTotalElements())
+                .content(content)
+                .totalElements(comments.getTotalElements())
                 .build();
     }
 
-    public CorrectionCommentDeleteResponseDTO deleteComment(Long correctionId, Long commentId, Long memberId) {
-        CorrectionComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
-        if (!comment.getCorrection().getId().equals(correctionId)) {
-            throw new IllegalArgumentException("correction 불일치");
-        }
-        if (!comment.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("작성자 불일치");
-        }
 
-        comment.softDelete(); // soft delete
-        return CorrectionCommentDeleteResponseDTO.builder()
-                .commentId(comment.getId())
-                .isDeleted(true)
-                .content(comment.getCommentText())
-                .deletedAt(comment.getUpdatedAt())
+    public CorrectionCommentPageResponseDTO getComments(Long correctionId, Long memberId, Pageable pageable) {
+        Page<CorrectionComment> comments = CorrectionCommentRepository.findByCorrectionIdWithOldestFirst(correctionId, pageable);
+
+        List<CorrectionCommentResponseDTO> content = comments.getContent().stream()
+                .map(comment -> CorrectionCommentResponseDTO.builder()
+                        .commentId(comment.getId())
+                        .parentId(null)
+                        .nickname(comment.getMember().getNickname())
+                        .profileImage(comment.getMember().getProfileImage())
+                        .content(comment.getCommentText()) // 삭제된 댓글 처리 포함
+                        .likeCount(comment.getLikes().size())
+                        .isLiked(comment.getLikes().stream()
+                                .anyMatch(like -> like.getMember().getId().equals(memberId)))
+                        .createdAt(comment.getCreatedAt())
+                        .build())
+                .toList();
+
+        return CorrectionCommentPageResponseDTO.builder()
+                .content(content)
+                .totalElements(comments.getTotalElements())
                 .build();
-
     }
+
+
+
 }
 

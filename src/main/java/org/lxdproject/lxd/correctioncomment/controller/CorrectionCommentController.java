@@ -36,18 +36,24 @@ public class CorrectionCommentController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        CorrectionCommentPageResponseDTO response = correctionCommentService.getComments(correctionId, pageable);
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        CorrectionCommentPageResponseDTO response = correctionCommentService.getComments(correctionId, memberId, pageable);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));  //여기서 에러가?
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<ApiResponse<CorrectionCommentDeleteResponseDTO>> deleteComment(
             @PathVariable Long correctionId,
-            @PathVariable Long commentId
+            @PathVariable Long commentId,
+            @RequestParam Long memberId
     ) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
         CorrectionCommentDeleteResponseDTO response = correctionCommentService.deleteComment(correctionId, commentId, memberId);
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
     }
+
+
 }
+
+
 

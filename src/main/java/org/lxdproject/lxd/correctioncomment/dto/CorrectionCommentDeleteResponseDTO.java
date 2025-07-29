@@ -11,6 +11,5 @@ public class CorrectionCommentDeleteResponseDTO {
     private Long commentId;
     private boolean isDeleted;
     private String content;
-    private LocalDateTime deletedAt;  //getDeletedAt()이거로 변경 필요
-}
+    private LocalDateTime deletedAt;
 
