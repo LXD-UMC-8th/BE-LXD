@@ -48,4 +48,9 @@ public class NotificationController implements NotificationApi {
     public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable("notificationId") Long notificationId) {
         return ApiResponse.onSuccess(notificationService.markAsReadAndSendSse(notificationId));
     }
+
+    @Override
+    public ApiResponse<String> readAllNotifications() {
+        return ApiResponse.onSuccess(notificationService.markAllAsRead());
+    }
 }

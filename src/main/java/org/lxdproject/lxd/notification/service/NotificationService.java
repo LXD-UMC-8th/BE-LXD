@@ -97,5 +97,19 @@ public class NotificationService {
                 .build();
     }
 
+    @Transactional
+    public String markAllAsRead() {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        List<Notification> unreadList = notificationRepository.findUnreadWithSenderByReceiverId(memberId);
+
+        for (Notification notification : unreadList) {
+            notification.markAsRead();
+        }
+
+        sseEmitterService.sendAllReadUpdate(memberId);
+
+        return unreadList.size() + "개의 알림이 읽음 처리 되었습니다.";
+    }
+
 }
 

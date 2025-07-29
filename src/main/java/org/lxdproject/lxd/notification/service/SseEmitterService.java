@@ -68,5 +68,19 @@ public class SseEmitterService {
         }
     }
 
+    public void sendAllReadUpdate(Long receiverId) {
+        SseEmitter emitter = emitters.get(receiverId);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("notification-all-read")
+                        .data("ALL_READ"));
+            } catch (IOException e) {
+                emitters.remove(receiverId);
+            }
+        }
+    }
+
+
 }
 

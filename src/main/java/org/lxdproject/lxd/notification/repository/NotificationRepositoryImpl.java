@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.QNotification;
 
 import java.util.List;
@@ -46,6 +47,22 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 .where(where)
                 .orderBy(notification.id.desc())
                 .limit(size)
+                .fetch();
+    }
+
+    @Override
+    public List<Notification> findUnreadWithSenderByReceiverId(Long receiverId) {
+        QNotification notification = QNotification.notification;
+        QMember sender = QMember.member;
+
+        return queryFactory
+                .selectFrom(notification)
+                .leftJoin(notification.sender, sender).fetchJoin()
+                .where(
+                        notification.receiver.id.eq(receiverId),
+                        notification.isRead.isFalse()
+                )
+                .orderBy(notification.createdAt.desc())
                 .fetch();
     }
 }

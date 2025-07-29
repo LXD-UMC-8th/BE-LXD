@@ -26,11 +26,11 @@ public interface NotificationApi {
     })
     public SseEmitter subscribe();
 
-    @Operation(summary = "테스트 알림 전송", description = "Redis로 테스트 알림 메시지를 전송합니다.")
+    @Operation(summary = "테스트 알림 전송 API", description = "Redis로 테스트 알림 메시지를 전송합니다.")
     @PostMapping("/test")
     public ApiResponse<String> testSend(@RequestBody NotificationRequestDTO requestDTO);
 
-    @Operation(summary = "알림 목록 조회", description = "나의 알림 목록을 조회합니다.")
+    @Operation(summary = "알림 목록 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
     public ApiResponse<NotificationCursorResponseDTO> getNotifications(
             @RequestParam(required = false) Long lastId, // 마지막 알림 ID(커서)
@@ -38,8 +38,11 @@ public interface NotificationApi {
             @RequestParam(required = false) Boolean isRead // 필터링 조건
     );
 
-    @Operation(summary = "알림 읽음과 리다이렉트", description = "알림을 읽음 처리하고 리다이렉트 url을 반환합니다.")
+    @Operation(summary = "알림 읽음과 리다이렉트 API", description = "알림을 읽음 처리하고 리다이렉트 url을 반환합니다.")
     @PatchMapping("/{notificationId}/read-redirect")
     public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable Long notificationId);
 
+    @Operation(summary = "모든 알림 읽음 처리 API", description = "로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다.")
+    @PatchMapping("/read-all")
+    public ApiResponse<String> readAllNotifications();
 }
