@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.member.dto.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 
 @Tag(name = "Friend API", description = "친구 관련 API")
@@ -48,4 +45,13 @@ public interface FriendApi {
     @PostMapping("/accept")
     ApiResponse<FriendMessageResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto);
 
+    @Operation(summary = "친구 삭제 API", description = "로그인한 사용자와 친구인 사용자를 삭제합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 삭제 성공",
+                    content = @Content(schema = @Schema(implementation = FriendMessageResponseDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "대상 사용자가 없거나 친구 관계가 아님"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @DeleteMapping("/{friendId}")
+    ApiResponse<FriendMessageResponseDTO> deleteFriend(@PathVariable Long friendId);
 }

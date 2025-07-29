@@ -5,6 +5,7 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.service.FriendService;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,4 +37,10 @@ public class FriendController implements FriendApi {
         return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 수락했습니다."));
     }
 
+    @Override
+    public ApiResponse<FriendMessageResponseDTO> deleteFriend(@PathVariable Long friendId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        friendService.deleteFriend(currentMemberId, friendId);
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구가 삭제되었습니다."));
+    }
 }
