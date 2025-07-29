@@ -60,7 +60,8 @@ public class FriendRepositoryImpl implements FriendRepository {
                 .from(friendship)
                 .where(
                         (friendship.requester.eq(m1).and(friendship.receiver.eq(m2)))
-                                .or(friendship.requester.eq(m2).and(friendship.receiver.eq(m1)))
+                                .or(friendship.requester.eq(m2).and(friendship.receiver.eq(m1))),
+                        friendship.deletedAt.isNull() // 삭제된 관계는 포함하지 않고 조회하도록 수정
                 )
                 .fetchFirst() != null;
     }
