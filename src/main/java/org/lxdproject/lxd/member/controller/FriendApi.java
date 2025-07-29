@@ -6,9 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.member.dto.FriendListResponseDTO;
-import org.lxdproject.lxd.member.dto.FriendRequestCreateRequestDTO;
-import org.lxdproject.lxd.member.dto.FriendRequestCreateResponseDTO;
+import org.lxdproject.lxd.member.dto.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,4 +36,16 @@ public interface FriendApi {
     })
     @PostMapping("/request")
     ApiResponse<FriendRequestCreateResponseDTO> sendFriendRequest(@RequestBody FriendRequestCreateRequestDTO requestDto);
+
+    @Operation(summary = "친구 요청 수락 API", description = "친구 요청을 수락하고 친구 관계를 생성합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 요청 수락 성공",
+                    content = @Content(schema = @Schema(implementation = FriendRequestAcceptResponseDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 또는 이미 처리됨"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "요청 내역 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping("/accept")
+    ApiResponse<FriendRequestAcceptResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto);
+
 }

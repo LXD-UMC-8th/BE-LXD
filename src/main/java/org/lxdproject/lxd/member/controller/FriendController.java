@@ -3,9 +3,7 @@ package org.lxdproject.lxd.member.controller;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.member.dto.FriendListResponseDTO;
-import org.lxdproject.lxd.member.dto.FriendRequestCreateRequestDTO;
-import org.lxdproject.lxd.member.dto.FriendRequestCreateResponseDTO;
+import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.service.FriendService;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,4 +28,12 @@ public class FriendController implements FriendApi {
         friendService.sendFriendRequest(currentMemberId, requestDto);
         return ApiResponse.onSuccess(new FriendRequestCreateResponseDTO("요청이 전송되었습니다."));
     }
+
+    @Override
+    public ApiResponse<FriendRequestAcceptResponseDTO> acceptFriendRequest(@RequestBody FriendRequestAcceptRequestDTO requestDto) {
+        Long receiverId = SecurityUtil.getCurrentMemberId();
+        friendService.acceptFriendRequest(receiverId, requestDto);
+        return ApiResponse.onSuccess(new FriendRequestAcceptResponseDTO("친구 요청을 수락했습니다."));
+    }
+
 }

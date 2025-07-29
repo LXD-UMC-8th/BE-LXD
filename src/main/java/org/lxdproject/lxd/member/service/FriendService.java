@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.member.dto.FriendListResponseDTO;
+import org.lxdproject.lxd.member.dto.FriendRequestAcceptRequestDTO;
 import org.lxdproject.lxd.member.dto.FriendRequestCreateRequestDTO;
 import org.lxdproject.lxd.member.dto.FriendResponseDTO;
 import org.lxdproject.lxd.member.entity.FriendRequest;
@@ -67,5 +68,29 @@ public class FriendService {
                 .build();
 
         friendRequestRepository.save(friendRequest);
+    }
+
+    public void acceptFriendRequest(Long receiverId, FriendRequestAcceptRequestDTO requestDto) {
+        Long requesterId = requestDto.getRequesterId();
+
+        if (receiverId.equals(requesterId)) {
+            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
+        }
+
+        FriendRequest request = friendRequestRepository.findByRequesterIdAndReceiverId(requesterId, receiverId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_NOT_FOUND));
+
+        if (!request.getStatus().equals(FriendRequestStatus.PENDING)) {
+            throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_PENDING);
+        }
+
+        // 요청 상태 변경
+        request.accept();
+
+        // 친구 관계 저장 (양방향)
+        Member requester = request.getRequester();
+        Member receiver = request.getReceiver();
+        friendRepository.saveFriendship(requester, receiver);
+        friendRepository.saveFriendship(receiver, requester); // 양방향 저장
     }
 }

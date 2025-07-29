@@ -2,6 +2,7 @@ package org.lxdproject.lxd.member.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.member.entity.Friendship;
 import org.lxdproject.lxd.member.entity.Member;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional
 public class FriendRepositoryImpl implements FriendRepository {
 
     private final JPAQueryFactory queryFactory;

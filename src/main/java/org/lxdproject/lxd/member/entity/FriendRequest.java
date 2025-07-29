@@ -30,5 +30,10 @@ public class FriendRequest extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FriendRequestStatus status;
+
+    public void accept() {
+        this.status = FriendRequestStatus.ACCEPTED;
+    }
+
 }
 
