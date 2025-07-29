@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface CorrectionCommentRepository extends JpaRepository<CorrectionComment, Long> {
-    Page<CorrectionComment> findAllByCorrectionId(Long correctionId, Pageable pageable);
 
     @Query("SELECT c FROM CorrectionComment c WHERE c.correction.id = :correctionId ORDER BY c.createdAt ASC")
     Page<CorrectionComment> findByCorrectionIdWithOldestFirst(@Param("correctionId") Long correctionId, Pageable pageable);

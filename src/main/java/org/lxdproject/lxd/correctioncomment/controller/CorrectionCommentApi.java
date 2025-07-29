@@ -1,9 +1,12 @@
 package org.lxdproject.lxd.correctioncomment.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.correctioncomment.dto.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentDeleteResponseDTO;
+import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentPageResponseDTO;
+import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentRequestDTO;
+import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +35,7 @@ public interface CorrectionCommentApi {
             @PathVariable Long commentId
     );
 }
+
 
 
 

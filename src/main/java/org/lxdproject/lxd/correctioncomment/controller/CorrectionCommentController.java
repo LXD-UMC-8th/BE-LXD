@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/corrections/{correctionId}/comments")
-public class CorrectionCommentController {
+public class CorrectionCommentController implements CorrectionCommentApi {
 
     private final CorrectionCommentService correctionCommentService;
 
@@ -36,24 +36,22 @@ public class CorrectionCommentController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        CorrectionCommentPageResponseDTO response = correctionCommentService.getComments(correctionId, memberId, pageable);
-
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));  //여기서 에러가?
+        Long userId = SecurityUtil.getCurrentMemberId();
+        CorrectionCommentPageResponseDTO response = correctionCommentService.getComments(correctionId, userId, pageable);
+        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<ApiResponse<CorrectionCommentDeleteResponseDTO>> deleteComment(
-            @PathVariable Long correctionId,
-            @PathVariable Long commentId,
-            @RequestParam Long memberId
+            @PathVariable Long correctionId, // 사용하지 않더라도 URL에 있으므로 필요
+            @PathVariable Long commentId
     ) {
-        CorrectionCommentDeleteResponseDTO response = correctionCommentService.deleteComment(correctionId, commentId, memberId);
+        Long userId = SecurityUtil.getCurrentMemberId();
+        CorrectionCommentDeleteResponseDTO response = correctionCommentService.deleteComment(commentId, userId);
         return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, response));
     }
-
-
 }
+
 
 
 

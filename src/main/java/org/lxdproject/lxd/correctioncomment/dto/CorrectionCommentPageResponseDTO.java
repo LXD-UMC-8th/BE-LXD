@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Builder
 public class CorrectionCommentPageResponseDTO {
-    private List<CorrectionCommentResponseDTO> comments;
+    private List<CorrectionCommentResponseDTO> replies;
     private long totalElements;
 }
 

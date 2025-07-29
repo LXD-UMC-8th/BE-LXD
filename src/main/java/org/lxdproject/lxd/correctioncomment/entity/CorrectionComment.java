@@ -3,6 +3,7 @@ package org.lxdproject.lxd.correctioncomment.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
+import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.correction.entity.Correction;
 
@@ -34,6 +35,10 @@ public class CorrectionComment extends BaseEntity {
     @Column(name = "comment_text", columnDefinition = "TEXT", nullable = false)
     private String commentText;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private DiaryComment parent; // 대댓글용 자기 참조
+
     // 좋아요 수
     @Column(name = "like_count", nullable = false)
     private int likeCount;
@@ -49,7 +54,6 @@ public class CorrectionComment extends BaseEntity {
     }
 
 
-    //baseEntity상속으로 변경
     public String getCommentText() {
         if (isDeleted()) {
             return "삭제된 댓글입니다.";
