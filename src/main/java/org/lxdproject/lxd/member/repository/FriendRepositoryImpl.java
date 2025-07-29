@@ -102,4 +102,17 @@ public class FriendRepositoryImpl implements FriendRepository {
                 )
                 .fetchOne();
     }
+
+    @Override
+    public void softDeleteFriendship(Member m1, Member m2) {
+        Friendship forward = findFriendshipIncludingDeleted(m1, m2);
+        if (forward != null && !forward.isDeleted()) {
+            forward.softDelete();
+        }
+
+        Friendship reverse = findFriendshipIncludingDeleted(m2, m1);
+        if (reverse != null && !reverse.isDeleted()) {
+            reverse.softDelete();
+        }
+    }
 }

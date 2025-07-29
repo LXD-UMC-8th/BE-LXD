@@ -27,6 +27,7 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_FRIEND_REQUEST(HttpStatus.BAD_REQUEST, "FRIEND4316", "자기 자신에게 친구 요청을 보낼 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4317", "친구 요청 대상을 찾을 수 없습니다."),
     FRIEND_REQUEST_NOT_PENDING(HttpStatus.BAD_REQUEST, "FRIEND4405", "이미 수락되었거나 처리된 요청입니다."),
+    NOT_FRIEND(HttpStatus.NOT_FOUND, "FRIEND4406", "친구 관계가 존재하지 않습니다."),
 
     // 인증 관련 에러
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4300", "토큰이 올바르지 않습니다."),

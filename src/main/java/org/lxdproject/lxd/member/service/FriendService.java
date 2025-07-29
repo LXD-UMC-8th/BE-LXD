@@ -90,4 +90,21 @@ public class FriendService {
         friendRepository.saveFriendship(requester, receiver);
         friendRepository.saveFriendship(receiver, requester); // 양방향 저장
     }
+
+    public void deleteFriend(Long currentMemberId, Long friendId) {
+        Member current = memberRepository.findById(currentMemberId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        Member target = memberRepository.findById(friendId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 존재 여부 확인
+        boolean exists = friendRepository.existsByRequesterAndReceiverOrReceiverAndRequester(current, target);
+        if (!exists) {
+            throw new FriendHandler(ErrorStatus.NOT_FRIEND);
+        }
+
+        // soft delete
+        friendRepository.softDeleteFriendship(current, target);
+    }
+
 }
