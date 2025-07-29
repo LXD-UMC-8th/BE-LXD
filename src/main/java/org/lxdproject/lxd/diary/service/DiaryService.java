@@ -7,10 +7,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.diary.dto.DiaryDetailResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
-import org.lxdproject.lxd.diary.dto.MyDiarySliceResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
+import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
@@ -126,7 +123,7 @@ public class DiaryService {
         return diaryRepository.getDiaryStatsByMonth(memberId, year, month);
     }
 
-    public MyDiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
+    public DiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
         return diaryRepository.findDiariesOfFriends(userId, pageable);
     }
 }

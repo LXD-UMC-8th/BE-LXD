@@ -5,14 +5,13 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.correction.util.DateFormatUtil;
-import org.lxdproject.lxd.diary.dto.MyDiarySliceResponseDTO;
-import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
-import org.lxdproject.lxd.diary.dto.MyDiarySummaryResponseDTO;
+import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
 import org.lxdproject.lxd.member.entity.QFriendship;
+import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -131,11 +130,12 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public MyDiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
+    public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
         QDiary diary = QDiary.diary;
+        QMember member = QMember.member;
         QFriendship friendship = QFriendship.friendship;
 
-        // 1. 친구 ID 목록 조회 (양방향)
+        // 친구 ID 목록 조회 (양방향)
         List<Long> sentFriendIds = queryFactory
                 .select(friendship.receiver.id)
                 .from(friendship)
@@ -152,9 +152,10 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         friendIds.addAll(sentFriendIds);
         friendIds.addAll(receivedFriendIds);
 
-        // 2. 친구들의 공개/친구공개 일기만 필터링
+        // 친구들이 작성한 공개/친구공개 일기 조회
         List<Diary> diaries = queryFactory
                 .selectFrom(diary)
+                .leftJoin(diary.member, member).fetchJoin()
                 .where(
                         diary.member.id.in(friendIds),
                         diary.visibility.ne(Visibility.PRIVATE),
@@ -165,15 +166,13 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
 
-        // 3. 페이징 처리
         boolean hasNext = diaries.size() > pageable.getPageSize();
         if (hasNext) {
             diaries.remove(diaries.size() - 1);
         }
 
-        // 4. DTO 변환
-        List<MyDiarySummaryResponseDTO> dtoList = diaries.stream()
-                .map(d -> MyDiarySummaryResponseDTO.builder()
+        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
                         .createdAt(d.getCreatedAt().toString())
                         .title(d.getTitle())
@@ -184,16 +183,20 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
                         .language(d.getLanguage())
+                        .writerUsername(d.getMember().getUsername())
+                        .writerNickname(d.getMember().getNickname())
+                        .writerProfileImg(d.getMember().getProfileImg())
                         .build())
                 .toList();
 
-        return MyDiarySliceResponseDTO.builder()
+        return DiarySliceResponseDTO.builder()
                 .diaries(dtoList)
                 .page(pageable.getPageNumber() + 1)
                 .size(pageable.getPageSize())
                 .hasNext(hasNext)
                 .build();
     }
+
 }
 
 
