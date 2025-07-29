@@ -4,6 +4,7 @@ import org.lxdproject.lxd.diary.dto.DiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.MyDiarySliceResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -14,5 +15,6 @@ public interface DiaryRepositoryCustom {
     List<Diary> findByMemberIdAndVisibilityForViewer(Long memberId, boolean isFriend);
     DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable);
     DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable);
+    DiarySliceResponseDTO findExploreDiaries(Long userId, Language language, Pageable pageable);
 }
 

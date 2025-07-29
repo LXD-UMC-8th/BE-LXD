@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diary.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -8,6 +9,7 @@ import org.lxdproject.lxd.correction.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
+import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
 import org.lxdproject.lxd.member.entity.QFriendship;
@@ -20,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.lxdproject.lxd.member.entity.QMember.member;
+
 @RequiredArgsConstructor
 public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
@@ -27,6 +31,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     QDiary diary = QDiary.diary;
     QDiaryLike diaryLike = QDiaryLike.diaryLike;
+    QFriendship friendship = QFriendship.friendship;
 
     @Override
     public MyDiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
@@ -276,6 +281,80 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerProfileImg(d.getMember().getProfileImg())
                         .build()
                 )
+                .toList();
+
+        return DiarySliceResponseDTO.builder()
+                .diaries(dtoList)
+                .page(pageable.getPageNumber() + 1)
+                .size(pageable.getPageSize())
+                .hasNext(hasNext)
+                .build();
+    }
+
+    @Override
+    public DiarySliceResponseDTO findExploreDiaries(Long userId, Language language, Pageable pageable) {
+
+        // 1. 친구 ID 목록 조회
+        List<Long> sentFriendIds = queryFactory
+                .select(friendship.receiver.id)
+                .from(friendship)
+                .where(friendship.requester.id.eq(userId), friendship.deletedAt.isNull())
+                .fetch();
+
+        List<Long> receivedFriendIds = queryFactory
+                .select(friendship.requester.id)
+                .from(friendship)
+                .where(friendship.receiver.id.eq(userId), friendship.deletedAt.isNull())
+                .fetch();
+
+        Set<Long> friendIds = new HashSet<>();
+        friendIds.addAll(sentFriendIds);
+        friendIds.addAll(receivedFriendIds);
+
+        // 2. 권한 조건 필터
+        BooleanBuilder condition = new BooleanBuilder();
+        condition.or(diary.visibility.eq(Visibility.PUBLIC));
+        condition.or(diary.visibility.eq(Visibility.FRIENDS).and(diary.member.id.in(friendIds)));
+        condition.or(diary.visibility.eq(Visibility.PRIVATE).and(diary.member.id.eq(userId)));
+
+        // 3. 언어 필터 추가
+        if (language != null) {
+            condition.and(diary.language.eq(language));
+        }
+
+        // 4. 일기 조회
+        List<Diary> diaries = queryFactory
+                .selectFrom(diary)
+                .join(diary.member, member).fetchJoin()
+                .where(condition, diary.deletedAt.isNull())
+                .orderBy(diary.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        // 5. 페이징 처리
+        boolean hasNext = diaries.size() > pageable.getPageSize();
+        if (hasNext) {
+            diaries.remove(diaries.size() - 1);
+        }
+
+        // 6. DTO 변환
+        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .writerUsername(d.getMember().getUsername())
+                        .writerNickname(d.getMember().getNickname())
+                        .writerProfileImg(d.getMember().getProfileImg())
+                        .diaryId(d.getId())
+                        .createdAt(d.getCreatedAt().toString())
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .language(d.getLanguage())
+                        .build())
                 .toList();
 
         return DiarySliceResponseDTO.builder()
