@@ -4,8 +4,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
+import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,5 +41,19 @@ public class MemberService {
         memberRepository.save(member);
         return member;
 
+    }
+
+    public MemberResponseDTO.MemberInfoDTO getMemberInfo() {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(
+                () -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return MemberResponseDTO.MemberInfoDTO.builder()
+                .memberId(currentMemberId)
+                .username(member.getUsername())
+                .email(member.getEmail())
+                .nickname(member.getNickname())
+                .profileImg(member.getProfileImg())
+                .build();
     }
 }
