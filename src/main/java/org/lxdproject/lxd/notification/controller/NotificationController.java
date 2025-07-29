@@ -3,15 +3,12 @@ package org.lxdproject.lxd.notification.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.notification.dto.NotificationCursorResponseDTO;
+import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
 import org.lxdproject.lxd.notification.service.NotificationService;
 import org.lxdproject.lxd.notification.service.SseEmitterService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,8 +36,8 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<NotificationCursorResponseDTO> getNotifications(Long lastId, int size, Boolean isRead) {
-        NotificationCursorResponseDTO dto = notificationService.getNotifications(isRead, lastId, size);
+    public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(Long lastId, int size, Boolean isRead) {
+        CursorPageResponse<NotificationResponseDTO> dto = notificationService.getNotifications(isRead, lastId, size);
         return ApiResponse.onSuccess(dto);
     }
 

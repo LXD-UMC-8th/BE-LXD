@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
@@ -61,7 +62,7 @@ public class NotificationService {
         notificationPublisher.publish(publishEventDTO);
     }
 
-    public NotificationCursorResponseDTO getNotifications(Boolean isRead, Long lastId, int size) {
+    public CursorPageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, Long lastId, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -71,7 +72,7 @@ public class NotificationService {
         boolean hasNext = content.size() == size;
         Long nextCursor = hasNext ? content.get(size - 1).getId() : null;
 
-        return new NotificationCursorResponseDTO(content, nextCursor, hasNext);
+        return new CursorPageResponse<>(content, nextCursor, hasNext);
     }
 
     @Transactional

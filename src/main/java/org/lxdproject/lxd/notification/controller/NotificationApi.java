@@ -6,8 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.notification.dto.NotificationCursorResponseDTO;
+import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
 import org.lxdproject.lxd.validation.annotation.ValidPageSize;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public interface NotificationApi {
 
     @Operation(summary = "알림 목록 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
-    public ApiResponse<NotificationCursorResponseDTO> getNotifications(
+    public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(
             @RequestParam(required = false) Long lastId, // 마지막 알림 ID(커서)
             @RequestParam(defaultValue = "20") @ValidPageSize int size, // 페이지 크기
             @RequestParam(required = false) Boolean isRead // 필터링 조건
