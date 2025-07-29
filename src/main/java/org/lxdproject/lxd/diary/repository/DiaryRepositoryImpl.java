@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.lxdproject.lxd.diary.util.DiaryUtil.generateContentPreview;
 import static org.lxdproject.lxd.member.entity.QMember.member;
 
 @RequiredArgsConstructor
@@ -64,7 +65,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(generatePreview(d.getContent()))
+                        .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
                         .build())
                 .toList();
@@ -170,7 +171,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
@@ -241,7 +242,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
@@ -298,7 +299,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
                         .build())
                 .toList();

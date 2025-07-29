@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.lxdproject.lxd.diary.util.DiaryUtil.generateContentPreview;
+
 @Service
 @RequiredArgsConstructor
 public class FriendService {
@@ -155,7 +157,7 @@ public class FriendService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
                         .build())
                 .toList();
