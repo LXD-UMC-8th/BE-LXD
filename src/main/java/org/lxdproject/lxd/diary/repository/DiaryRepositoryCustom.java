@@ -11,5 +11,6 @@ public interface DiaryRepositoryCustom {
     DiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable);
     List<DiaryStatsResponseDTO> getDiaryStatsByMonth(Long userId, int year, int month);
     List<Diary> findByMemberIdAndVisibilityForViewer(Long memberId, boolean isFriend);
+    DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable);
 }
 

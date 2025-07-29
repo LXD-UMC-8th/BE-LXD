@@ -12,11 +12,14 @@ import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
+import org.lxdproject.lxd.member.entity.QFriendship;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
@@ -127,6 +130,70 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
+        QDiary diary = QDiary.diary;
+        QFriendship friendship = QFriendship.friendship;
+
+        // 1. 친구 ID 목록 조회 (양방향)
+        List<Long> sentFriendIds = queryFactory
+                .select(friendship.receiver.id)
+                .from(friendship)
+                .where(friendship.requester.id.eq(userId), friendship.deletedAt.isNull())
+                .fetch();
+
+        List<Long> receivedFriendIds = queryFactory
+                .select(friendship.requester.id)
+                .from(friendship)
+                .where(friendship.receiver.id.eq(userId), friendship.deletedAt.isNull())
+                .fetch();
+
+        Set<Long> friendIds = new HashSet<>();
+        friendIds.addAll(sentFriendIds);
+        friendIds.addAll(receivedFriendIds);
+
+        // 2. 친구들의 공개/친구공개 일기만 필터링
+        List<Diary> diaries = queryFactory
+                .selectFrom(diary)
+                .where(
+                        diary.member.id.in(friendIds),
+                        diary.visibility.ne(Visibility.PRIVATE),
+                        diary.deletedAt.isNull()
+                )
+                .orderBy(diary.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        // 3. 페이징 처리
+        boolean hasNext = diaries.size() > pageable.getPageSize();
+        if (hasNext) {
+            diaries.remove(diaries.size() - 1);
+        }
+
+        // 4. DTO 변환
+        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(d.getCreatedAt().toString())
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .language(d.getLanguage())
+                        .build())
+                .toList();
+
+        return DiarySliceResponseDTO.builder()
+                .diaries(dtoList)
+                .page(pageable.getPageNumber() + 1)
+                .size(pageable.getPageSize())
+                .hasNext(hasNext)
+                .build();
+    }
 }
 
 
