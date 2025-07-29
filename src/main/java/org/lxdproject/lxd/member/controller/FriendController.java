@@ -7,9 +7,7 @@ import org.lxdproject.lxd.member.dto.FriendListResponseDTO;
 import org.lxdproject.lxd.member.dto.FriendRequestCreateRequestDTO;
 import org.lxdproject.lxd.member.dto.FriendRequestCreateResponseDTO;
 import org.lxdproject.lxd.member.service.FriendService;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
