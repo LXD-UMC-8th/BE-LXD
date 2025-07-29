@@ -9,6 +9,7 @@ import org.lxdproject.lxd.diary.dto.DiaryStatsResponseDTO;
 import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDTO;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
+import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
 import org.springframework.data.domain.Pageable;
 
@@ -103,6 +104,19 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                     return new DiaryStatsResponseDTO(date, tuple.get(diary.count()));
                 })
                 .toList();
+    }
+
+    @Override
+    public List<Diary> findByMemberIdAndVisibilityForFriend(Long friendId) {
+        return queryFactory
+                .selectFrom(diary)
+                .where(
+                        diary.member.id.eq(friendId),
+                        diary.deletedAt.isNull(),
+                        diary.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS)
+                )
+                .orderBy(diary.createdAt.desc())
+                .fetch();
     }
 }
 

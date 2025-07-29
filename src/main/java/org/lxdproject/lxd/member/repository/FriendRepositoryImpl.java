@@ -115,4 +115,23 @@ public class FriendRepositoryImpl implements FriendRepository {
             reverse.softDelete();
         }
     }
+
+    @Override
+    public boolean existsFriendRelation(Long memberId, Long friendId) {
+        return queryFactory
+                .selectOne()
+                .from(friendship)
+                .where(
+                        (
+                                friendship.requester.id.eq(memberId)
+                                        .and(friendship.receiver.id.eq(friendId))
+                        ).or(
+                                friendship.requester.id.eq(friendId)
+                                        .and(friendship.receiver.id.eq(memberId))
+                        ),
+                        friendship.deletedAt.isNull()
+                )
+                .fetchFirst() != null;
+    }
+
 }

@@ -3,6 +3,9 @@ package org.lxdproject.lxd.member.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.diary.dto.DiarySummaryResponseDTO;
+import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
@@ -22,6 +25,7 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final DiaryRepository diaryRepository;
 
     public FriendListResponseDTO getFriendList(Long memberId) {
 
@@ -129,4 +133,36 @@ public class FriendService {
         return new FriendRequestListResponseDTO(sentDtos.size(), receivedDtos.size(), sentDtos, receivedDtos);
     }
 
+    public FriendDetailResponseDTO getFriendDetail(Long currentUserId, Long friendId) {
+        if (currentUserId.equals(friendId)) {
+            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
+        }
+
+        boolean isFriend = friendRepository.existsFriendRelation(currentUserId, friendId);
+        if (!isFriend) {
+            throw new FriendHandler(ErrorStatus.NOT_FRIEND);
+        }
+
+        Member friend = memberRepository.findById(friendId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        List<Diary> diaries = diaryRepository.findByMemberIdAndVisibilityForFriend(friendId);
+
+        List<DiarySummaryResponseDTO> diaryDtos = diaries.stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(d.getCreatedAt().toString())
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(d.getContent().substring(0, Math.min(30, d.getContent().length())))
+                        .language(d.getLanguage())
+                        .build())
+                .toList();
+
+        return new FriendDetailResponseDTO(friend.getUsername(), friend.getNickname(), diaryDtos);
+    }
 }
