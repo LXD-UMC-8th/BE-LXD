@@ -58,6 +58,7 @@ public class CorrectionCommentService {
                 .nickname(member.getNickname())
                 .profileImage(member.getProfileImg())
                 .content(saved.getCommentText())
+                .parentId(parent != null ? parent.getId() : null)
                 .likeCount(saved.getLikeCount())
                 .isLiked(false)
                 .createdAt(saved.getCreatedAt())
