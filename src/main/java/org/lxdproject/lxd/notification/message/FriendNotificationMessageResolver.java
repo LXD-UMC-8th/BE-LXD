@@ -23,7 +23,7 @@ public class FriendNotificationMessageResolver implements NotificationMessageRes
         String senderUsername = "@" + event.getSenderUsername();
         NotificationType type = event.getNotificationType();
 
-        if (locale.getLanguage().equals("en")) {
+        if (("en".equals(locale.getLanguage()))) {
             return switch (type) {
                 case FRIEND_REQUEST -> List.of(
                         new MessagePart("bold", senderUsername),
