@@ -59,12 +59,17 @@ public class SseEmitterService {
         SseEmitter emitter = emitters.get(receiverId);
         if (emitter != null) {
             try {
+                log.info("[SSE] 알림 읽음 상태 전송 - to: {}, notificationId: {}", receiverId, notification.getId());
                 emitter.send(SseEmitter.event()
                         .name("notification-read")
                         .data(dto));
             } catch (IOException e) {
                 emitters.remove(receiverId);
+                log.error("[SSE] 알림 읽음 상태 전송 실패 - receiverId: {}", receiverId, e);
             }
+        }
+        else {
+            log.warn("[SSE] 알림 읽음 상태 전송 실패: 연결 없음 - receiverId: {}", receiverId);
         }
     }
 
