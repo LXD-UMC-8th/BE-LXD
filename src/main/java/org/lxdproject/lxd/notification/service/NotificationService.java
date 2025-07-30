@@ -70,7 +70,7 @@ public class NotificationService {
         List<NotificationResponseDTO> content = notificationRepository.findNotificationsWithCursor(memberId, isRead, lastId, size);
 
         boolean hasNext = content.size() == size;
-        Long nextCursor = hasNext ? content.get(size - 1).getId() : null;
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
 
         return new CursorPageResponse<>(content, nextCursor, hasNext);
     }
