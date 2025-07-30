@@ -15,6 +15,6 @@ public interface DiaryCommentRepository extends JpaRepository<DiaryComment, Long
     Page<DiaryComment> findByDiaryIdAndParentIsNull(Long diaryId, Pageable pageable);
     List<DiaryComment> findByParentIdIn(List<Long> parentIds);
 
-    @Query("SELECT dc.diary.title FROM DiaryComment dc WHERE dc.id = :id")
+    @Query("SELECT dc.diary.title FROM DiaryComment dc WHERE dc.id = :id AND dc.diary IS NOT NULL")
     Optional<String> findDiaryTitleByCommentId(@Param("id") Long id);
 }

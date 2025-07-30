@@ -22,6 +22,6 @@ public interface CorrectionRepository extends JpaRepository<Correction, Long> {
     @Query("SELECT c FROM Correction c WHERE c.id = :id")
     Optional<Correction> findByIdWithPessimisticLock(@Param("id") Long id);
 
-    @Query("SELECT c.diary.title FROM Correction c WHERE c.id = :id")
+    @Query("SELECT c.diary.title FROM Correction c WHERE c.id = :id AND c.diary IS NOT NULL")
     Optional<String> findDiaryTitleByCorrectionId(@Param("id") Long id);
 }

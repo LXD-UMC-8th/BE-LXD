@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface CorrectionCommentRepository extends JpaRepository<CorrectionComment, Long> {
     Page<CorrectionComment> findAllByCorrectionId(Long correctionId, Pageable pageable);
-    @Query("SELECT cc.correction.diary.title FROM CorrectionComment cc WHERE cc.id = :id")
+    @Query("SELECT cc.correction.diary.title FROM CorrectionComment cc WHERE cc.id = :id AND cc.correction IS NOT NULL AND cc.correction.diary IS NOT NULL")
     Optional<String> findDiaryTitleByCorrectionCommentId(@Param("id") Long id);
 }
 
