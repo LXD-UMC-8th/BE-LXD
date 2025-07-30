@@ -60,8 +60,6 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
 
     @Override
     public List<Notification> findUnreadWithSenderByReceiverId(Long receiverId) {
-        QNotification notification = QNotification.notification;
-        QMember sender = QMember.member;
 
         return queryFactory
                 .selectFrom(notification)
