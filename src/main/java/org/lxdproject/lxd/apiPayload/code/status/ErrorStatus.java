@@ -42,6 +42,7 @@ public enum ErrorStatus implements BaseErrorCode {
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTIFICATION4001","알림을 찾을 수 없습니다."),
     TARGET_TYPE_UNSUPPORTED(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4002","지원하지 않는 알림 TargetType 입니다."),
     TARGET_TYPE_MISMATCH(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4003","알림 TargetType이 올바르지 않습니다."),
+    NOTIFICATION_TYPE_NOT_SUPPORTED(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4004","알림 종류가 올바르지 않습니다."),
 
     // 교정 관련 에러
     CORRECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "CORRECTION4400", "교정을 찾을 수 없습니다."),

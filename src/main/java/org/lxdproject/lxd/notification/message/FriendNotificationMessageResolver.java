@@ -3,10 +3,13 @@ package org.lxdproject.lxd.notification.message;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Locale;
 
 @Component
@@ -18,17 +21,35 @@ public class FriendNotificationMessageResolver implements NotificationMessageRes
     }
 
     @Override
-    public String resolveMessage(NotificationRequestDTO dto, Member sender, Locale locale) {
-        LocalizedMessageTemplate template = switch (dto.getNotificationType()) {
-            case FRIEND_REQUEST -> new LocalizedMessageTemplate(
-                    "%s님이 친구를 요청했습니다.",
-                    "%s sent you a friend request.");
-            case FRIEND_ACCEPTED -> new LocalizedMessageTemplate(
-                    "%s님과 친구가 되었습니다.",
-                    "You are now friends with %s");
-            default -> throw new NotificationHandler(ErrorStatus.TARGET_TYPE_UNSUPPORTED);
-        };
+    public List<MessagePart> resolveParts(Notification notification, Locale locale) {
+        String senderUsername = "@" + notification.getSender().getUsername();
+        NotificationType type = notification.getNotificationType();
 
-        return template.format(sender.getNickname(), null, locale);
+        if (locale.getLanguage().equals("en")) {
+            return switch (type) {
+                case FRIEND_REQUEST -> List.of(
+                        new MessagePart("bold", senderUsername),
+                        new MessagePart("text", " sent you a friend request.")
+                );
+                case FRIEND_ACCEPTED -> List.of(
+                        new MessagePart("text", "You are now friends with "),
+                        new MessagePart("bold", senderUsername)
+                );
+                default -> throw new NotificationHandler(ErrorStatus.TARGET_TYPE_UNSUPPORTED);
+            };
+        } else {
+            return switch (type) {
+                case FRIEND_REQUEST -> List.of(
+                        new MessagePart("bold", senderUsername),
+                        new MessagePart("text", "님이 친구를 요청했습니다.")
+                );
+                case FRIEND_ACCEPTED -> List.of(
+                        new MessagePart("bold", senderUsername),
+                        new MessagePart("text", "님과 친구가 되었습니다.")
+                );
+                default -> throw new NotificationHandler(ErrorStatus.TARGET_TYPE_UNSUPPORTED);
+            };
+        }
     }
+
 }

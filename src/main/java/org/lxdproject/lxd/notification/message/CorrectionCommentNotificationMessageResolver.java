@@ -7,11 +7,14 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Locale;
 
 @Component
@@ -26,20 +29,33 @@ public class CorrectionCommentNotificationMessageResolver implements Notificatio
     }
 
     @Override
-    public String resolveMessage(NotificationRequestDTO dto, Member sender, Locale locale) {
-        if (dto.getTargetType() != TargetType.CORRECTION_COMMENT) {
+    public List<MessagePart> resolveParts(Notification notification, Locale locale) {
+        if (notification.getTargetType() != TargetType.CORRECTION_COMMENT) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
 
-        CorrectionComment comment = correctionCommentRepository.findById(dto.getTargetId())
+        CorrectionComment comment = correctionCommentRepository.findById(notification.getTargetId())
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
-        LocalizedMessageTemplate template = new LocalizedMessageTemplate(
-                "%s님이 %s 일기에 제공한 교정에 답글을 추가했습니다.",
-                "%s replied to the correction on the %s diary entry."
-        );
+        String diaryTitle = comment.getCorrection().getDiary().getTitle();
+        String senderUsername = "@" + notification.getSender().getUsername();
 
-        return template.format(sender.getNickname(), comment.getCorrection().getDiary().getTitle(), locale);
+        if (locale.getLanguage().equals("en")) {
+            return List.of(
+                    new MessagePart("bold", senderUsername),
+                    new MessagePart("text", " replied to the correction on the "),
+                    new MessagePart("bold", diaryTitle),
+                    new MessagePart("text", " diary entry.")
+            );
+        } else {
+            return List.of(
+                    new MessagePart("bold", senderUsername),
+                    new MessagePart("text", "님이 "),
+                    new MessagePart("bold", diaryTitle),
+                    new MessagePart("text", " 일기에 제공한 교정에 답글을 추가했습니다.")
+            );
+        }
     }
+
 }
 

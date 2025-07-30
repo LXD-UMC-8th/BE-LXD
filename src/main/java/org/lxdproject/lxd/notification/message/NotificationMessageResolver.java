@@ -1,12 +1,15 @@
 package org.lxdproject.lxd.notification.message;
 
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 
+import java.util.List;
 import java.util.Locale;
 
 public interface NotificationMessageResolver {
     boolean supports(NotificationType type);
-    String resolveMessage(NotificationRequestDTO dto, Member sender, Locale locale);
+    List<MessagePart> resolveParts(Notification notification, Locale locale);
 }

@@ -8,10 +8,12 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.correction.util.DateFormatUtil;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Slf4j
 @Service
@@ -40,14 +43,11 @@ public class NotificationService {
         Member sender = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        String message = messageResolverManager.resolve(dto, sender, sender.getNativeLanguage().toLocale());
-
         // Notification 저장
         Notification notification = Notification.builder()
                 .receiver(receiver)
                 .sender(sender)
                 .notificationType(dto.getNotificationType())
-                .message(message)
                 .targetType(dto.getTargetType())
                 .targetId(dto.getTargetId())
                 .redirectUrl(dto.getRedirectUrl())
@@ -67,7 +67,26 @@ public class NotificationService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<NotificationResponseDTO> content = notificationRepository.findNotificationsWithCursor(memberId, isRead, lastId, size);
+        List<Notification> notifications = notificationRepository.findNotificationsWithCursor(memberId, isRead, lastId, size);
+
+        List<NotificationResponseDTO> content = notifications.stream()
+                .map(notification -> {
+                    Member sender = notification.getSender();
+                    Locale locale = member.getNativeLanguage().toLocale();
+
+                    List<MessagePart> parts = messageResolverManager.resolve(notification, locale);
+
+                    return NotificationResponseDTO.builder()
+                            .id(notification.getId())
+                            .buttonField(notification.getNotificationType() == NotificationType.FRIEND_REQUEST)
+                            .profileImg(sender.getProfileImg())
+                            .messageParts(parts)
+                            .redirectUrl(notification.getRedirectUrl())
+                            .isRead(notification.isRead())
+                            .createdAt(DateFormatUtil.formatDate(notification.getCreatedAt()))
+                            .build();
+                })
+                .toList();
 
         boolean hasNext = content.size() == size;
         Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;

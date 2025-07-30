@@ -5,16 +5,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class NotificationResponseDTO {
     private Long id; // 커서 기준
+    private boolean buttonField;
     private String profileImg;
-    private String nickname;
-    private String username;
-    private String message;
+    private List<MessagePart> messageParts;
     private String redirectUrl;
     private boolean isRead;
     private String createdAt;

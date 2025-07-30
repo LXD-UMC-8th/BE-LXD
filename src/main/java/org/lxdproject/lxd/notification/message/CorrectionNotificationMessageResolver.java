@@ -7,11 +7,14 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Locale;
 
 @Component
@@ -26,21 +29,33 @@ public class CorrectionNotificationMessageResolver implements NotificationMessag
     }
 
     @Override
-    public String resolveMessage(NotificationRequestDTO dto, Member sender, Locale locale) {
-        if (dto.getTargetType() != TargetType.CORRECTION) {
+    public List<MessagePart> resolveParts(Notification notification, Locale locale) {
+        if (notification.getTargetType() != TargetType.CORRECTION) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
 
-        Correction correction = correctionRepository.findById(dto.getTargetId())
+        Correction correction = correctionRepository.findById(notification.getTargetId())
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
 
+        String senderUsername = "@" + notification.getSender().getUsername();
         String diaryTitle = correction.getDiary().getTitle();
 
-        LocalizedMessageTemplate template = new LocalizedMessageTemplate(
-                "%s님이 %s 일기에 교정을 추가했습니다.",
-                "%s added a correction to the %s diary entry."
-        );
-
-        return template.format(sender.getNickname(), diaryTitle, locale);
+        if (locale.getLanguage().equals("en")) {
+            return List.of(
+                    new MessagePart("bold", senderUsername),
+                    new MessagePart("text", " added a correction to the "),
+                    new MessagePart("bold", diaryTitle),
+                    new MessagePart("text", " diary entry.")
+            );
+        } else {
+            return List.of(
+                    new MessagePart("bold", senderUsername),
+                    new MessagePart("text", "님이 "),
+                    new MessagePart("bold", diaryTitle),
+                    new MessagePart("text", " 일기에 교정을 추가했습니다.")
+            );
+        }
     }
+
+
 }
