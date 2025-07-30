@@ -45,14 +45,11 @@ public class NotificationSubscriber implements MessageListener {
             log.debug("[RedisSubscriber] 메시지 수신: {}", dto);
 
             // 클라이언트용 메시지 생성
-            Notification notification = notificationRepository.findById(dto.getNotificationId())
+            Notification notification = notificationRepository.findWithSenderAndReceiverById(dto.getNotificationId())
                     .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
 
-            Member sender = memberRepository.findById(dto.getSenderId())
-                    .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-            Member receiver = memberRepository.findById(dto.getReceiverId())
-                    .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+            Member sender = notification.getSender();
+            Member receiver = notification.getReceiver();
 
             // 알림 받는 사람의 언어를 기준으로 메시지 생성
             Locale locale = receiver.getNativeLanguage().toLocale();
