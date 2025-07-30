@@ -16,9 +16,6 @@ import java.util.Locale;
 @Component
 @RequiredArgsConstructor
 public class CorrectionCommentNotificationMessageResolver implements NotificationMessageResolver {
-
-    private final CorrectionCommentRepository correctionCommentRepository;
-
     @Override
     public boolean supports(NotificationType type) {
         return type == NotificationType.CORRECTION_REPLIED;

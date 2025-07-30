@@ -16,9 +16,6 @@ import java.util.Locale;
 @Component
 @RequiredArgsConstructor
 public class DiaryCommentNotificationMessageResolver implements NotificationMessageResolver {
-
-    private final DiaryCommentRepository diaryCommentRepository;
-
     @Override
     public boolean supports(NotificationType type) {
         return type == NotificationType.COMMENT_ADDED;
@@ -32,7 +29,6 @@ public class DiaryCommentNotificationMessageResolver implements NotificationMess
 
         String diaryTitle = event.getDiaryTitle();
         String senderUsername = "@" + event.getSenderUsername();
-
 
         if (locale.getLanguage().equals("en")) {
             return List.of(
