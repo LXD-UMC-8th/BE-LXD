@@ -1,8 +1,9 @@
 package org.lxdproject.lxd.notification.entity.enums;
 
 public enum NotificationType {
-    COMMENT,
-    LIKE,
     FRIEND_REQUEST,
-    CORRECTION
+    FRIEND_ACCEPTED,
+    COMMENT_ADDED,
+    CORRECTION_ADDED,
+    CORRECTION_REPLIED
 }
