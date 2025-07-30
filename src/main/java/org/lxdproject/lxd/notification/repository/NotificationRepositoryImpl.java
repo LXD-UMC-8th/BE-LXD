@@ -1,9 +1,11 @@
 package org.lxdproject.lxd.notification.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.correction.util.DateFormatUtil;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
@@ -32,22 +34,28 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
             where.and(notification.id.lt(lastId)); // 커서 조건 -> ID보다 작은 알림만
         }
 
-        return queryFactory
-                .select(Projections.constructor(NotificationResponseDTO.class,
-                        notification.id,
-                        sender.profileImg,
-                        sender.nickname,
-                        sender.username,
-                        notification.message,
-                        notification.redirectUrl,
-                        notification.isRead
-                ))
+        List<Tuple> results = queryFactory
+                .select(notification.id, sender.profileImg, sender.nickname, sender.username,
+                        notification.message, notification.redirectUrl, notification.isRead, notification.createdAt)
                 .from(notification)
                 .join(notification.sender, sender)
                 .where(where)
                 .orderBy(notification.id.desc())
                 .limit(size)
                 .fetch();
+
+        return results.stream()
+                .map(tuple -> new NotificationResponseDTO(
+                        tuple.get(notification.id),
+                        tuple.get(sender.profileImg),
+                        tuple.get(sender.nickname),
+                        tuple.get(sender.username),
+                        tuple.get(notification.message),
+                        tuple.get(notification.redirectUrl),
+                        tuple.get(notification.isRead),
+                        DateFormatUtil.formatDate(tuple.get(notification.createdAt))
+                ))
+                .toList();
     }
 
     @Override

@@ -17,5 +17,5 @@ public class NotificationResponseDTO {
     private String message;
     private String redirectUrl;
     private boolean isRead;
-
+    private String createdAt;
 }
