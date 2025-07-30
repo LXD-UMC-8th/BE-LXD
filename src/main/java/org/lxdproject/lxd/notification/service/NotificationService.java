@@ -114,15 +114,23 @@ public class NotificationService {
 
         List<NotificationResponseDTO> content = notifications.stream()
                 .map(notification -> {
-                    Member sender = notification.getSender();
                     Locale locale = member.getNativeLanguage().toLocale();
 
-                    List<MessagePart> parts = messageResolverManager.resolve(notification, locale);
+                    String senderUsername = "@" + notification.getSender().getUsername();
+                    String diaryTitle = getDiaryTitleIfExists(notification);
+
+                    NotificationMessageContext context = NotificationMessageContext.of(
+                            notification,
+                            senderUsername,
+                            diaryTitle
+                    );
+
+                    List<MessagePart> parts = messageResolverManager.resolve(context, locale);
 
                     return NotificationResponseDTO.builder()
                             .id(notification.getId())
                             .buttonField(notification.getNotificationType() == NotificationType.FRIEND_REQUEST)
-                            .profileImg(sender.getProfileImg())
+                            .profileImg(notification.getSender().getProfileImg())
                             .messageParts(parts)
                             .redirectUrl(notification.getRedirectUrl())
                             .isRead(notification.isRead())

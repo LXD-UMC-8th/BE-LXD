@@ -56,7 +56,7 @@ public class NotificationSubscriber implements MessageListener {
 
             // 알림 받는 사람의 언어를 기준으로 메시지 생성
             Locale locale = receiver.getNativeLanguage().toLocale();
-            List<MessagePart> parts = messageResolverManager.resolve(notification, locale);
+            List<MessagePart> parts = messageResolverManager.resolve(dto, locale);
 
             NotificationResponseDTO response = NotificationResponseDTO.builder()
                     .id(notification.getId())
