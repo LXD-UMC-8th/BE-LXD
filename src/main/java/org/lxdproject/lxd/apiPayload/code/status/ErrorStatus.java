@@ -40,6 +40,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 알림 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTIFICATION4001","알림을 찾을 수 없습니다."),
+    TARGET_TYPE_UNSUPPORTED(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4002","지원하지 않는 알림 TargetType 입니다."),
+    TARGET_TYPE_MISMATCH(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4003","알림 TargetType이 올바르지 않습니다."),
 
     // 교정 관련 에러
     CORRECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "CORRECTION4400", "교정을 찾을 수 없습니다."),
@@ -50,10 +52,6 @@ public enum ErrorStatus implements BaseErrorCode {
     PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4001","존재하지 않는 부모 댓글입니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4002","댓글을 찾을 수 없습니다."),
     COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
-
-    // 알림 관련 에러
-    TARGET_TYPE_UNSUPPORTED(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4001","지원하지 않는 알림 TargetType 입니다."),
-    TARGET_TYPE_MISMATCH(HttpStatus.NOT_ACCEPTABLE,"NOTIFICATION4002","알림 TargetType이 올바르지 않습니다."),
 
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
