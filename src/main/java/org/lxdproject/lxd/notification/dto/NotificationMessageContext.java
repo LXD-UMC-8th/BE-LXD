@@ -10,7 +10,7 @@ import org.lxdproject.lxd.notification.entity.enums.TargetType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class NotificationPublishEvent {
+public class NotificationMessageContext {
     private Long notificationId;
     private Long receiverId;
     private Long senderId;
@@ -20,8 +20,8 @@ public class NotificationPublishEvent {
     private Long targetId;
     private String diaryTitle;
 
-    public static NotificationPublishEvent of(Notification notification, String senderUsername, String diaryTitle) {
-        return NotificationPublishEvent.builder()
+    public static NotificationMessageContext of(Notification notification, String senderUsername, String diaryTitle) {
+        return NotificationMessageContext.builder()
                 .notificationId(notification.getId())
                 .receiverId(notification.getReceiver().getId())
                 .senderId(notification.getSender().getId())

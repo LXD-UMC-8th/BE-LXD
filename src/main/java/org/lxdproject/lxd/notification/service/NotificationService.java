@@ -23,8 +23,6 @@ import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +66,7 @@ public class NotificationService {
         String diaryTitle = getDiaryTitleIfExists(notification);
 
         // Notification을 기반으로 Redis에 발행되는 메시지 생성
-        NotificationPublishEvent publishEventDTO = NotificationPublishEvent.of(notification, senderUsername, diaryTitle);
+        NotificationMessageContext publishEventDTO = NotificationMessageContext.of(notification, senderUsername, diaryTitle);
 
         // Redis에 publish
         notificationPublisher.publish(publishEventDTO);

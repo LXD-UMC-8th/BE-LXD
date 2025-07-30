@@ -2,11 +2,8 @@ package org.lxdproject.lxd.notification.message;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.notification.dto.MessagePart;
-import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
-import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
-import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +19,7 @@ public class FriendNotificationMessageResolver implements NotificationMessageRes
     }
 
     @Override
-    public List<MessagePart> resolveParts(NotificationPublishEvent event, Locale locale) {
+    public List<MessagePart> resolveParts(NotificationMessageContext event, Locale locale) {
         String senderUsername = "@" + event.getSenderUsername();
         NotificationType type = event.getNotificationType();
 

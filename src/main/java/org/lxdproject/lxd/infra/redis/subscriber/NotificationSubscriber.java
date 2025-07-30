@@ -11,7 +11,7 @@ import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
-import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
+import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
@@ -40,7 +40,7 @@ public class NotificationSubscriber implements MessageListener {
         try {
             // Redis 메시지 수신
             String body = new String(message.getBody());
-            NotificationPublishEvent dto = objectMapper.readValue(body, NotificationPublishEvent.class);
+            NotificationMessageContext dto = objectMapper.readValue(body, NotificationMessageContext.class);
 
             log.debug("[RedisSubscriber] 메시지 수신: {}", dto);
 
