@@ -74,35 +74,17 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     protected String getDiaryTitleIfExists(Notification notification) {
+        Long targetId = notification.getTargetId();
 
-        // Todo. Projection으로 최적화 매우 필요
-        NotificationType type = notification.getNotificationType();
-
-        if (type == NotificationType.COMMENT_ADDED) {
-            DiaryComment comment = diaryCommentRepository.findById(notification.getTargetId())
-                    .orElse(null);
-            if (comment != null && comment.getDiary() != null) {
-                return comment.getDiary().getTitle();
-            }
-        }
-
-        if (type == NotificationType.CORRECTION_ADDED) {
-            Correction correction = correctionRepository.findById(notification.getTargetId())
-                    .orElse(null);
-            if (correction != null && correction.getDiary() != null) {
-                return correction.getDiary().getTitle();
-            }
-        }
-
-        if (type == NotificationType.CORRECTION_REPLIED) {
-            CorrectionComment correctionComment = correctionCommentRepository.findById(notification.getTargetId())
-                    .orElse(null);
-            if (correctionComment != null) {
-                return correctionComment.getCorrection().getDiary().getTitle();
-            }
-        }
-
-        return null; // 나머지는 title이 필요 없는 경우
+        return switch (notification.getNotificationType()) {
+            case COMMENT_ADDED ->
+                    diaryCommentRepository.findDiaryTitleByCommentId(targetId).orElse(null);
+            case CORRECTION_ADDED ->
+                    correctionRepository.findDiaryTitleByCorrectionId(targetId).orElse(null);
+            case CORRECTION_REPLIED ->
+                    correctionCommentRepository.findDiaryTitleByCorrectionCommentId(targetId).orElse(null);
+            default -> null;
+        };
     }
 
     public CursorPageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, Long lastId, int size) {
@@ -116,7 +98,7 @@ public class NotificationService {
                 .map(notification -> {
                     Locale locale = member.getNativeLanguage().toLocale();
 
-                    String senderUsername = "@" + notification.getSender().getUsername();
+                    String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
                     NotificationMessageContext context = NotificationMessageContext.of(
