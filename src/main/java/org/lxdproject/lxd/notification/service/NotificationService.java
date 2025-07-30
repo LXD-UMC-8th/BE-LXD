@@ -8,7 +8,13 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.correction.entity.Correction;
+import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
+import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
+import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
+import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
@@ -34,6 +40,9 @@ public class NotificationService {
     private final MemberRepository memberRepository;
     private final NotificationMessageResolverManager messageResolverManager;
     private final SseEmitterService sseEmitterService;
+    private final CorrectionCommentRepository correctionCommentRepository;
+    private final CorrectionRepository correctionRepository;
+    private final DiaryCommentRepository diaryCommentRepository;
 
     public void saveAndPublishNotification(NotificationRequestDTO dto) {
 
@@ -55,11 +64,47 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
+        String senderUsername = sender.getUsername();
+        String diaryTitle = getDiaryTitleIfExists(notification);
+
         // Notification을 기반으로 Redis에 발행되는 메시지 생성
-        NotificationPublishEvent publishEventDTO = NotificationPublishEvent.from(notification);
+        NotificationPublishEvent publishEventDTO = NotificationPublishEvent.of(notification, senderUsername, diaryTitle);
 
         // Redis에 publish
         notificationPublisher.publish(publishEventDTO);
+    }
+
+    @Transactional(readOnly = true)
+    protected String getDiaryTitleIfExists(Notification notification) {
+
+        // Todo. Projection으로 최적화 매우 필요
+        NotificationType type = notification.getNotificationType();
+
+        if (type == NotificationType.COMMENT_ADDED) {
+            DiaryComment comment = diaryCommentRepository.findById(notification.getTargetId())
+                    .orElse(null);
+            if (comment != null && comment.getDiary() != null) {
+                return comment.getDiary().getTitle();
+            }
+        }
+
+        if (type == NotificationType.CORRECTION_ADDED) {
+            Correction correction = correctionRepository.findById(notification.getTargetId())
+                    .orElse(null);
+            if (correction != null && correction.getDiary() != null) {
+                return correction.getDiary().getTitle();
+            }
+        }
+
+        if (type == NotificationType.CORRECTION_REPLIED) {
+            CorrectionComment correctionComment = correctionCommentRepository.findById(notification.getTargetId())
+                    .orElse(null);
+            if (correctionComment != null) {
+                return correctionComment.getCorrection().getDiary().getTitle();
+            }
+        }
+
+        return null; // 나머지는 title이 필요 없는 경우
     }
 
     public CursorPageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, Long lastId, int size) {

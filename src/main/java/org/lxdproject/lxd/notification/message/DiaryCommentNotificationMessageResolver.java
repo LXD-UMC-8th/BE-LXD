@@ -8,6 +8,7 @@ import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.notification.dto.MessagePart;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
@@ -29,16 +30,14 @@ public class DiaryCommentNotificationMessageResolver implements NotificationMess
     }
 
     @Override
-    public List<MessagePart> resolveParts(Notification notification, Locale locale) {
-        if (notification.getTargetType() != TargetType.DIARY_COMMENT) {
+    public List<MessagePart> resolveParts(NotificationPublishEvent event, Locale locale) {
+        if (event.getTargetType() != TargetType.DIARY_COMMENT) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
 
-        DiaryComment comment = diaryCommentRepository.findById(notification.getTargetId())
-                .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
+        String diaryTitle = event.getDiaryTitle();
+        String senderUsername = "@" + event.getSenderUsername();
 
-        String senderUsername = "@" + notification.getSender().getUsername();
-        String diaryTitle = comment.getDiary().getTitle();
 
         if (locale.getLanguage().equals("en")) {
             return List.of(

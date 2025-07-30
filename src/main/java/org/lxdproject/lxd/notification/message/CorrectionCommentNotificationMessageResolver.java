@@ -8,6 +8,7 @@ import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.notification.dto.MessagePart;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
@@ -29,16 +30,13 @@ public class CorrectionCommentNotificationMessageResolver implements Notificatio
     }
 
     @Override
-    public List<MessagePart> resolveParts(Notification notification, Locale locale) {
-        if (notification.getTargetType() != TargetType.CORRECTION_COMMENT) {
+    public List<MessagePart> resolveParts(NotificationPublishEvent event, Locale locale) {
+        if (event.getTargetType() != TargetType.CORRECTION_COMMENT) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
 
-        CorrectionComment comment = correctionCommentRepository.findById(notification.getTargetId())
-                .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
-
-        String diaryTitle = comment.getCorrection().getDiary().getTitle();
-        String senderUsername = "@" + notification.getSender().getUsername();
+        String diaryTitle = event.getDiaryTitle();
+        String senderUsername = "@" + event.getSenderUsername();
 
         if (locale.getLanguage().equals("en")) {
             return List.of(

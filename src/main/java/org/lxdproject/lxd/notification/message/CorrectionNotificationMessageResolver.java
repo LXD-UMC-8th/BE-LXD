@@ -8,6 +8,7 @@ import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.notification.dto.MessagePart;
+import org.lxdproject.lxd.notification.dto.NotificationPublishEvent;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
@@ -29,16 +30,13 @@ public class CorrectionNotificationMessageResolver implements NotificationMessag
     }
 
     @Override
-    public List<MessagePart> resolveParts(Notification notification, Locale locale) {
-        if (notification.getTargetType() != TargetType.CORRECTION) {
+    public List<MessagePart> resolveParts(NotificationPublishEvent event, Locale locale) {
+        if (event.getTargetType() != TargetType.CORRECTION) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
 
-        Correction correction = correctionRepository.findById(notification.getTargetId())
-                .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
-
-        String senderUsername = "@" + notification.getSender().getUsername();
-        String diaryTitle = correction.getDiary().getTitle();
+        String diaryTitle = event.getDiaryTitle();
+        String senderUsername = "@" + event.getSenderUsername();
 
         if (locale.getLanguage().equals("en")) {
             return List.of(
