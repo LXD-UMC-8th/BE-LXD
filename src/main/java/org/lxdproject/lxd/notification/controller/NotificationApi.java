@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
@@ -29,7 +30,7 @@ public interface NotificationApi {
 
     @Operation(summary = "테스트 알림 전송 API", description = "Redis로 테스트 알림 메시지를 전송합니다.")
     @PostMapping("/test")
-    public ApiResponse<String> testSend(@RequestBody NotificationRequestDTO requestDTO);
+    public ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO);
 
     @Operation(summary = "알림 목록 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping

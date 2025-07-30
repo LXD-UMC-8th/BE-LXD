@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.notification.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
@@ -30,7 +31,7 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<String> testSend(@RequestBody NotificationRequestDTO requestDTO) {
+    public ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO) {
         notificationService.saveAndPublishNotification(requestDTO);
         return ApiResponse.onSuccess("테스트 알림 발행 성공");
     }
