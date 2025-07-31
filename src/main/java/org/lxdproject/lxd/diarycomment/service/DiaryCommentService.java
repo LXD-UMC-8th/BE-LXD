@@ -7,6 +7,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.diarycomment.converter.DiaryCommentConverter;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.lxdproject.lxd.member.repository.FriendRepository;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +39,7 @@ public class DiaryCommentService {
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
     private final DiaryCommentLikeRepository likeRepository;
+    private final FriendRepository friendRepository;
 
     @Transactional
     public DiaryCommentResponseDTO writeComment(Long memberId, Long diaryId, DiaryCommentRequestDTO request) {
@@ -44,6 +47,21 @@ public class DiaryCommentService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+
+        Member diaryOwner = diary.getMember();
+        CommentPermission permission = diary.getCommentPermission();
+
+        //권한 확인
+
+        if (permission == CommentPermission.NONE && !member.equals(diaryOwner)) {
+            throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
+        }
+
+        if (permission == CommentPermission.FRIENDS && !member.equals(diaryOwner)) {
+            if (!friendRepository.existsFriendRelation(diaryOwner.getId(), member.getId())) {
+                throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
+            }
+        }
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
