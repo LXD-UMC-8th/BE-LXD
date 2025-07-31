@@ -55,6 +55,8 @@ public class DiaryCommentService {
             }
         }
 
+
+
         DiaryComment comment = DiaryComment.builder()
                 .member(member)
                 .diary(diary)
@@ -74,6 +76,8 @@ public class DiaryCommentService {
                 .profileImage(member.getProfileImg())
                 .commentText(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
+                .likeCount(saved.getLikeCount())
+                .isLiked(false)
                 .createdAt(saved.getCreatedAt())
                 .build();
     }
@@ -107,9 +111,11 @@ public class DiaryCommentService {
         List<DiaryCommentResponseDTO.Comment> commentDTOs =
                 DiaryCommentConverter.toCommentDtoTree(parents, repliesGroupedByParent, likedCommentIds);
 
+        int totalElements = parents.size() + allReplies.size();
+
         return DiaryCommentResponseDTO.CommentList.builder()
                 .content(commentDTOs)
-                .totalElements((int) parentComments.getTotalElements())
+                .totalElements(totalElements)
                 .build();
     }
 
@@ -123,6 +129,7 @@ public class DiaryCommentService {
 
         comment.softDelete();
         diary.decreaseCommentCount();
+
 
         return DiaryCommentDeleteResponseDTO.from(comment);
     }

@@ -27,14 +27,13 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
-    private final DiaryRepository diaryRepository;
 
     public FriendListResponseDTO getFriendList(Long memberId) {
 
         List<Member> friends = friendRepository.findFriendsByMemberId(memberId);
 
         List<FriendResponseDTO> friendDtos = friends.stream()
-                .map(friend -> new FriendResponseDTO(friend.getId(), friend.getUsername(), friend.getNickname()))
+                .map(friend -> new FriendResponseDTO(friend.getId(), friend.getUsername(), friend.getNickname(), friend.getProfileImg()))
                 .collect(Collectors.toList());
 
         return new FriendListResponseDTO(friendDtos.size(), friendDtos);
@@ -126,13 +125,13 @@ public class FriendService {
         List<FriendResponseDTO> sentDtos = sent.stream()
                 .map(req -> {
                     Member target = req.getReceiver();
-                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname());
+                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname(), target.getProfileImg());
                 }).toList();
 
         List<FriendResponseDTO> receivedDtos = received.stream()
                 .map(req -> {
                     Member target = req.getRequester();
-                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname());
+                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname(), target.getProfileImg());
                 }).toList();
 
         return new FriendRequestListResponseDTO(sentDtos.size(), receivedDtos.size(), sentDtos, receivedDtos);
