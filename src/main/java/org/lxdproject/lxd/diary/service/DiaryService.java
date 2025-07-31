@@ -112,6 +112,8 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
+        s3Uploader.deleteFileByUrl(diary.getThumbImg());
+
         if (!diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
