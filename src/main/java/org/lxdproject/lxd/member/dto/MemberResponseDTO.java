@@ -57,5 +57,11 @@ public class MemberResponseDTO {
         private String profileImg;
     }
 
+    @Builder
+    @Getter
+    public static class CheckUsernameResponseDTO {
+        private String username;
+        private boolean isDuplicated;
+    }
 
 }

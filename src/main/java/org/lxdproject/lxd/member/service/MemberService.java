@@ -77,4 +77,13 @@ public class MemberService {
                 .profileImg(member.getProfileImg())
                 .build();
     }
+
+    public MemberResponseDTO.CheckUsernameResponseDTO isUsernameDuplicated(String username) {
+        Boolean exists = memberRepository.existsByUsername(username);
+
+        return MemberResponseDTO.CheckUsernameResponseDTO.builder()
+                .username(username)
+                .isDuplicated(exists)
+                .build();
+    }
 }
