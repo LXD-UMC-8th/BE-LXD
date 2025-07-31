@@ -156,12 +156,17 @@ public class AuthService {
                     .build();
         }
 
-        // 기존 유저 -> 로그인 후 jwt 토큰 발급
+        // 기존 유저 -> 로그인 후 액세스 토큰 및 리프레쉬 토큰 발급
         String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+
+        // redis에 refreshToken 저장
+        redisService.setValues(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
                 .isNewMember(Boolean.FALSE) // 기존 유저
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
                         .email(member.getEmail())
