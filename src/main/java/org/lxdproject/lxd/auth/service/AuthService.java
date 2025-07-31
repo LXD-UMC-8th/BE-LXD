@@ -173,7 +173,8 @@ public class AuthService {
                         .username(member.getUsername())
                         .profileImg(member.getProfileImg())
                         .nickname(member.getNickname())
-                        .language(member.getLanguage().name())
+                        .nativeLanguage(member.getNativeLanguage().name())
+                        .studyLanguage(member.getLanguage().name())
                         .loginType(oAuthUserInfo.getLoginType())
                         .build())
                 .build();
