@@ -20,6 +20,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4312", "이미 존재하는 닉네임입니다."),
     PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4313", "개인정보 동의는 필수입니다."),
+    USERNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4314", "이미 존재하는 아이디입니다."),
 
     // 인증 관련 에러
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4300", "토큰이 올바르지 않습니다."),

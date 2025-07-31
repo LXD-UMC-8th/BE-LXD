@@ -33,6 +33,10 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 
+        if(memberRepository.existsByUsername(joinRequestDTO.getUsername())) {
+            throw new MemberHandler(ErrorStatus.USERNAME_DUPLICATION);
+        }
+
         if(memberRepository.existsByNickname(joinRequestDTO.getNickname())) {
             throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
         }
