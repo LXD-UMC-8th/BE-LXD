@@ -50,8 +50,8 @@ public class MemberRequestDTO {
         @Schema(description = "닉네임", example = "눈사람")
         String nickname;
 
-        @Schema(description = "프로필 이미지", example = "https://image.jpg")
-        String profileImg;
+        // @Schema(description = "프로필 이미지", example = "https://image.jpg")
+        // String profileImg;
 
         // 주사용언어
         @NotNull(message = "주 사용언어는 필수입니다.")
@@ -61,7 +61,7 @@ public class MemberRequestDTO {
         // 학습언어
         @NotNull(message = "학습언어는 필수입니다.")
         @Schema(description = "학습 언어", example = "KO")
-        private Language language;
+        private Language studyLanguage;
 
         @NotNull(message = "로그인 방식을 지정해주어야 합니다.")
         @Schema(description = "로그인 방식", example = "LOCAL")

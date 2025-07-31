@@ -6,12 +6,13 @@ import lombok.Getter;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 
-import java.time.LocalDateTime;
-
 @Getter
 @AllArgsConstructor
 @Builder
 public class DiarySummaryResponseDTO {
+    private String writerUsername;
+    private String writerNickname;
+    private String writerProfileImg;
     private Long diaryId;
     private String createdAt;
     private String title;

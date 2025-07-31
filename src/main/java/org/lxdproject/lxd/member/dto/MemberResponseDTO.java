@@ -39,8 +39,11 @@ public class MemberResponseDTO {
             @Schema(description = "프로필 이미지 URL")
             private String profileImg;
 
-            @Schema(description = "선택 언어 (KO, ENG 등)")
-            private String language;
+            @Schema(description = "주 사용언어", example = "KO")
+            private String nativeLanguage;
+
+            @Schema(description = "학습 언어", example = "ENG")
+            private String studyLanguage;
         }
     }
 
@@ -54,5 +57,11 @@ public class MemberResponseDTO {
         private String profileImg;
     }
 
+    @Builder
+    @Getter
+    public static class CheckUsernameResponseDTO {
+        private String username;
+        private boolean isDuplicated;
+    }
 
 }
