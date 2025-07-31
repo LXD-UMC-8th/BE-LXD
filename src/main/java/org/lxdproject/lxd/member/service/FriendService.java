@@ -137,34 +137,4 @@ public class FriendService {
 
         return new FriendRequestListResponseDTO(sentDtos.size(), receivedDtos.size(), sentDtos, receivedDtos);
     }
-
-    public FriendDetailResponseDTO getFriendDetail(Long currentUserId, Long friendId) {
-        if (currentUserId.equals(friendId)) {
-            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
-        }
-
-        boolean isFriend = friendRepository.existsFriendRelation(currentUserId, friendId);
-
-        Member friend = memberRepository.findById(friendId)
-                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-        List<Diary> diaries = diaryRepository.findByMemberIdAndVisibilityForViewer(friendId, isFriend);
-
-        List<MyDiarySummaryResponseDTO> diaryDtos = diaries.stream()
-                .map(d -> MyDiarySummaryResponseDTO.builder()
-                        .diaryId(d.getId())
-                        .createdAt(d.getCreatedAt().toString())
-                        .title(d.getTitle())
-                        .visibility(d.getVisibility())
-                        .thumbnailUrl(d.getThumbImg())
-                        .likeCount(d.getLikeCount())
-                        .commentCount(d.getCommentCount())
-                        .correctionCount(d.getCorrectionCount())
-                        .contentPreview(generateContentPreview(d.getContent()))
-                        .language(d.getLanguage())
-                        .build())
-                .toList();
-
-        return new FriendDetailResponseDTO(friend.getUsername(), friend.getNickname(), diaryDtos);
-    }
 }

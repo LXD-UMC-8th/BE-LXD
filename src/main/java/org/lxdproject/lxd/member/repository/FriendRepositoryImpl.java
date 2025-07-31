@@ -134,5 +134,4 @@ public class FriendRepositoryImpl implements FriendRepository {
                 )
                 .fetchFirst() != null;
     }
-
 }
