@@ -79,6 +79,9 @@ public class MemberService {
     }
 
     public MemberResponseDTO.CheckUsernameResponseDTO isUsernameDuplicated(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new MemberHandler(ErrorStatus.INVALID_USERNAME);
+        }
         Boolean exists = memberRepository.existsByUsername(username);
 
         return MemberResponseDTO.CheckUsernameResponseDTO.builder()
