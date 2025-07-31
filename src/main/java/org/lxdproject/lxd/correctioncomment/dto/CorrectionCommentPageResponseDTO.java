@@ -27,7 +27,6 @@ public class CorrectionCommentPageResponseDTO {
         private String profileImage;
         private String content;
         private int likeCount;
-        private boolean isLiked;
         private LocalDateTime createdAt;
         private List<Comment> replies;  //대댓글
     }

@@ -63,7 +63,6 @@ public class CorrectionCommentService {
                 .content(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
                 .likeCount(saved.getLikeCount())
-                .isLiked(false)
                 .createdAt(saved.getCreatedAt())
                 .build();
     }
@@ -103,7 +102,6 @@ public class CorrectionCommentService {
                                     .profileImage(child.getMember().getProfileImg())
                                     .content(child.getCommentText())
                                     .likeCount(child.getLikeCount())
-                                    .isLiked(false)
                                     .createdAt(child.getCreatedAt())
                                     .replies(List.of()) // 대대댓글 방지
                                     .build()
@@ -118,7 +116,6 @@ public class CorrectionCommentService {
                     .profileImage(parent.getMember().getProfileImg())
                     .content(parent.getCommentText())
                     .likeCount(parent.getLikeCount())
-                    .isLiked(false)
                     .createdAt(parent.getCreatedAt())
                     .replies(replyDtos)
                     .build();

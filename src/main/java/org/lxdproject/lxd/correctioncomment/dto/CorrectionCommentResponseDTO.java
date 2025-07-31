@@ -20,6 +20,5 @@ public class CorrectionCommentResponseDTO {
     private String content;
     private Long parentId;
     private int likeCount;
-    private boolean isLiked;
     private LocalDateTime createdAt;
 }
