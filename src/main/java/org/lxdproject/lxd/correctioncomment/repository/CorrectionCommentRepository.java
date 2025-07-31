@@ -1,34 +1,21 @@
 package org.lxdproject.lxd.correctioncomment.repository;
 
-import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
-import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentPageResponseDTO;
 import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
-import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CorrectionCommentRepository extends JpaRepository<CorrectionComment, Long> {
-
-    @Query("SELECT c FROM CorrectionComment c WHERE c.correction.id = :correctionId ORDER BY c.createdAt ASC")
-    Page<CorrectionComment> findByCorrectionIdWithOldestFirst(@Param("correctionId") Long correctionId, Pageable pageable);
-
-
-    // 부모 댓글 페이징
-    Page<CorrectionComment> findByCorrectionIdAndParentIsNull(Long correctionId, Pageable pageable);
-
-    // 자식 댓글 일괄 조회
-    List<CorrectionComment> findByCorrectionIdIn(List<Long> parentIds);
-
+    Page<CorrectionComment> findByCorrectionIdAndParentIsNull(Long correctionId, Pageable pageable); // 부모 댓글 페이징
+    List<CorrectionComment> findByCorrectionIdIn(List<Long> parentIds); // 자식 댓글 일괄 조회
     List<CorrectionComment> findByParentIdIn(List<Long> parentIds);
+    @Query("SELECT cc.correction.diary.title FROM CorrectionComment cc WHERE cc.id = :id AND cc.correction IS NOT NULL AND cc.correction.diary IS NOT NULL")
+    Optional<String> findDiaryTitleByCorrectionCommentId(@Param("id") Long id);
 
 }
 
