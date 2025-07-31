@@ -59,6 +59,7 @@ public class Member extends BaseEntity {
     private String email;
 
     // 닉네임
+    @Setter
     @Column(nullable = false, length = 20, unique = true)
     private String nickname;
 

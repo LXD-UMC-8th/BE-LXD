@@ -19,6 +19,11 @@ import java.util.List;
 public class MemberRequestDTO {
 
     @Getter
+    public static class ProfileUpdateDTO {
+        String nickname;
+    }
+
+    @Getter
     @Schema(description = "회원가입을 위한 RequestDTO")
     public static class JoinRequestDTO{
 
