@@ -31,5 +31,5 @@ public interface MemberApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일, 닉네임 중복", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
 
     })
-    public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(@RequestPart @Valid MemberRequestDTO.JoinRequestDTO joinRequestDTO, @RequestPart MultipartFile profileImg);
+    public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(@RequestPart(value = "data") @Valid MemberRequestDTO.JoinRequestDTO joinRequestDTO, @RequestPart(required = false) MultipartFile profileImg);
 }
