@@ -39,7 +39,10 @@ public class MemberController implements MemberApi {
     }
 
     @Override
-    public ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(@RequestPart(value = "data") MemberRequestDTO.ProfileUpdateDTO updateDTO, @RequestPart(required = false) MultipartFile profileImg) {
+    public ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(
+            @RequestPart(value = "data", required = false) MemberRequestDTO.ProfileUpdateDTO updateDTO,
+            @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
+    ) {
         return ApiResponse.onSuccess(memberService.updateMemberInfo(updateDTO, profileImg));
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @Service
@@ -99,11 +100,17 @@ public class MemberService {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(currentMemberId).orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        if (StringUtils.hasText(profileUpdateDTO.getNickname()) && !profileUpdateDTO.getNickname().equals(member.getNickname())) {
-            if (memberRepository.existsByNickname(profileUpdateDTO.getNickname())) {
-                throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
+        if (profileUpdateDTO != null) {
+            String newNickname = profileUpdateDTO.getNickname();
+            if (newNickname != null && !newNickname.equals(member.getNickname())) {
+                if (!StringUtils.hasText(newNickname)) {
+                    throw new MemberHandler(ErrorStatus.INVALID_NICKNAME);
+                }
+                if (memberRepository.existsByNickname(newNickname)) {
+                    throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
+                }
+                member.setNickname(newNickname);
             }
-            member.setNickname(profileUpdateDTO.getNickname());
         }
 
         if (profileImg != null && !profileImg.isEmpty()) {

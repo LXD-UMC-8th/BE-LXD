@@ -1,21 +1,15 @@
 package org.lxdproject.lxd.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
-import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.service.MemberService;
 import org.springframework.http.MediaType;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,7 +45,7 @@ public interface MemberApi {
     })
     public ApiResponse<MemberResponseDTO.CheckUsernameResponseDTO> checkUsername(@RequestParam String username);
 
-    @PostMapping(
+    @PatchMapping (
             value    = "/profile",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
     )
@@ -66,7 +60,7 @@ public interface MemberApi {
     )
     ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(
 
-            @RequestPart("data") MemberRequestDTO.ProfileUpdateDTO updateDTO,
+            @RequestPart(value = "data", required = false) MemberRequestDTO.ProfileUpdateDTO updateDTO,
             @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
     );
 }
