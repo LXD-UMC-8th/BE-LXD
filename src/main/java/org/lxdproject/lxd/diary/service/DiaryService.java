@@ -11,9 +11,11 @@ import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
+import org.lxdproject.lxd.diary.entity.enums.RelationType;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.repository.FriendRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,7 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
     private final S3Uploader s3Uploader;
+    private final FriendRepository friendRepository;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -137,5 +140,31 @@ public class DiaryService {
     public DiarySliceResponseDTO getExploreDiaries(Pageable pageable, Language language) {
         Long userId = SecurityUtil.getCurrentMemberId();
         return diaryRepository.findExploreDiaries(userId, language, pageable);
+    }
+
+    public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Long diaryCount = diaryRepository.countByMemberId(targetMemberId);
+        Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
+
+        RelationType relation;
+        if (targetMemberId.equals(currentMemberId)) {
+            relation = RelationType.SELF;
+        } else if (friendRepository.existsFriendRelation(targetMemberId, currentMemberId)) {
+            relation = RelationType.FRIEND;
+        } else {
+            relation = RelationType.NONE;
+        }
+
+        return MemberDiarySummaryResponseDTO.builder()
+                .profileImg(member.getProfileImg())
+                .username(member.getUsername())
+                .nickname(member.getNickname())
+                .diaryCount(diaryCount)
+                .friendCount(friendCount)
+                .relation(relation)
+                .build();
     }
 }
