@@ -27,9 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CorrectionCommentService {
 
-
-    //생성
-
     private final CorrectionCommentRepository commentRepository;
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
@@ -54,6 +51,7 @@ public class CorrectionCommentService {
         CorrectionComment comment = CorrectionComment.builder()
                 .member(member)
                 .correction(correction)
+                .parent(parent)
                 .commentText(request.getCommentText())
                 .likeCount(0)
                 .build();
@@ -76,59 +74,67 @@ public class CorrectionCommentService {
     //조회
     @Transactional(readOnly = true)
     public CorrectionCommentPageResponseDTO getComments(Long correctionId, Long memberId, Pageable pageable) {
-        // 부모 댓글만 조회
+        // 부모 댓글 조회
         Page<CorrectionComment> parentComments = commentRepository.findByCorrectionIdAndParentIsNull(correctionId, pageable);
+        List<CorrectionComment> parents = parentComments.getContent();
 
-        List<Long> parentIds = parentComments.getContent().stream()
+        // 부모 ID 목록
+        List<Long> parentIds = parents.stream()
                 .map(CorrectionComment::getId)
                 .toList();
 
-        List<CorrectionComment> childComments = commentRepository.findByParentIdIn(parentIds);
+        // 대댓글 일괄 조회
+        List<CorrectionComment> childComments = parentIds.isEmpty() ? List.of() :
+                commentRepository.findByParentIdIn(parentIds);
 
-        Map<Long, List<CorrectionComment>> groupedChildren = childComments.stream()
+        // 대댓글을 parentId 기준으로 그룹핑
+        Map<Long, List<CorrectionComment>> groupedReplies = childComments.stream()
                 .filter(c -> !c.isDeleted())
                 .collect(Collectors.groupingBy(c -> c.getParent().getId()));
 
-        // 댓글 1개씩 DTO로 변환 (대댓글 없이)
-        List<CorrectionCommentResponseDTO> flatCommentList = new java.util.ArrayList<>();
+        // DTO 트리 구조 생성
+        List<CorrectionCommentPageResponseDTO.Comment> result = parents.stream().map(parent -> {
+            // 대댓글 DTO 목록
+            List<CorrectionCommentPageResponseDTO.Comment> replyDtos = groupedReplies.getOrDefault(parent.getId(), List.of())
+                    .stream().map(child ->
+                            CorrectionCommentPageResponseDTO.Comment.builder()
+                                    .commentId(child.getId())
+                                    .parentId(parent.getId())
+                                    .userId(child.getMember().getId())
+                                    .nickname(child.getMember().getNickname())
+                                    .profileImage(child.getMember().getProfileImg())
+                                    .content(child.getCommentText())
+                                    .likeCount(child.getLikeCount())
+                                    .isLiked(false)
+                                    .createdAt(child.getCreatedAt())
+                                    .replies(List.of()) // 대대댓글 방지
+                                    .build()
+                    ).toList();
 
-        for (CorrectionComment parent : parentComments.getContent()) {
-            // 부모 댓글
-            CorrectionCommentResponseDTO parentDTO = CorrectionCommentResponseDTO.builder()
+            // 부모 댓글에 replies 세팅
+            return CorrectionCommentPageResponseDTO.Comment.builder()
                     .commentId(parent.getId())
+                    .parentId(null)
+                    .userId(parent.getMember().getId())
                     .nickname(parent.getMember().getNickname())
                     .profileImage(parent.getMember().getProfileImg())
                     .content(parent.getCommentText())
-                    .parentId(null)
                     .likeCount(parent.getLikeCount())
                     .isLiked(false)
                     .createdAt(parent.getCreatedAt())
+                    .replies(replyDtos)
                     .build();
+        }).toList();
 
-            flatCommentList.add(parentDTO);
-
-            // 자식 댓글들
-            List<CorrectionComment> children = groupedChildren.getOrDefault(parent.getId(), List.of());
-            for (CorrectionComment child : children) {
-                CorrectionCommentResponseDTO childDTO = CorrectionCommentResponseDTO.builder()
-                        .commentId(child.getId())
-                        .nickname(child.getMember().getNickname())
-                        .profileImage(child.getMember().getProfileImg())
-                        .content(child.getCommentText())
-                        .parentId(parent.getId())
-                        .likeCount(child.getLikeCount())
-                        .isLiked(false)
-                        .createdAt(child.getCreatedAt())
-                        .build();
-                flatCommentList.add(childDTO);
-            }
-        }
+        int totalElements = parents.size() + childComments.size();
 
         return CorrectionCommentPageResponseDTO.builder()
-                .replies(flatCommentList)
-                .totalElements(parentComments.getTotalElements())
+                .replies(result)
+                .totalElements(totalElements)
                 .build();
     }
+
+
 
 
 

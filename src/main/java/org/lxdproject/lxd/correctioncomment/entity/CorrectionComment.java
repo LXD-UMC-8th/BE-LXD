@@ -23,7 +23,7 @@ public class CorrectionComment extends BaseEntity {
 
     // 연관관계: 유저
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     // 연관관계: 교정

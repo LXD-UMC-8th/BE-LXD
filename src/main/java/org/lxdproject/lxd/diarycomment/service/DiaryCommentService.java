@@ -109,9 +109,11 @@ public class DiaryCommentService {
         List<DiaryCommentResponseDTO.Comment> commentDTOs =
                 DiaryCommentConverter.toCommentDtoTree(parents, repliesGroupedByParent, likedCommentIds);
 
+        int totalElements = parents.size() + allReplies.size();
+
         return DiaryCommentResponseDTO.CommentList.builder()
                 .content(commentDTOs)
-                .totalElements((int) parentComments.getTotalElements())
+                .totalElements(totalElements)
                 .build();
     }
 
@@ -125,6 +127,7 @@ public class DiaryCommentService {
 
         comment.softDelete();
         diary.decreaseCommentCount();
+
 
         return DiaryCommentDeleteResponseDTO.from(comment);
     }

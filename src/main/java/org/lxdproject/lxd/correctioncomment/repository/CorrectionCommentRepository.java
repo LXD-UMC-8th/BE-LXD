@@ -1,9 +1,15 @@
 package org.lxdproject.lxd.correctioncomment.repository;
 
+import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentPageResponseDTO;
 import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,5 +29,6 @@ public interface CorrectionCommentRepository extends JpaRepository<CorrectionCom
     List<CorrectionComment> findByCorrectionIdIn(List<Long> parentIds);
 
     List<CorrectionComment> findByParentIdIn(List<Long> parentIds);
+
 }
 
