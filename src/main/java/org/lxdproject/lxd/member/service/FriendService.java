@@ -27,7 +27,6 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
-//    private final DiaryRepository diaryRepository;
 
     public FriendListResponseDTO getFriendList(Long memberId) {
 
