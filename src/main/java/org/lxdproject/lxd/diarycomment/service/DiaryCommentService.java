@@ -55,6 +55,8 @@ public class DiaryCommentService {
             }
         }
 
+
+
         DiaryComment comment = DiaryComment.builder()
                 .member(member)
                 .diary(diary)
