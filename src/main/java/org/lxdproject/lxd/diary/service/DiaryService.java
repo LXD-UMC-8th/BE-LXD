@@ -142,7 +142,7 @@ public class DiaryService {
 
     public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                               .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         Long diaryCount = diaryRepository.countByMemberId(targetMemberId);
 
