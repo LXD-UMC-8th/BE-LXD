@@ -30,7 +30,5 @@ public interface CorrectionCommentRepository extends JpaRepository<CorrectionCom
 
     List<CorrectionComment> findByParentIdIn(List<Long> parentIds);
 
-    List<CorrectionComment> findByParentIdInAndIsDeletedFalse(List<Long> parentIds);
-
 }
 

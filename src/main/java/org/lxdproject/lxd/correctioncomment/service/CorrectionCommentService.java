@@ -87,7 +87,7 @@ public class CorrectionCommentService {
 
         // 대댓글을 parentId 기준으로 그룹핑
         Map<Long, List<CorrectionComment>> groupedReplies = childComments.stream()
-                .filter(c -> !c.isDeleted())
+                //.filter(c -> !c.isDeleted())   대댓글은 그냥 삭제시키고 싶으면 이 코드 사용
                 .collect(Collectors.groupingBy(c -> c.getParent().getId()));
 
         // DTO 트리 구조 생성
