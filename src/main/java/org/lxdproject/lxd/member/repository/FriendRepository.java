@@ -10,5 +10,4 @@ public interface FriendRepository {
     void saveFriendship(Member requester, Member receiver);
     void softDeleteFriendship(Member m1, Member m2);
     boolean existsFriendRelation(Long memberId, Long friendId);
-    Long countFriendsByMemberId(Long memberId);
 }

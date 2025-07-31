@@ -134,17 +134,4 @@ public class FriendRepositoryImpl implements FriendRepository {
                 )
                 .fetchFirst() != null;
     }
-
-    @Override
-    public Long countFriendsByMemberId(Long memberId) {
-        return queryFactory
-                .select(friendship.count())
-                .from(friendship)
-                .where(
-                        friendship.deletedAt.isNull(),
-                        friendship.requester.id.eq(memberId)
-                                .or(friendship.receiver.id.eq(memberId))
-                )
-                .fetchOne();
-    }
 }

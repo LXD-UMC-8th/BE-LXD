@@ -11,6 +11,6 @@ public class MemberDiarySummaryResponseDTO {
     private String username;
     private String nickname;
     private Long diaryCount;
-    private Long friendCount;
+    private Integer friendCount;
     private RelationType relation;
 }
