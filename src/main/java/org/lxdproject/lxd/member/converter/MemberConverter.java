@@ -18,7 +18,8 @@ public class MemberConverter {
                         .username(member.getUsername())
                         .nickname(member.getNickname())
                         .profileImg(member.getProfileImg())
-                        .language(member.getLanguage().name())
+                        .nativeLanguage(member.getNativeLanguage().name())
+                        .studyLanguage(member.getLanguage().name())
                         .build())
                 .build();
     }
@@ -26,7 +27,7 @@ public class MemberConverter {
     public static Member toMember(MemberRequestDTO.JoinRequestDTO joinRequestDTO, String profileURL, String encryptedPassword) {
         return Member.builder()
                 .nativeLanguage(joinRequestDTO.getNativeLanguage())
-                .language(joinRequestDTO.getLanguage())
+                .language(joinRequestDTO.getStudyLanguage())
                 .role(Role.USER)
                 .username(joinRequestDTO.getUsername())
                 .password(encryptedPassword)

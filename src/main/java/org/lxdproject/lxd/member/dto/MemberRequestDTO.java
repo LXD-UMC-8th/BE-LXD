@@ -56,7 +56,7 @@ public class MemberRequestDTO {
         // 학습언어
         @NotNull(message = "학습언어는 필수입니다.")
         @Schema(description = "학습 언어", example = "KO")
-        private Language language;
+        private Language studyLanguage;
 
         @NotNull(message = "로그인 방식을 지정해주어야 합니다.")
         @Schema(description = "로그인 방식", example = "LOCAL")
