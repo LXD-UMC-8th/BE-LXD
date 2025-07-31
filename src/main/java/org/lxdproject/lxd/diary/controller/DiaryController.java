@@ -101,12 +101,12 @@ public class DiaryController implements DiaryApi{
     @GetMapping("/me/diary-summary")
     public MemberDiarySummaryResponseDTO getMyDiarySummary() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return memberService.getDiarySummary(currentMemberId, currentMemberId);
+        return diaryService.getDiarySummary(currentMemberId, currentMemberId);
     }
 
     @GetMapping("/{memberId}/diary-summary")
     public MemberDiarySummaryResponseDTO getUserDiarySummary(@PathVariable Long memberId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return memberService.getDiarySummary(memberId, currentMemberId);
+        return diaryService.getDiarySummary(memberId, currentMemberId);
     }
 }
