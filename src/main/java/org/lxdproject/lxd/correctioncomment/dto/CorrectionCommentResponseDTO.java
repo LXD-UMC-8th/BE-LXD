@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CorrectionCommentResponseDTO {
     private Long commentId;
-    private int userId;
+    private Long userId;
     private String nickname;
     private String profileImage;
     private String content;

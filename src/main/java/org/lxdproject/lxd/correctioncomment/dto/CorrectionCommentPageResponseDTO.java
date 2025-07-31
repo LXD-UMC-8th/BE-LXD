@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class CorrectionCommentPageResponseDTO {
     private List<Comment> replies;
-    private int totalElements;
+    private Long totalElements;
 
     @Getter
     @Builder(toBuilder = true)

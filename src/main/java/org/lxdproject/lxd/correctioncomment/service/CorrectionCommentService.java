@@ -5,13 +5,11 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.correctioncomment.dto.*;
 import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
-import org.lxdproject.lxd.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.Page;
@@ -126,7 +124,7 @@ public class CorrectionCommentService {
                     .build();
         }).toList();
 
-        int totalElements = parents.size() + childComments.size();
+        long totalElements = parents.size() + childComments.size();
 
         return CorrectionCommentPageResponseDTO.builder()
                 .replies(result)
