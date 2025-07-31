@@ -16,6 +16,8 @@ public class DiaryCommentResponseDTO {
     private String profileImage;
     private String commentText;
     private Long parentId; // nullable
+    private int likeCount;
+    private boolean isLiked;
     private LocalDateTime createdAt;
 
     @Getter
@@ -32,8 +34,7 @@ public class DiaryCommentResponseDTO {
         private int likeCount;
         private boolean isLiked;
         private LocalDateTime createdAt;
-        private List<Comment> replies;
-
+        private List<Comment> replies;  //대댓글
     }
 
     @Getter
