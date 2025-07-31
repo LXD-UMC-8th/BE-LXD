@@ -3,7 +3,7 @@ package org.lxdproject.lxd.diary.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
