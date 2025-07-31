@@ -1,7 +1,6 @@
 package org.lxdproject.lxd.diary.service;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
@@ -64,7 +63,6 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        // 비공개 일기의 경우 작성자만 접근 가능
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         if (diary.getVisibility() == Visibility.PRIVATE && !diary.getMember().getId().equals(currentMemberId)) {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
@@ -168,5 +166,10 @@ public class DiaryService {
                 .friendCount(friendCount)
                 .relation(relation)
                 .build();
+    }
+
+    public MyDiarySliceResponseDTO getDiariesByMemberId(Long memberId, Pageable pageable) {
+        Long userId = SecurityUtil.getCurrentMemberId();
+        return diaryRepository.getDiariesByMemberId(userId, memberId, pageable);
     }
 }

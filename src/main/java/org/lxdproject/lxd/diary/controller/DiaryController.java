@@ -111,4 +111,13 @@ public class DiaryController implements DiaryApi{
         MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(memberId, currentMemberId);
         return ApiResponse.onSuccess(response);
     }
+
+    @Override
+    public ApiResponse<MyDiarySliceResponseDTO> getDiariesByMemberId(@PathVariable Long memberId,
+                                                                     @RequestParam("page") int page,
+                                                                     @RequestParam("size") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        MyDiarySliceResponseDTO response = diaryService.getDiariesByMemberId(memberId, pageable);
+        return ApiResponse.onSuccess(response);
+    }
 }

@@ -1,8 +1,6 @@
 package org.lxdproject.lxd.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -66,18 +64,4 @@ public interface FriendApi {
     })
     @GetMapping("/requests")
     ApiResponse<FriendRequestListResponseDTO> getFriendRequestList();
-
-    @GetMapping("/{friendId}")
-    @Operation(summary = "친구 상세 조회 API", description = "친구의 username, nickname, 공개 일기 목록을 조회합니다.")
-    @Parameters({
-            @Parameter(name = "friendId", description = "조회할 친구의 ID", required = true)
-    })
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 상세 조회 성공",
-                    content = @Content(schema = @Schema(implementation = FriendDetailResponseDTO.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구를 찾을 수 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "친구가 아님"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    ApiResponse<FriendDetailResponseDTO> getFriendDetail(@PathVariable("friendId") Long friendId);
 }

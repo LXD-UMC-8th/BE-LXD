@@ -206,4 +206,18 @@ public interface DiaryApi {
     })
     @GetMapping("/{memberId}/diary-summary")
     ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(@PathVariable Long memberId);
+
+    @GetMapping("/member/{memberId}")
+    @Operation(summary = "작성자 별 작성 일기 목록 조회 API", description = "작성자의 일기 목록을 조회합니다.")
+    @Parameters({
+            @Parameter(name = "memberId", description = "조회할 작성자의 ID", required = true)
+    })
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 상세 조회 성공",
+                    content = @Content(schema = @Schema(implementation = MyDiarySliceResponseDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구를 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "친구가 아님"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    ApiResponse<MyDiarySliceResponseDTO> getDiariesByMemberId(@PathVariable("memberId") Long memberId, int page, int size);
 }
