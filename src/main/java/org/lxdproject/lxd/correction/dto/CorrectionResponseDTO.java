@@ -61,7 +61,7 @@ public class CorrectionResponseDTO {
         private String thumbImg;
         private String createdAt;
         private String userId;
-        private String userNickname;
+        private String userProfileImg;
 
         public static DiaryInfo from(Diary diary) {
             return DiaryInfo.builder()
@@ -70,7 +70,7 @@ public class CorrectionResponseDTO {
                     .thumbImg(diary.getThumbImg())
                     .createdAt(DateFormatUtil.formatDate(diary.getCreatedAt()))
                     .userId(diary.getMember().getUsername())
-                    .userNickname(diary.getMember().getNickname())
+                    .userProfileImg(diary.getMember().getProfileImg())
                     .build();
         }
     }
