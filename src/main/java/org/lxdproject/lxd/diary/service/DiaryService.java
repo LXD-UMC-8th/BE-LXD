@@ -22,9 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import name.fraser.neil.plaintext.diff_match_patch;
 
 @Service
 @RequiredArgsConstructor
@@ -112,15 +115,47 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        s3Uploader.deleteFileByUrl(diary.getThumbImg());
-
         if (!diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
+        s3Uploader.deleteFileByUrl(diary.getThumbImg());
+
+        String diffHtmlContent = generateDiffHtml(diary.getContent(), request.getContent());
+
+        request.setContent(diffHtmlContent);
+
         diary.update(request);
         Diary updated = diaryRepository.save(diary);
+
         return DiaryDetailResponseDTO.from(updated);
+    }
+
+    private String generateDiffHtml(String oldContent, String newContent) {
+        diff_match_patch dmp = new diff_match_patch();
+
+        // 라이브러리 활용해서 content 간의 diff 계산
+        LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main(oldContent, newContent);
+        dmp.diff_cleanupSemantic(diffs);
+
+        // 라이브러리에서 삽입하는 스타일 태그 제거
+        StringBuilder html = new StringBuilder();
+        for (diff_match_patch.Diff diff : diffs) {
+            String text = diff.text;
+
+            switch (diff.operation) {
+                case INSERT:
+                    html.append("<ins>").append(text).append("</ins>");
+                    break;
+                case DELETE:
+                    html.append("<del>").append(text).append("</del>");
+                    break;
+                case EQUAL:
+                    html.append(text);
+                    break;
+            }
+        }
+        return html.toString();
     }
 
     public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
