@@ -121,14 +121,16 @@ public class DiaryService {
 
         s3Uploader.deleteFileByUrl(diary.getThumbImg());
 
-        String diffHtmlContent = generateDiffHtml(diary.getContent(), request.getContent());
+        String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
 
-        request.setContent(diffHtmlContent);
-
+        // DB에 새로운 내용 저장
         diary.update(request);
         Diary updated = diaryRepository.save(diary);
 
-        return DiaryDetailResponseDTO.from(updated);
+        // diff 계산
+        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
+
+        return DiaryDetailResponseDTO.fromWithDiff(updated, diffHtmlContent);
     }
 
     private String generateDiffHtml(String oldContent, String newContent) {
