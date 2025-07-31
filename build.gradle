@@ -69,9 +69,6 @@ dependencies {
 	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
 	annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
 	annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-
-	// diff-match-patch
-	implementation 'name.fraser.neil.plaintext:diff-match-patch:1.0'
 }
 
 tasks.named('test') {
