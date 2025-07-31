@@ -81,19 +81,11 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-//        List<String> urls = extractImageUrls(diary.getContent());
-//        List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
-//        s3Uploader.deleteFiles(keys);
-
-        deleteImagesInContentFromS3(diary.getContent());
-
-        diary.softDelete();
-    }
-
-    private void deleteImagesInContentFromS3(String htmlContent) {
-        List<String> urls = extractImageUrls(htmlContent);
+        List<String> urls = extractImageUrls(diary.getContent());
         List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
         s3Uploader.deleteFiles(keys);
+
+        diary.softDelete();
     }
 
     private static final Pattern IMG_URL_PATTERN = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
