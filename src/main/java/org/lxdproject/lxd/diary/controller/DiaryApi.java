@@ -189,4 +189,21 @@ public interface DiaryApi {
             @RequestParam(defaultValue = "10") @Min(1) int size,
             @RequestParam(required = false) Language language
     );
+
+    @Operation(summary = "내 다이어리 요약 조회 API", description = "로그인한 사용자의 다이어리 요약 정보를 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 누락 또는 만료", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
+    @GetMapping("/me/diary-summary")
+    ApiResponse<MemberDiarySummaryResponseDTO> getMyDiarySummary();
+
+    @Operation(summary = "특정 사용자 다이어리 요약 조회 API", description = "사용자 ID를 기반으로 다이어리 요약 정보를 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 누락 또는 만료", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자 ID에 해당하는 회원이 존재하지 않음", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @GetMapping("/{memberId}/diary-summary")
+    ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(@PathVariable Long memberId);
 }

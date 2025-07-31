@@ -98,15 +98,17 @@ public class DiaryController implements DiaryApi{
         return ApiResponse.onSuccess(result);
     }
 
-    @GetMapping("/me/diary-summary")
-    public MemberDiarySummaryResponseDTO getMyDiarySummary() {
+    @Override
+    public ApiResponse<MemberDiarySummaryResponseDTO> getMyDiarySummary() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return diaryService.getDiarySummary(currentMemberId, currentMemberId);
+        MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(currentMemberId, currentMemberId);
+        return ApiResponse.onSuccess(response);
     }
 
-    @GetMapping("/{memberId}/diary-summary")
-    public MemberDiarySummaryResponseDTO getUserDiarySummary(@PathVariable Long memberId) {
+    @Override
+    public ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(Long memberId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return diaryService.getDiarySummary(memberId, currentMemberId);
+        MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(memberId, currentMemberId);
+        return ApiResponse.onSuccess(response);
     }
 }
