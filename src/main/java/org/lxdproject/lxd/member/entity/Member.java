@@ -8,7 +8,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.entity.enums.Language;
-import org.lxdproject.lxd.diary.entity.mapping.DiaryLike;
+import org.lxdproject.lxd.diarylike.entity.DiaryLike;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.entity.enums.Role;
 import org.lxdproject.lxd.member.entity.enums.Status;
