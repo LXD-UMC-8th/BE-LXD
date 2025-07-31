@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
-import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;

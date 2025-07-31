@@ -1,9 +1,8 @@
-package org.lxdproject.lxd.auth.service.oauth;
+package org.lxdproject.lxd.auth.service.oauthClient;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleTokenResponse;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
-import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -11,10 +10,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Component

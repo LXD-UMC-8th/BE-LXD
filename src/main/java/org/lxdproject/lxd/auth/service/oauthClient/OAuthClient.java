@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.auth.service.oauth;
+package org.lxdproject.lxd.auth.service.oauthClient;
 
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 
