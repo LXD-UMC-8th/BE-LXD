@@ -28,7 +28,7 @@ public class CorrectionCommentService {
     private final CorrectionCommentRepository commentRepository;
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
-    //like구현필요 likeRepository
+
 
     public CorrectionCommentResponseDTO writeComment(Long memberId, Long correctionId, CorrectionCommentRequestDTO request) {
         Member member = memberRepository.findById(memberId)
@@ -131,10 +131,6 @@ public class CorrectionCommentService {
                 .totalElements(totalElements)
                 .build();
     }
-
-
-
-
 
 
     //삭제
