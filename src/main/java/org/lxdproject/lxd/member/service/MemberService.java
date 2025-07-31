@@ -12,6 +12,7 @@ import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO) {
+    public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
 
         if(!joinRequestDTO.getIsPrivacyAgreed().equals(Boolean.TRUE)){

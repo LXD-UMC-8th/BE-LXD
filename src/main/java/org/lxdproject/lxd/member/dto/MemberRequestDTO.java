@@ -45,8 +45,8 @@ public class MemberRequestDTO {
         @Schema(description = "닉네임", example = "눈사람")
         String nickname;
 
-        @Schema(description = "프로필 이미지", example = "https://image.jpg")
-        String profileImg;
+        // @Schema(description = "프로필 이미지", example = "https://image.jpg")
+        // String profileImg;
 
         // 주사용언어
         @NotNull(message = "주 사용언어는 필수입니다.")
