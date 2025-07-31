@@ -62,9 +62,13 @@ public class AuthService {
 
         // 인증 완료 후, 토큰 생성
         String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+
+        redisService.setValues(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
+                refreshToken,
                 member
         );
     }
