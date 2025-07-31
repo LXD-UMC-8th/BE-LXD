@@ -11,6 +11,7 @@ import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
+import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
@@ -61,8 +62,8 @@ public class AuthService {
         }
 
         // 인증 완료 후, 토큰 생성
-        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
-        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
 
         redisService.setValues(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
@@ -157,8 +158,8 @@ public class AuthService {
         }
 
         // 기존 유저 -> 로그인 후 액세스 토큰 및 리프레쉬 토큰 발급
-        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
-        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
 
         // redis에 refreshToken 저장
         redisService.setValues(refreshToken, member.getEmail(), Duration.ofDays(7L));

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.auth.enums.TokenType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -27,12 +28,13 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
 
-    public String generateToken(Long memberId, String email, String role) {
+    public String generateToken(Long memberId, String email, String role, TokenType tokenType) {
 
         return Jwts.builder()
                 .setSubject(String.valueOf(memberId))
                 .claim("role", role)
                 .claim("email", email)
+                .claim("type", tokenType.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessToken().getExpiration()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
