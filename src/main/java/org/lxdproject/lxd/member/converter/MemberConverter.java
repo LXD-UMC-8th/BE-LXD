@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.member.converter;
 
+import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
@@ -22,7 +23,7 @@ public class MemberConverter {
                 .build();
     }
 
-    public static Member toMember(MemberRequestDTO.JoinRequestDTO joinRequestDTO, String encryptedPassword) {
+    public static Member toMember(MemberRequestDTO.JoinRequestDTO joinRequestDTO, String profileURL, String encryptedPassword) {
         return Member.builder()
                 .nativeLanguage(joinRequestDTO.getNativeLanguage())
                 .language(joinRequestDTO.getLanguage())
@@ -33,7 +34,7 @@ public class MemberConverter {
                 .nickname(joinRequestDTO.getNickname())
                 .loginType(joinRequestDTO.getLoginType())
                 .isPrivacyAgreed(joinRequestDTO.getIsPrivacyAgreed())
-                .profileImg(joinRequestDTO.getProfileImg())
+                .profileImg(profileURL)
                 .status(Status.ACTIVE)
                 .isAlarmAgreed(Boolean.FALSE) // 알람은 꺼져있는게 Default
                 .build();
