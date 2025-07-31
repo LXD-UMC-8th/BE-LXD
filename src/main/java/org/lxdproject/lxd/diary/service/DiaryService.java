@@ -84,6 +84,7 @@ public class DiaryService {
 //        List<String> urls = extractImageUrls(diary.getContent());
 //        List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
 //        s3Uploader.deleteFiles(keys);
+
         deleteImagesInContentFromS3(diary.getContent());
 
         diary.softDelete();
