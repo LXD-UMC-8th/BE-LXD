@@ -147,7 +147,6 @@ public class DiaryService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Long diaryCount = diaryRepository.countByMemberId(targetMemberId);
-//        Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
 
         List<Member> friends = friendRepository.findFriendsByMemberId(targetMemberId);
         Integer friendCount = friends.size();
