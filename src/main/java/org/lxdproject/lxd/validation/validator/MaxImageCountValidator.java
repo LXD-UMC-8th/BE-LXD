@@ -33,8 +33,7 @@ public class MaxImageCountValidator implements ConstraintValidator<MaxImageCount
 
         if (!isValid) {
             context.disableDefaultConstraintViolation();
-            context
-                    .buildConstraintViolationWithTemplate(ErrorStatus.TOO_MANY_IMAGES.toString())
+            context.buildConstraintViolationWithTemplate(context.getDefaultConstraintMessageTemplate())
                     .addConstraintViolation();
         }
 
