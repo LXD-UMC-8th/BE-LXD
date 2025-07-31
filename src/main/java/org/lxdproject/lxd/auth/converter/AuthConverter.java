@@ -16,7 +16,8 @@ public class AuthConverter {
                         .username(member.getUsername())
                         .nickname(member.getNickname())
                         .profileImg(member.getProfileImg())
-                        .language(member.getLanguage().name())
+                        .nativeLanguage(member.getNativeLanguage().name())
+                        .studyLanguage(member.getLanguage().name())
                         .build())
                 .build();
     }
