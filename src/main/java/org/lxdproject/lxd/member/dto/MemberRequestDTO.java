@@ -19,6 +19,12 @@ import java.util.List;
 public class MemberRequestDTO {
 
     @Getter
+    public static class ProfileUpdateDTO {
+        @Size(max = 40, message = "닉네임은 최대 40자까지 가능합니다.")
+        String nickname;
+    }
+
+    @Getter
     @Schema(description = "회원가입을 위한 RequestDTO")
     public static class JoinRequestDTO{
 

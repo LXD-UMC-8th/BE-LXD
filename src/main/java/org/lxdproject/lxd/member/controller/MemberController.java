@@ -38,4 +38,11 @@ public class MemberController implements MemberApi {
         return ApiResponse.onSuccess(memberService.isUsernameDuplicated(username));
     }
 
+    @Override
+    public ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(
+            @RequestPart(value = "data", required = false) MemberRequestDTO.ProfileUpdateDTO updateDTO,
+            @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
+    ) {
+        return ApiResponse.onSuccess(memberService.updateMemberInfo(updateDTO, profileImg));
+    }
 }
