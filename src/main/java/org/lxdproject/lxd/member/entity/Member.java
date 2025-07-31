@@ -73,6 +73,7 @@ public class Member extends BaseEntity {
     private Boolean isPrivacyAgreed;
 
     // 프로필 이미지 URL
+    @Setter
     @Column(name = "profile_img", columnDefinition = "TEXT")
     private String profileImg;
 

@@ -4,9 +4,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
+import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
@@ -15,9 +15,9 @@ import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,35 +27,36 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
+    private final S3Uploader s3Uploader;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
 
-        if(!joinRequestDTO.getIsPrivacyAgreed().equals(Boolean.TRUE)){
+        if (!joinRequestDTO.getIsPrivacyAgreed().equals(Boolean.TRUE)) {
             throw new MemberHandler(ErrorStatus.PRIVACY_POLICY_NOT_AGREED);
         }
 
-        if(memberRepository.existsByEmail(joinRequestDTO.getEmail())) {
+        if (memberRepository.existsByEmail(joinRequestDTO.getEmail())) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 
-        if(memberRepository.existsByUsername(joinRequestDTO.getUsername())) {
+        if (memberRepository.existsByUsername(joinRequestDTO.getUsername())) {
             throw new MemberHandler(ErrorStatus.USERNAME_DUPLICATION);
         }
 
-        if(memberRepository.existsByNickname(joinRequestDTO.getNickname())) {
+        if (memberRepository.existsByNickname(joinRequestDTO.getNickname())) {
             throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
         }
 
-        String profileImgURL  = null;
+        String profileImgURL = null;
         Member member = null;
 
         // 프로필 이미지가 있는 경우
-        if(profileImg != null && !profileImg.isEmpty()) {
+        if (profileImg != null && !profileImg.isEmpty()) {
             profileImgURL = imageService.uploadImage(profileImg, ImageDir.PROFILE).getImageUrl();
-            member = MemberConverter.toMember(joinRequestDTO, profileImgURL ,passwordEncoder.encode(joinRequestDTO.getPassword()));
-        }else{
-            member = MemberConverter.toMember(joinRequestDTO, profileImgURL ,passwordEncoder.encode(joinRequestDTO.getPassword()));
+            member = MemberConverter.toMember(joinRequestDTO, profileImgURL, passwordEncoder.encode(joinRequestDTO.getPassword()));
+        } else {
+            member = MemberConverter.toMember(joinRequestDTO, profileImgURL, passwordEncoder.encode(joinRequestDTO.getPassword()));
         }
 
         memberRepository.save(member);
@@ -87,6 +88,42 @@ public class MemberService {
         return MemberResponseDTO.CheckUsernameResponseDTO.builder()
                 .username(username)
                 .isDuplicated(exists)
+                .build();
+    }
+
+    @Transactional
+    public MemberResponseDTO.MemberInfoDTO updateMemberInfo(
+            MemberRequestDTO.ProfileUpdateDTO profileUpdateDTO,
+            MultipartFile profileImg
+    ) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if (StringUtils.hasText(profileUpdateDTO.getNickname()) && !profileUpdateDTO.getNickname().equals(member.getNickname())) {
+            if (memberRepository.existsByNickname(profileUpdateDTO.getNickname())) {
+                throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
+            }
+            member.setNickname(profileUpdateDTO.getNickname());
+        }
+
+        if (profileImg != null && !profileImg.isEmpty()) {
+            String newImageUrl = imageService.uploadImage(profileImg, ImageDir.PROFILE)
+                    .getImageUrl();
+            // 기존 이미지 삭제
+            String oldImageUrl = member.getProfileImg();
+            if (StringUtils.hasText(oldImageUrl)) {
+                s3Uploader.deleteFiles(List.of(oldImageUrl));
+            }
+            // 새 이미지 업로드
+            member.setProfileImg(newImageUrl);
+        }
+
+        return MemberResponseDTO.MemberInfoDTO.builder()
+                .memberId(currentMemberId)
+                .username(member.getUsername())
+                .email(member.getEmail())
+                .nickname(member.getNickname())
+                .profileImg(member.getProfileImg())
                 .build();
     }
 }
