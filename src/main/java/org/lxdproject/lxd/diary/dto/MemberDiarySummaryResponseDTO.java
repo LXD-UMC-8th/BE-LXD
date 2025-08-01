@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
+import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
 
 @Getter
 @Builder
@@ -13,4 +14,5 @@ public class MemberDiarySummaryResponseDTO {
     private Long diaryCount;
     private Integer friendCount;
     private RelationType relation;
+    private FriendRequestStatus status;
 }
