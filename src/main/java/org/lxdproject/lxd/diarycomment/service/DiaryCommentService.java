@@ -74,7 +74,7 @@ public class DiaryCommentService {
             parent.increaseReplyCount();
         }
 
-        
+
         DiaryComment comment = DiaryComment.builder()
                 .member(member)
                 .diary(diary)

@@ -29,7 +29,7 @@ public class DiaryCommentConverter {
                 .likeCount(comment.getLikeCount())
                 .isLiked(likedCommentIds.contains(comment.getId()))
                 .createdAt(comment.getCreatedAt())
-                .replyCount(comment.getParent() == null ? 0 : null)
+                .replyCount(comment.getReplyCount())
                 .replies(replies)
                 .build();
     }

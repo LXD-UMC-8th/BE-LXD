@@ -35,7 +35,7 @@ public class DiaryComment extends BaseEntity {
 
     private int likeCount;
 
-    private int replyCount;
+    private Integer  replyCount=0;
 
     public void increaseReplyCount(){
         this.replyCount +=1;
