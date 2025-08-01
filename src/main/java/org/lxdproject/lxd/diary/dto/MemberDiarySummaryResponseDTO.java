@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diary.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
@@ -14,5 +15,7 @@ public class MemberDiarySummaryResponseDTO {
     private Long diaryCount;
     private Integer friendCount;
     private RelationType relation;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private FriendRequestStatus status;
 }
