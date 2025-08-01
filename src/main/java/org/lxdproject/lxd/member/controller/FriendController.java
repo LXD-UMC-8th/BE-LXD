@@ -52,15 +52,15 @@ public class FriendController implements FriendApi {
         return ApiResponse.onSuccess(response);
     }
 
-    @PatchMapping("/refuse")
-    public ApiResponse<FriendMessageResponseDTO> refuseFriendRequest(@RequestBody FriendRequestRefuseRequestDTO requestDto) {
+    @Override
+    public ApiResponse<FriendMessageResponseDTO> refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
         friendService.refuseFriendRequest(requestDto);
         return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 거절하였습니다."));
     }
 
-    @PatchMapping("/cancel")
-    public ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(@RequestBody FriendRequestCancelRequestDTO requestDto) {
+    @Override
+    public ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
         friendService.cancelFriendRequest(requestDto);
-        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 취소하였습니다"));
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 취소하였습니다."));
     }
 }
