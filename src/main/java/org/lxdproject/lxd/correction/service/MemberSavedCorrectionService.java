@@ -10,7 +10,7 @@ import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
-import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.data.domain.PageRequest;

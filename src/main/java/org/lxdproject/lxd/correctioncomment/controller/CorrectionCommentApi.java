@@ -5,10 +5,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentDeleteResponseDTO;
-import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentPageResponseDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentRequestDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentResponseDTO;
+import org.lxdproject.lxd.validation.annotation.ValidPageSize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Correction Comment API", description = "교정 댓글 관련 API 입니다.")
@@ -22,14 +23,11 @@ public interface CorrectionCommentApi {
             @RequestBody @Valid CorrectionCommentRequestDTO request
     );
 
-
-
-
     @Operation(summary = "교정 댓글 조회", description = "교정 댓글 목록을 조회합니다.")
     @GetMapping
-    ApiResponse<CorrectionCommentPageResponseDTO> getComments(
+    public ApiResponse<PageResponse<CorrectionCommentResponseDTO>> getComments(
             @PathVariable Long correctionId,
-            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "페이지당 개수", example = "10") @RequestParam(defaultValue = "10") int size
     );
 

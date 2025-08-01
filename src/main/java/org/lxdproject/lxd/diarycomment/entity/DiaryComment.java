@@ -12,7 +12,7 @@ import org.lxdproject.lxd.member.entity.Member;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class DiaryComment extends BaseEntity {   //baseentity상속
+public class DiaryComment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +34,12 @@ public class DiaryComment extends BaseEntity {   //baseentity상속
     private String commentText;
 
     private int likeCount;
+
+    private int replyCount;
+
+    public void increaseReplyCount(){
+        this.replyCount +=1;
+    }
 
     public void increaseLikeCount() {
         this.likeCount += 1;

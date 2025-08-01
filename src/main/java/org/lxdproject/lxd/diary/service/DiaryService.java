@@ -13,8 +13,11 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.member.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.member.repository.FriendRepository;
+import org.lxdproject.lxd.member.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +25,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import name.fraser.neil.plaintext.diff_match_patch;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +40,7 @@ public class DiaryService {
     private final MemberRepository memberRepository;
     private final S3Uploader s3Uploader;
     private final FriendRepository friendRepository;
+    private final FriendRequestRepository friendRequestRepository;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -116,9 +123,45 @@ public class DiaryService {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
+        s3Uploader.deleteFileByUrl(diary.getThumbImg());
+
+        String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
+
+        // DB에 새로운 내용 저장
         diary.update(request);
         Diary updated = diaryRepository.save(diary);
-        return DiaryDetailResponseDTO.from(updated);
+
+        // diff 계산
+        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
+
+        return DiaryDetailResponseDTO.fromWithDiff(updated, diffHtmlContent);
+    }
+
+    private String generateDiffHtml(String oldContent, String newContent) {
+        diff_match_patch dmp = new diff_match_patch();
+
+        // 라이브러리 활용해서 content 간의 diff 계산
+        LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main(oldContent, newContent);
+        dmp.diff_cleanupSemantic(diffs);
+
+        // 라이브러리에서 삽입하는 스타일 태그 제거
+        StringBuilder html = new StringBuilder();
+        for (diff_match_patch.Diff diff : diffs) {
+            String text = diff.text;
+
+            switch (diff.operation) {
+                case INSERT:
+                    html.append("<ins>").append(text).append("</ins>");
+                    break;
+                case DELETE:
+                    html.append("<del>").append(text).append("</del>");
+                    break;
+                case EQUAL:
+                    html.append(text);
+                    break;
+            }
+        }
+        return html.toString();
     }
 
     public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
@@ -140,7 +183,7 @@ public class DiaryService {
         return diaryRepository.findExploreDiaries(userId, language, pageable);
     }
 
-    public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId) {
+    public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId, boolean includeStatus) {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
@@ -158,6 +201,15 @@ public class DiaryService {
             relation = RelationType.NONE;
         }
 
+        // 추가된 FriendRequestStatus 조회 로직
+        FriendRequestStatus status = null;
+
+        if (includeStatus && !targetMemberId.equals(currentMemberId)) {
+            status = friendRequestRepository.findByRequesterIdAndReceiverId(currentMemberId, targetMemberId)
+                    .map(FriendRequest::getStatus)
+                    .orElse(null);
+        }
+
         return MemberDiarySummaryResponseDTO.builder()
                 .profileImg(member.getProfileImg())
                 .username(member.getUsername())
@@ -165,6 +217,7 @@ public class DiaryService {
                 .diaryCount(diaryCount)
                 .friendCount(friendCount)
                 .relation(relation)
+                .status(status) // 필드 추가함
                 .build();
     }
 

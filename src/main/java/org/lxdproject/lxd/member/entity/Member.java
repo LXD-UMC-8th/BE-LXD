@@ -8,7 +8,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.entity.enums.Language;
-import org.lxdproject.lxd.diary.entity.mapping.DiaryLike;
+import org.lxdproject.lxd.diarylike.entity.DiaryLike;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.entity.enums.Role;
 import org.lxdproject.lxd.member.entity.enums.Status;
@@ -59,6 +59,7 @@ public class Member extends BaseEntity {
     private String email;
 
     // 닉네임
+    @Setter
     @Column(nullable = false, length = 20, unique = true)
     private String nickname;
 
@@ -72,6 +73,7 @@ public class Member extends BaseEntity {
     private Boolean isPrivacyAgreed;
 
     // 프로필 이미지 URL
+    @Setter
     @Column(name = "profile_img", columnDefinition = "TEXT")
     private String profileImg;
 

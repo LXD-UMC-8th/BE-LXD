@@ -71,10 +71,10 @@ public class DiaryCommentService {
             if (parent.getParent() != null) {
                 throw new CommentHandler(ErrorStatus.COMMENT_DEPTH_EXCEEDED);
             }
+            parent.increaseReplyCount();
         }
 
-
-
+        
         DiaryComment comment = DiaryComment.builder()
                 .member(member)
                 .diary(diary)
@@ -88,12 +88,14 @@ public class DiaryCommentService {
 
         return DiaryCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .userId(member.getId())
+                .memberId(member.getId())
+                .username(member.getUsername())
                 .nickname(member.getNickname())
                 .diaryId(diary.getId())
                 .profileImage(member.getProfileImg())
                 .commentText(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
+                .replyCount(parent == null ? 0 : null)
                 .likeCount(saved.getLikeCount())
                 .isLiked(false)
                 .createdAt(saved.getCreatedAt())

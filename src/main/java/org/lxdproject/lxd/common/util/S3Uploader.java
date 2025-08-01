@@ -93,5 +93,26 @@ public class S3Uploader {
         }
     }
 
+    public void deleteFileByUrl(String imageUrl) {
+        String key = extractKeyFromUrl(imageUrl);
+        if (key == null || key.isBlank()) {
+            log.warn("유효하지 않은 S3 이미지 URL입니다: {}", imageUrl);
+            return;
+        }
+
+        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+
+        try {
+            s3Client.deleteObject(request);
+            log.info("S3 이미지 삭제 성공: {}", key);
+        } catch (S3Exception e) {
+            log.warn("S3 이미지 삭제 실패: {} - {}", key, e.awsErrorDetails().errorMessage());
+        }
+    }
+
+
 }
 

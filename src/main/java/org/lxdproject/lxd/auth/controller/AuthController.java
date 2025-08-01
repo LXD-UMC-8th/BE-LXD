@@ -1,6 +1,5 @@
 package org.lxdproject.lxd.auth.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
@@ -10,7 +9,7 @@ import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.service.AuthService;
-import org.lxdproject.lxd.auth.service.oauth.GoogleOAuthClient;
+import org.lxdproject.lxd.auth.service.oauthClient.GoogleOAuthClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
