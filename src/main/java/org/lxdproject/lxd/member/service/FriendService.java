@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
@@ -173,5 +174,39 @@ public class FriendService {
                 member.getNickname(),
                 member.getProfileImg()
         );
+    }
+
+    public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
+        Long receiverId = SecurityUtil.getCurrentMemberId();
+        Member receiver = memberRepository.findById(receiverId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        FriendRequest friendRequest = friendRequestRepository
+                .findByRequesterIdAndReceiverId(requestDto.getRequesterId(), receiverId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
+
+        if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
+            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST_STATUS);
+        }
+
+        friendRequest.reject(); // 상태 변경
+        friendRequestRepository.save(friendRequest);
+    }
+
+    public void cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
+        Member requester = memberRepository.findById(requesterId)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        FriendRequest friendRequest = friendRequestRepository
+                .findByRequesterIdAndReceiverId(requesterId, requestDto.getReceiverId())
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
+
+        if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
+            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST_STATUS);
+        }
+
+        friendRequest.cancel(); // 상태 변경
+        friendRequestRepository.save(friendRequest);
     }
 }
