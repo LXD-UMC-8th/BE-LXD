@@ -9,5 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 public class FriendListResponseDTO {
     private int totalFriends;
+    private int totalRequests;
     private List<FriendResponseDTO> friends;
 }
