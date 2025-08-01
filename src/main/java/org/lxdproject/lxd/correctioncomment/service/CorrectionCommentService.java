@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.correctioncomment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
@@ -97,10 +98,10 @@ public class CorrectionCommentService {
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         if (!comment.getMember().getId().equals(SecurityUtil.getCurrentMemberId())) {
-            throw new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND); // 자신이 쓴 댓글만 삭제 가능
+            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        comment.softDelete(); // 삭제 시간 세팅
+        comment.softDelete();
 
         return CorrectionCommentDeleteResponseDTO.builder()
                 .commentId(comment.getId())
