@@ -3,9 +3,7 @@ package org.lxdproject.lxd.member.service;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.diary.dto.MyDiarySummaryResponseDTO;
-import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.repository.DiaryRepository;
+
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
@@ -16,9 +14,6 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.lxdproject.lxd.diary.util.DiaryUtil.generateContentPreview;
 
 @Service
 @RequiredArgsConstructor
