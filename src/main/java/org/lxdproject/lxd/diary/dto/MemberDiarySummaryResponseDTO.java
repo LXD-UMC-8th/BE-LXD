@@ -16,6 +16,6 @@ public class MemberDiarySummaryResponseDTO {
     private Integer friendCount;
     private RelationType relation;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL) // null 값도 반환하려면 이 부분 주석처리하면 됨
     private FriendRequestStatus status;
 }
