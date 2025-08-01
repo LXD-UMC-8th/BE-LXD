@@ -9,12 +9,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CorrectionCommentRequestDTO {
-    @Schema(description = "부모 댓글 ID (대댓글일 경우 사용)", example = "0", nullable = true)
-    private Long parentId;
 
     @NotBlank(message = "댓글 본문은 비어 있을 수 없습니다.")
     @Schema(description = "댓글 본문", example = "정말 좋은 교정이에요!")
-    private String commentText;
+    private String content;
 
 }
 
