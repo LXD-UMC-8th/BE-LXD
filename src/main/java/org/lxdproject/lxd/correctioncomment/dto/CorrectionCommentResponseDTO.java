@@ -14,11 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 public class CorrectionCommentResponseDTO {
     private Long commentId;
-    private Long userId;
+    private Long memberId;
+    private String username;
     private String nickname;
     private String profileImage;
     private String content;
-    private Long parentId;
-    private int likeCount;
-    private LocalDateTime createdAt;
+    private String createdAt;
 }
