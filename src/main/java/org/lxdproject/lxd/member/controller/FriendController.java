@@ -5,6 +5,7 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.service.FriendService;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class FriendController implements FriendApi {
 
+    public static final String  = "친구 요청을 취소하였습니다.";
     private final FriendService friendService;
 
     @Override
@@ -49,5 +51,17 @@ public class FriendController implements FriendApi {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId);
         return ApiResponse.onSuccess(response);
+    }
+
+    @PatchMapping("/refuse")
+    public ApiResponse<FriendMessageResponseDTO> refuseFriendRequest(@RequestBody FriendRequestRefuseRequestDTO requestDto) {
+        friendService.refuseFriendRequest(requestDto);
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 거절하였습니다."));
+    }
+
+    @PatchMapping("/cancel")
+    public ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(@RequestBody FriendRequestCancelRequestDTO requestDto) {
+        friendService.cancelFriendRequest(requestDto);
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 취소하였습니다"));
     }
 }
