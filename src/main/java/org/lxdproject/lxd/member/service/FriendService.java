@@ -29,14 +29,22 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
 
     public FriendListResponseDTO getFriendList(Long memberId) {
+        Member member = findMemberById(memberId);
 
-        List<Member> friends = friendRepository.findFriendsByMemberId(memberId);
+        List<Member> friends = getFriends(memberId);
+        int totalFriends = friends.size();
+
+        int totalRequests = getSentRequestCount(member) + getReceivedRequestCount(member);
 
         List<FriendResponseDTO> friendDtos = friends.stream()
-                .map(friend -> new FriendResponseDTO(friend.getId(), friend.getUsername(), friend.getNickname(), friend.getProfileImg()))
-                .collect(Collectors.toList());
+                .map(friend -> new FriendResponseDTO(
+                        friend.getId(),
+                        friend.getUsername(),
+                        friend.getNickname(),
+                        friend.getProfileImg()))
+                .toList();
 
-        return new FriendListResponseDTO(friendDtos.size(), friendDtos);
+        return new FriendListResponseDTO(totalFriends, totalRequests, friendDtos);
     }
 
     public void sendFriendRequest(Long requesterId, FriendRequestCreateRequestDTO requestDto) {
@@ -116,24 +124,59 @@ public class FriendService {
     }
 
     public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId) {
-        Member currentMember = memberRepository.findById(memberId)
-                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        Member currentMember = findMemberById(memberId);
 
         List<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING);
         List<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING);
 
+        int sentCount = sent.size();
+        int receivedCount = received.size();
+        int totalFriends = getFriends(memberId).size();
+
         List<FriendResponseDTO> sentDtos = sent.stream()
-                .map(req -> {
-                    Member target = req.getReceiver();
-                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname(), target.getProfileImg());
-                }).toList();
+                .map(req -> mapToDto(req.getReceiver()))
+                .toList();
 
         List<FriendResponseDTO> receivedDtos = received.stream()
-                .map(req -> {
-                    Member target = req.getRequester();
-                    return new FriendResponseDTO(target.getId(), target.getUsername(), target.getNickname(), target.getProfileImg());
-                }).toList();
+                .map(req -> mapToDto(req.getRequester()))
+                .toList();
 
-        return new FriendRequestListResponseDTO(sentDtos.size(), receivedDtos.size(), sentDtos, receivedDtos);
+        return new FriendRequestListResponseDTO(
+                sentCount,
+                receivedCount,
+                totalFriends,
+                sentDtos,
+                receivedDtos
+        );
+    }
+
+    private Member findMemberById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+    }
+
+    private List<Member> getFriends(Long memberId) {
+        return friendRepository.findFriendsByMemberId(memberId);
+    }
+
+    private int getSentRequestCount(Member member) {
+        return friendRequestRepository
+                .findByRequesterAndStatus(member, FriendRequestStatus.PENDING)
+                .size();
+    }
+
+    private int getReceivedRequestCount(Member member) {
+        return friendRequestRepository
+                .findByReceiverAndStatus(member, FriendRequestStatus.PENDING)
+                .size();
+    }
+
+    private FriendResponseDTO mapToDto(Member member) {
+        return new FriendResponseDTO(
+                member.getId(),
+                member.getUsername(),
+                member.getNickname(),
+                member.getProfileImg()
+        );
     }
 }
