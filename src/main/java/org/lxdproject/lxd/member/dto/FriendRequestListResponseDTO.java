@@ -10,6 +10,7 @@ import java.util.List;
 public class FriendRequestListResponseDTO {
     private int sentRequestsCount;
     private int receivedRequestsCount;
+    private int totalFriends;
     private List<FriendResponseDTO> sentRequests;
     private List<FriendResponseDTO> receivedRequests;
 }
