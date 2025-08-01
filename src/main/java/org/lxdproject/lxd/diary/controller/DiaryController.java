@@ -101,14 +101,14 @@ public class DiaryController implements DiaryApi{
     @Override
     public ApiResponse<MemberDiarySummaryResponseDTO> getMyDiarySummary() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(currentMemberId, currentMemberId);
+        MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(currentMemberId, currentMemberId, false);
         return ApiResponse.onSuccess(response);
     }
 
     @Override
     public ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(Long memberId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(memberId, currentMemberId);
+        MemberDiarySummaryResponseDTO response = diaryService.getDiarySummary(memberId, currentMemberId, true);
         return ApiResponse.onSuccess(response);
     }
 

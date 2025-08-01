@@ -13,8 +13,11 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.member.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.member.repository.FriendRepository;
+import org.lxdproject.lxd.member.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +40,7 @@ public class DiaryService {
     private final MemberRepository memberRepository;
     private final S3Uploader s3Uploader;
     private final FriendRepository friendRepository;
+    private final FriendRequestRepository friendRequestRepository;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -179,7 +183,7 @@ public class DiaryService {
         return diaryRepository.findExploreDiaries(userId, language, pageable);
     }
 
-    public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId) {
+    public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId, boolean includeStatus) {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
@@ -197,6 +201,15 @@ public class DiaryService {
             relation = RelationType.NONE;
         }
 
+        // 추가된 FriendRequestStatus 조회 로직
+        FriendRequestStatus status = null;
+
+        if (includeStatus && !targetMemberId.equals(currentMemberId)) {
+            status = friendRequestRepository.findByRequesterIdAndReceiverId(currentMemberId, targetMemberId)
+                    .map(FriendRequest::getStatus)
+                    .orElse(null);
+        }
+
         return MemberDiarySummaryResponseDTO.builder()
                 .profileImg(member.getProfileImg())
                 .username(member.getUsername())
@@ -204,6 +217,7 @@ public class DiaryService {
                 .diaryCount(diaryCount)
                 .friendCount(friendCount)
                 .relation(relation)
+                .status(status) // 필드 추가함
                 .build();
     }
 
