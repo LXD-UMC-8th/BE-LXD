@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class FriendController implements FriendApi {
 
-    public static final String  = "친구 요청을 취소하였습니다.";
     private final FriendService friendService;
 
     @Override
