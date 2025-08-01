@@ -35,11 +35,9 @@ public class CorrectionComment extends BaseEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    public String getDeleteMessage() {
-        if (isDeleted()) {
-            return "삭제된 댓글입니다.";
-        }
-        return this.content;
+    public String getDisplayContent() {
+        return isDeleted() ? "삭제된 댓글입니다." : this.content;
     }
+
 }
 

@@ -75,9 +75,7 @@ public class CorrectionCommentService {
                         .username(comment.getMember().getUsername())
                         .nickname(comment.getMember().getNickname())
                         .profileImage(comment.getMember().getProfileImg())
-                        .content(comment.getDeletedAt() == null
-                                ? comment.getContent()
-                                : comment.getDeleteMessage())
+                        .content(comment.getDisplayContent())
                         .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
                         .build())
                 .toList();
@@ -106,7 +104,7 @@ public class CorrectionCommentService {
         return CorrectionCommentDeleteResponseDTO.builder()
                 .commentId(comment.getId())
                 .isDeleted(comment.isDeleted())
-                .content(comment.getDeleteMessage())
+                .content(comment.getDisplayContent())
                 .deletedAt(comment.getDeletedAt())
                 .build();
     }
