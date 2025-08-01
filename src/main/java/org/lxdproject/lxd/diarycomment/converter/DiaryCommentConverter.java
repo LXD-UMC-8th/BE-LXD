@@ -21,13 +21,15 @@ public class DiaryCommentConverter {
         return DiaryCommentResponseDTO.Comment.builder()
                 .commentId(comment.getId())
                 .parentId(parentId)
-                .userId(writer.getId())
+                .memberId(writer.getId())
+                .username(writer.getUsername())
                 .nickname(writer.getNickname())
                 .profileImage(writer.getProfileImg())
                 .content(comment.getCommentText())
                 .likeCount(comment.getLikeCount())
                 .isLiked(likedCommentIds.contains(comment.getId()))
                 .createdAt(comment.getCreatedAt())
+                .replyCount(comment.getReplyCount())
                 .replies(replies)
                 .build();
     }
