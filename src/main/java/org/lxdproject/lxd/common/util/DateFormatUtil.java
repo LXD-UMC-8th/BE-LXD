@@ -1,11 +1,10 @@
-package org.lxdproject.lxd.correction.util;
+package org.lxdproject.lxd.common.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 public class DateFormatUtil {
     public static String formatDate(LocalDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ofPattern("yyyy. MM. dd a hh:mm", Locale.KOREA));
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
     }
 }

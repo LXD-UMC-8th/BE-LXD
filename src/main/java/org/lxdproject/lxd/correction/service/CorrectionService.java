@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
-import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -163,36 +163,19 @@ public class CorrectionService {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
         Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
 
-        List<CorrectionResponseDTO.ProvidedCorrectionItem> correctionItems = corrections.getContent().stream()
-                .map(correction -> CorrectionResponseDTO.ProvidedCorrectionItem.builder()
-                        .correctionId(correction.getId())
-                        .diaryId(correction.getDiary().getId())
-                        .diaryTitle(correction.getDiary().getTitle())
-                        .diaryCreatedAt(DateFormatUtil.formatDate(correction.getDiary().getCreatedAt()))
-                        .createdAt(DateFormatUtil.formatDate(correction.getCreatedAt()))
-                        .originalText(correction.getOriginalText())
-                        .corrected(correction.getCorrected())
-                        .commentText(correction.getCommentText())
-                        .likeCount(correction.getLikeCount())
-                        .commentCount(correction.getCommentCount())
-                        .build())
+        List<CorrectionResponseDTO.ProvidedCorrectionItem> items = corrections.getContent().stream()
+                .map(CorrectionResponseDTO.ProvidedCorrectionItem::from)
                 .toList();
 
-        return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
-                .member(CorrectionResponseDTO.MemberInfo.builder()
-                        .memberId(member.getId())
-                        .userId(member.getUsername())
-                        .nickname(member.getNickname())
-                        .profileImageUrl(member.getProfileImg())
-                        .build())
-                .corrections(correctionItems)
-                .page(page)
-                .size(size)
-                .hasNext(corrections.hasNext())
-                .build();
+        return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.from(
+                member,
+                items,
+                page,
+                size,
+                corrections.hasNext()
+        );
     }
 
     private CorrectionResponseDTO.DiaryCorrectionsResponseDTO emptyDiaryCorrectionsResponse(Long diaryId) {

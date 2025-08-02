@@ -24,6 +24,8 @@ public enum ErrorStatus implements BaseErrorCode {
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4312", "이미 존재하는 닉네임입니다."),
     PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4313", "개인정보 동의는 필수입니다."),
     USERNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4314", "이미 존재하는 아이디입니다."),
+    INVALID_USERNAME(HttpStatus.BAD_REQUEST, "MEMBER4001", "올바르지 않는 아이디 형식입니다."),
+    INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "MEMBER4315", "올바르지 않은 닉네임 형식입니다."),
 
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),
@@ -64,6 +66,8 @@ public enum ErrorStatus implements BaseErrorCode {
     PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4001","존재하지 않는 부모 댓글입니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4002","댓글을 찾을 수 없습니다."),
     COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
+    COMMENT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "COMMENT4004", "댓글 작성 권한이 없습니다."),
+
 
     // 테스트 용 응답
     INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),

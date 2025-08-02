@@ -2,10 +2,8 @@ package org.lxdproject.lxd.member.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
-import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.service.FriendService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,13 +48,6 @@ public class FriendController implements FriendApi {
     public ApiResponse<FriendRequestListResponseDTO> getFriendRequestList() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId);
-        return ApiResponse.onSuccess(response);
-    }
-
-    @Override
-    public ApiResponse<FriendDetailResponseDTO> getFriendDetail(@PathVariable Long friendId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        FriendDetailResponseDTO response = friendService.getFriendDetail(currentMemberId, friendId);
         return ApiResponse.onSuccess(response);
     }
 }

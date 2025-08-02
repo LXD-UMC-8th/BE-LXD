@@ -5,13 +5,13 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.correction.util.DateFormatUtil;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
-import org.lxdproject.lxd.diary.entity.mapping.QDiaryLike;
+import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
 import org.lxdproject.lxd.member.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Pageable;
@@ -78,9 +78,59 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .build();
     }
 
-    private String generatePreview(String content) {
-        if (content == null) return "";
-        return content.length() <= 100 ? content : content.substring(0, 100);
+    public MyDiarySliceResponseDTO getDiariesByMemberId(Long userId, Long memberId, Pageable pageable) {
+        Set<Long> friendIds = getFriendIds(userId);
+
+        BooleanExpression visibilityCondition;
+
+        if (userId.equals(memberId)) { // 본인
+            visibilityCondition = diary.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS, Visibility.PRIVATE);
+        } else if (friendIds.contains(memberId)) { // 친구관계
+            visibilityCondition = diary.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS);
+        } else { // 타인
+            visibilityCondition = diary.visibility.eq(Visibility.PUBLIC);
+        }
+
+        List<Diary> diaries = queryFactory
+                .selectFrom(diary)
+                .leftJoin(diary.likes, diaryLike).fetchJoin()
+                .where(
+                        diary.member.id.eq(memberId),
+                        diary.deletedAt.isNull(),
+                        visibilityCondition
+                )
+                .distinct()
+                .orderBy(diary.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = diaries.size() > pageable.getPageSize();
+        if (hasNext) {
+            diaries = diaries.subList(0, pageable.getPageSize());
+        }
+
+        List<MyDiarySummaryResponseDTO> content = diaries.stream()
+                .map(d -> MyDiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(generateContentPreview(d.getContent()))
+                        .language(d.getLanguage())
+                        .build())
+                .toList();
+
+        return MyDiarySliceResponseDTO.builder()
+                .diaries(content)
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
+                .hasNext(hasNext)
+                .build();
     }
 
 
@@ -115,34 +165,12 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public List<Diary> findByMemberIdAndVisibilityForViewer(Long memberId, boolean isFriend) {
-        QDiary diary = QDiary.diary;
-
-        BooleanExpression visibilityCondition = diary.visibility.eq(Visibility.PUBLIC);
-        if (isFriend) {
-            visibilityCondition = visibilityCondition.or(diary.visibility.eq(Visibility.FRIENDS));
-        }
-
-        return queryFactory
-                .selectFrom(diary)
-                .where(
-                        diary.member.id.eq(memberId),
-                        diary.deletedAt.isNull(),
-                        visibilityCondition
-                )
-                .orderBy(diary.createdAt.desc())
-                .fetch();
-    }
-
-    @Override
     public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
         QDiary diary = QDiary.diary;
         QMember member = QMember.member;
-        QFriendship friendship = QFriendship.friendship;
 
         Set<Long> friendIds = getFriendIds(userId);
 
-        // 친구들이 작성한 공개/친구공개 일기 조회
         List<Diary> diaries = queryFactory
                 .selectFrom(diary)
                 .leftJoin(diary.member, member).fetchJoin()
