@@ -97,7 +97,7 @@ public class JwtTokenProvider {
     public Authentication extractAuthentication(HttpServletRequest request){
         String accessToken = resolveToken(request);
         if(accessToken == null || !validateToken(accessToken)) {
-            throw new MemberHandler(ErrorStatus.INVALID_TOKEN);
+            throw new MemberHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
         return getAuthentication(accessToken);
     }
