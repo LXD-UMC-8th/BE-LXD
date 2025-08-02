@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.config.security;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.config.security.jwt.JwtAuthenticationFilter;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
@@ -19,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     // 인증 없이 접근 가능한 화이트리스트 경로 정의
-    private static final String[] WHITELIST = {
+    public static final String[] WHITELIST = {
             "/",
             "/health",
             "/test/**",
