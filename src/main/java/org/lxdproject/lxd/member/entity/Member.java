@@ -40,6 +40,10 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Language language;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Language SystemLanguage;
 
     // 권한
     @Enumerated(EnumType.STRING)
