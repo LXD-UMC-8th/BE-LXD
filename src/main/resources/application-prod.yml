@@ -33,6 +33,11 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 50MB
+
 aws:
   s3:
     bucket: ${S3_BUCKET}
@@ -52,7 +57,7 @@ server:
   port: 8080
 
 urls:
-  frontend: http://localhost:5173
+  frontend: http://localhost:3000
   backend: http://43.202.178.60:8080
 
 google:

@@ -95,7 +95,7 @@ public class DiaryCommentService {
                 .profileImage(member.getProfileImg())
                 .commentText(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
-                .replyCount(parent == null ? 0 : null)
+                .replyCount(0)
                 .likeCount(saved.getLikeCount())
                 .isLiked(false)
                 .createdAt(saved.getCreatedAt())

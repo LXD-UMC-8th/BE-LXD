@@ -23,7 +23,7 @@ public interface CorrectionCommentApi {
             @RequestBody @Valid CorrectionCommentRequestDTO request
     );
 
-    @Operation(summary = "교정 댓글 조회", description = "교정 댓글 목록을 조회합니다.")
+    @Operation(summary = "교정 댓글 조회 API", description = "교정 댓글 목록을 조회합니다.")
     @GetMapping
     public ApiResponse<PageResponse<CorrectionCommentResponseDTO>> getComments(
             @PathVariable Long correctionId,
@@ -31,7 +31,7 @@ public interface CorrectionCommentApi {
             @Parameter(description = "페이지당 개수", example = "10") @RequestParam(defaultValue = "10") int size
     );
 
-    @Operation(summary = "교정 댓글 삭제", description = "교정 댓글을 소프트 삭제합니다.")
+    @Operation(summary = "교정 댓글 삭제 API", description = "교정 댓글을 소프트 삭제합니다.")
     @DeleteMapping("/{commentId}")
     ApiResponse<CorrectionCommentDeleteResponseDTO> deleteComment(
             @PathVariable Long correctionId,

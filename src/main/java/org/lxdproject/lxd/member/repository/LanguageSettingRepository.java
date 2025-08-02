@@ -1,4 +1,4 @@
 package org.lxdproject.lxd.member.repository;
 
-public class LanguageChangeRepository {
+public class LanguageSettingRepository {
 }
