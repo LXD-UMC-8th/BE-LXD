@@ -6,16 +6,18 @@ import org.lxdproject.lxd.member.entity.Member;
 
 public class AuthConverter {
 
-    public static AuthResponseDTO.LoginResponseDTO toLoginResponseDTO(String accessToken, Member member) {
+    public static AuthResponseDTO.LoginResponseDTO toLoginResponseDTO(String accessToken, String refreshToken, Member member) {
         return AuthResponseDTO.LoginResponseDTO.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .member(AuthResponseDTO.LoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
                         .email(member.getEmail())
                         .username(member.getUsername())
                         .nickname(member.getNickname())
                         .profileImg(member.getProfileImg())
-                        .language(member.getLanguage().name())
+                        .nativeLanguage(member.getNativeLanguage().name())
+                        .studyLanguage(member.getLanguage().name())
                         .build())
                 .build();
     }

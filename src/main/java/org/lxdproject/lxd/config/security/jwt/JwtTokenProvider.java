@@ -4,8 +4,10 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.config.properties.JwtProperties;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,12 +29,13 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
 
-    public String generateToken(Long memberId, String email, String role) {
+    public String generateToken(Long memberId, String email, String role, TokenType tokenType) {
 
         return Jwts.builder()
                 .setSubject(String.valueOf(memberId))
                 .claim("role", role)
                 .claim("email", email)
+                .claim("type", tokenType.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessToken().getExpiration()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -50,6 +53,21 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
+    // 리프레쉬 토큰 전용 유효성 검사 메서드
+    public void validateRefreshTokenOrThrow(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw new AuthHandler(ErrorStatus.EXPIRED_REFRESH_TOKEN);
+        } catch (Exception e) {
+            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+    }
+
 
     public Authentication getAuthentication(String token) {
 
