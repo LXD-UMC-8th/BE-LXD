@@ -97,4 +97,8 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member")
     private List<DiaryLike> diaryLikes = new ArrayList<>();
 
+    public void updateSystemLanguage(Language systemLanguage) {
+        this.SystemLanguage = systemLanguage;
+    }
+
 }
