@@ -36,8 +36,10 @@ public enum ErrorStatus implements BaseErrorCode {
     NOT_FRIEND(HttpStatus.NOT_FOUND, "FRIEND4406", "친구 관계가 존재하지 않습니다."),
 
     // 인증 관련 에러
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4300", "토큰이 올바르지 않습니다."),
+    REQUIRED_LOGIN(HttpStatus.UNAUTHORIZED, "AUTH4300", "로그인이 필요한 서비스입니다,"),
+    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4301", "액세스 토큰이 올바르지 않습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4302", "리프레쉬 토큰이 올바르지 않습니다"),
+    EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4303", "액세스 토큰 기간이 만료되었습니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4304", "리프레쉬 토큰 기간이 만료되었습니다."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH4310", "아이디 또는 비밀번호가 올바르지 않습니다."),
     AUTHENTICATION_INFO_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH4320", "인증 정보를 찾을 수 없습니다."),

@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.enums.TokenType;
@@ -55,16 +56,16 @@ public class JwtTokenProvider {
     }
 
     // 리프레쉬 토큰 전용 유효성 검사 메서드
-    public void validateRefreshTokenOrThrow(String token) {
+    public void validateTokenOrThrow(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
         } catch (ExpiredJwtException e) {
-            throw new AuthHandler(ErrorStatus.EXPIRED_REFRESH_TOKEN);
+            throw new GeneralException(ErrorStatus.EXPIRED_ACCESS_TOKEN);
         } catch (Exception e) {
-            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+            throw new GeneralException(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
     }
 
@@ -97,7 +98,7 @@ public class JwtTokenProvider {
     public Authentication extractAuthentication(HttpServletRequest request){
         String accessToken = resolveToken(request);
         if(accessToken == null || !validateToken(accessToken)) {
-            throw new MemberHandler(ErrorStatus.INVALID_TOKEN);
+            throw new MemberHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
         return getAuthentication(accessToken);
     }
