@@ -11,6 +11,7 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityConfig;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,6 +22,8 @@ import java.util.Arrays;
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
     private final JwtTokenProvider jwtTokenProvider;
+    private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -37,7 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         }
 
         // 아래부터, 화이트 리스트에 존재하지 않을 시 과정(토큰 인증이 필요한 경우)
-
 
         // 토큰 추출
         String token = resolveToken(request);
@@ -66,7 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     }
 
     private boolean isWhitelisted(String uri) {
-        return Arrays.stream(SecurityConfig.WHITELIST).anyMatch(uri::startsWith);
+        return Arrays.stream(SecurityConfig.WHITELIST)
+                .anyMatch(pattern -> antPathMatcher.match(pattern, uri));
     }
 
 }
