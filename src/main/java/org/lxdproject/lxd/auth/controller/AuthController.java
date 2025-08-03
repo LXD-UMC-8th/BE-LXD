@@ -53,6 +53,14 @@ public class AuthController implements AuthApi {
     }
 
     @Override
+    public ApiResponse<AuthResponseDTO.GetEmailByTokenResponseDTO> getEmailByToken(String token) {
+
+        AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByTokenResponseDTO = authService.getEmailByToken(token);
+
+        return ApiResponse.onSuccess(getEmailByTokenResponseDTO);
+    }
+
+    @Override
     public ApiResponse<AuthResponseDTO.ReissueResponseDTO> reissue(@RequestBody @Valid AuthRequestDTO.ReissueRequestDTO reissueRequestDTO) {
 
         AuthResponseDTO.ReissueResponseDTO reissueResponseDTO = authService.reissue(reissueRequestDTO);

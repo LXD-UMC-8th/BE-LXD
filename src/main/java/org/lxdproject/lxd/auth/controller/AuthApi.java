@@ -56,6 +56,14 @@ public interface AuthApi {
     })
     ApiResponse<AuthResponseDTO.SocialLoginResponseDTO> loginWithGoogle(@RequestBody AuthRequestDTO.SocialLoginRequestDTO socialLoginRequestDTO);
 
+    @GetMapping("/email")
+    @Operation(summary = "이메일 인증 시 프론트엔드 uri에 전달한 토큰의 주인(이메일)을 반환합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "구글 로그인 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패 또는 파라미터 오류"),
+    })
+    ApiResponse<AuthResponseDTO.GetEmailByTokenResponseDTO> getEmailByToken(@RequestParam ("token") String token);
+
     @PostMapping("/reissue")
     @Operation(summary = "토큰 재발급 API", description = "access token 및 refresh token 재발급 기능입니다.")
     @ApiResponses({

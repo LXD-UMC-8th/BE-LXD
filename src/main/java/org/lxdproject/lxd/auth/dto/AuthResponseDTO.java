@@ -121,4 +121,15 @@ public class AuthResponseDTO {
 
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetEmailByTokenResponseDTO {
+
+        @Schema(description = "이메일")
+        private String email;
+
+    }
+
 }
