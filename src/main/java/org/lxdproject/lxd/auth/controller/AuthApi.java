@@ -61,6 +61,7 @@ public interface AuthApi {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "구글 로그인 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패 또는 파라미터 오류"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "유효하지 않은 이메일 토큰"),
     })
     ApiResponse<AuthResponseDTO.GetEmailByTokenResponseDTO> getEmailByToken(@RequestParam ("token") String token);
 

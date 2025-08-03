@@ -55,6 +55,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 메일 관련 에러
     UNABLE_TO_SEND_EMAIL(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL 4301", "이메일을 보낼 수 없습니다."),
+    INVALID_EMAIL_TOKEN(HttpStatus.UNAUTHORIZED, "EMAIL4311", "이메일 인증 토큰이 유효하지 않습니다."),
 
     // 알림 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTIFICATION4001","알림을 찾을 수 없습니다."),

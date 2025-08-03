@@ -234,4 +234,17 @@ public class AuthService {
         redisService.deleteValues(refreshToken);
 
     }
+
+    public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
+
+        String email = redisService.getValues(token);
+
+        if(email == null) {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
+
+        return AuthResponseDTO.GetEmailByTokenResponseDTO.builder()
+                .email(email)
+                .build();
+    }
 }
