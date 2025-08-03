@@ -1,6 +1,5 @@
 package org.lxdproject.lxd.member.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
@@ -9,7 +8,6 @@ import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.service.MemberService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

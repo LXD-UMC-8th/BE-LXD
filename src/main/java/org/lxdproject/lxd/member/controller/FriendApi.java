@@ -64,4 +64,24 @@ public interface FriendApi {
     })
     @GetMapping("/requests")
     ApiResponse<FriendRequestListResponseDTO> getFriendRequestList();
+
+    @Operation(summary = "친구 요청 거절 API", description = "자신에게 온 친구 요청을 거절합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 요청 거절 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구 요청을 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @PatchMapping("/refuse")
+    ApiResponse<FriendMessageResponseDTO> refuseFriendRequest(@RequestBody FriendRequestRefuseRequestDTO requestDto);
+
+    @Operation(summary = "친구 요청 취소 API", description = "자신이 보낸 친구 요청을 취소합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 요청 취소 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구 요청을 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @PatchMapping("/cancel")
+    ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(@RequestBody FriendRequestCancelRequestDTO requestDto);
 }

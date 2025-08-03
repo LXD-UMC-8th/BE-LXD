@@ -50,4 +50,16 @@ public class FriendController implements FriendApi {
         FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId);
         return ApiResponse.onSuccess(response);
     }
+
+    @Override
+    public ApiResponse<FriendMessageResponseDTO> refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
+        friendService.refuseFriendRequest(requestDto);
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 거절하였습니다."));
+    }
+
+    @Override
+    public ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
+        friendService.cancelFriendRequest(requestDto);
+        return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 취소하였습니다."));
+    }
 }

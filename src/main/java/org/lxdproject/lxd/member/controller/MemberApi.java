@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 @Tag(name = "Member API", description = "사용자 관련 API 입니다.")
 @RequestMapping("/members")
 public interface MemberApi {
