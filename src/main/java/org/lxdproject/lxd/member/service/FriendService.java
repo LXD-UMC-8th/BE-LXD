@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.member.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
@@ -176,6 +177,7 @@ public class FriendService {
         );
     }
 
+    @Transactional
     public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
         Long receiverId = SecurityUtil.getCurrentMemberId();
         Member receiver = memberRepository.findById(receiverId)
@@ -193,6 +195,7 @@ public class FriendService {
         friendRequestRepository.save(friendRequest);
     }
 
+    @Transactional
     public void cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
         Long requesterId = SecurityUtil.getCurrentMemberId();
         Member requester = memberRepository.findById(requesterId)
