@@ -212,4 +212,21 @@ public class AuthService {
                 .build();
 
     }
+
+    public void logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
+
+        String refreshToken = logoutRequestDTO.getRefreshToken();
+
+        // refresh 토큰 유효성 검사
+        jwtTokenProvider.validateRefreshTokenOrThrow(refreshToken);
+
+        String email = redisService.getValues(refreshToken);
+
+        if(email == null) {
+            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+
+        redisService.deleteValues(refreshToken);
+
+    }
 }

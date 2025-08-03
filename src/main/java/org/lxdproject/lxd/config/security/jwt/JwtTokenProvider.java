@@ -36,7 +36,7 @@ public class JwtTokenProvider {
                 .setSubject(String.valueOf(memberId))
                 .claim("role", role)
                 .claim("email", email)
-                .claim("type", tokenType.name())
+                .claim("tokenType", tokenType.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessToken().getExpiration()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -56,7 +56,7 @@ public class JwtTokenProvider {
     }
 
     // 액세스 토큰 전용 유효성 검사 메서드
-    public void validateTokenOrThrow(String token) {
+    public void validateAccessTokenOrThrow(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
@@ -69,6 +69,7 @@ public class JwtTokenProvider {
         }
     }
 
+    // 리프레쉬 토큰 전용 유효성 검사 메서드
     public void validateRefreshTokenOrThrow(String refreshToken){
         try {
             Jwts.parserBuilder()
@@ -80,7 +81,6 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
-
 
     }
 
@@ -116,6 +116,10 @@ public class JwtTokenProvider {
             throw new MemberHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
         return getAuthentication(accessToken);
+    }
+
+    public String getTokenType(String token){
+        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().get("tokenType", String.class);
     }
 
 }
