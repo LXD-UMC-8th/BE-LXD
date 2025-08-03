@@ -55,9 +55,8 @@ public class AuthController implements AuthApi {
     @Override
     public ApiResponse<AuthResponseDTO.ReissueResponseDTO> reissue(@RequestBody @Valid AuthRequestDTO.ReissueRequestDTO reissueRequestDTO) {
 
-        Long userID = SecurityUtil.getCurrentMemberId();
         AuthResponseDTO.ReissueResponseDTO reissueResponseDTO = authService.reissue(reissueRequestDTO);
 
-        return ApiResponse.onSuccess(reissueResponseDTO)
+        return ApiResponse.onSuccess(reissueResponseDTO);
     }
 }
