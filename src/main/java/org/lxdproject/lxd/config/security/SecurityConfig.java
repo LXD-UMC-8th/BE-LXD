@@ -34,6 +34,8 @@ public class SecurityConfig {
             "/auth/google/login",
             "/auth/emails/verification-requests",
             "/auth/emails/verifications",
+            "/auth/email",
+            "/auth/email/**", // 쿼리 파라미터가 있는 경우 /** uri 추가로 붙여주기
             "/auth/reissue",
             "/auth/logout"
     };

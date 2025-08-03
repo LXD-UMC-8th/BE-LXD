@@ -129,7 +129,12 @@ public class AuthService {
                 response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
             } else {
                 redisService.deleteValues(token); // 재사용 방지
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/success");
+
+                String newToken = createSecureToken();
+                redisService.setValues(newToken, email, Duration.ofMinutes(1L));
+
+                //TODO 임시적으로 프론트엔드 uri를 하드코딩 방식으로 구현했어서 추후 urlProperties.getFrontend() 방식으로 변경하기
+                response.sendRedirect("http://localhost:5173" + "/signup?token=" +newToken );
             }
         }catch (IOException e) {
             log.error("redirect에 실패했습니다");
@@ -228,5 +233,18 @@ public class AuthService {
 
         redisService.deleteValues(refreshToken);
 
+    }
+
+    public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
+
+        String email = redisService.getValues(token);
+
+        if(email == null) {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
+
+        return AuthResponseDTO.GetEmailByTokenResponseDTO.builder()
+                .email(email)
+                .build();
     }
 }

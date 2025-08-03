@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
@@ -55,6 +56,18 @@ public interface AuthApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "사용자 정보 요청 실패"),
     })
     ApiResponse<AuthResponseDTO.SocialLoginResponseDTO> loginWithGoogle(@RequestBody AuthRequestDTO.SocialLoginRequestDTO socialLoginRequestDTO);
+
+    @GetMapping("/email")
+    @Operation(summary = "이메일 인증 시 프론트엔드 uri에 전달한 토큰의 주인(이메일)을 반환합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이메일 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효성 실패 또는 파라미터 오류"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "유효하지 않은 이메일 토큰"),
+    })
+    ApiResponse<AuthResponseDTO.GetEmailByTokenResponseDTO> getEmailByToken(
+            @Parameter(description = "이메일 인증 토큰", required = true, example = "abc123token")
+            @RequestParam("token") @NotBlank String token
+    );
 
     @PostMapping("/reissue")
     @Operation(summary = "토큰 재발급 API", description = "access token 및 refresh token 재발급 기능입니다.")
