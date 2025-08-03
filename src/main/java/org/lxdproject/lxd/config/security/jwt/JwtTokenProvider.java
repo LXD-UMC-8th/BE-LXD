@@ -56,7 +56,7 @@ public class JwtTokenProvider {
     }
 
     // 액세스 토큰 전용 유효성 검사 메서드
-    public void validateTokenOrThrow(String token) {
+    public void validateAccessTokenOrThrow(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
@@ -69,6 +69,7 @@ public class JwtTokenProvider {
         }
     }
 
+    // 리프레쉬 토큰 전용 유효성 검사 메서드
     public void validateRefreshTokenOrThrow(String refreshToken){
         try {
             Jwts.parserBuilder()

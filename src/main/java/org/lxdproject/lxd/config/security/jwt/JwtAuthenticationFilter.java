@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         }
 
         // 토큰의 올바른 값인지, 만료 시간 내인지 등을 검사 후 만족하지 않을 시 에러 처리
-        jwtTokenProvider.validateTokenOrThrow(token);
+        jwtTokenProvider.validateAccessTokenOrThrow(token);
 
 
         // 토큰 유효성 검사를 성공하면 이후 로직
