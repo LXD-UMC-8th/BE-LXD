@@ -55,5 +55,12 @@ public interface AuthApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "사용자 정보 요청 실패"),
     })
     ApiResponse<AuthResponseDTO.SocialLoginResponseDTO> loginWithGoogle(@RequestBody AuthRequestDTO.SocialLoginRequestDTO socialLoginRequestDTO);
+
+    @PostMapping("/reissue")
+    @Operation(summary = "토큰 재발급 API", description = "access token 및 refresh token 재발급 기능입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 재발급 성공")
+    })
+    ApiResponse<AuthResponseDTO.ReissueResponseDTO> reissue(@RequestBody @Valid AuthRequestDTO.ReissueRequestDTO reissueRequestDTO);
 }
 
