@@ -59,4 +59,15 @@ public class AuthController implements AuthApi {
 
         return ApiResponse.onSuccess(reissueResponseDTO);
     }
+
+    @Override
+    public ApiResponse<String> logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
+
+        authService.logout(logoutRequestDTO);
+
+        return ApiResponse.onSuccess("로그아웃에 성공했습니다");
+
+    }
+
+
 }

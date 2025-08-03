@@ -59,8 +59,18 @@ public interface AuthApi {
     @PostMapping("/reissue")
     @Operation(summary = "토큰 재발급 API", description = "access token 및 refresh token 재발급 기능입니다.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 재발급 성공")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "토큰 오류 또는 토큰 만료시간 오버")
     })
     ApiResponse<AuthResponseDTO.ReissueResponseDTO> reissue(@RequestBody @Valid AuthRequestDTO.ReissueRequestDTO reissueRequestDTO);
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃 API", description = "리프레쉬 토큰을 redis에서 제거합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "토큰 오류 또는 토큰 만료시간 오버")
+    })
+    ApiResponse<String> logout(@RequestBody @Valid AuthRequestDTO.LogoutRequestDTO logoutRequestDTO);
+
 }
 

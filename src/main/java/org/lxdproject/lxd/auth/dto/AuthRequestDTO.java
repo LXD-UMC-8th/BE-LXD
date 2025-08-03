@@ -50,4 +50,16 @@ public class AuthRequestDTO {
         private String refreshToken;
     }
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class LogoutRequestDTO{
+        @NotBlank(message = "refresh token")
+        @Schema(description = "refresh token", example = "eckdsnkflfknldnsas")
+        private String refreshToken;
+    }
+
+
+
 }
