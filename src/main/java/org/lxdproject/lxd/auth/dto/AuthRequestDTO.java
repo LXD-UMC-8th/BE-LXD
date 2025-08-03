@@ -40,4 +40,14 @@ public class AuthRequestDTO {
         private String code;
     }
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ReissueRequestDTO{
+        @NotBlank(message = "refresh token")
+        @Schema(description = "refresh token", example = "eckdsnkflfknldnsas")
+        private String refreshToken;
+    }
+
 }

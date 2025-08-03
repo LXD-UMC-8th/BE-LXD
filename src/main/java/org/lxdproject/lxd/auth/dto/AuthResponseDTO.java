@@ -107,4 +107,18 @@ public class AuthResponseDTO {
 
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReissueResponseDTO {
+
+        @Schema(description = "access token")
+        private String accessToken;
+
+        @Schema(description = "refresh token")
+        private String refreshToken;
+
+    }
+
 }

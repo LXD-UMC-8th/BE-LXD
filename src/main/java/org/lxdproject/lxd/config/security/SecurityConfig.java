@@ -33,7 +33,8 @@ public class SecurityConfig {
             "/auth/login",
             "/auth/google/login",
             "/auth/emails/verification-requests",
-            "/auth/emails/verifications"
+            "/auth/emails/verifications",
+            "/auth/reissue"
     };
 
     private final JwtTokenProvider jwtTokenProvider;

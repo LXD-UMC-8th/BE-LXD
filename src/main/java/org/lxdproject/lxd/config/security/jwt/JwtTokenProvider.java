@@ -55,7 +55,7 @@ public class JwtTokenProvider {
         }
     }
 
-    // 리프레쉬 토큰 전용 유효성 검사 메서드
+    // 액세스 토큰 전용 유효성 검사 메서드
     public void validateTokenOrThrow(String token) {
         try {
             Jwts.parserBuilder()
@@ -67,6 +67,21 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             throw new GeneralException(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
+    }
+
+    public void validateRefreshTokenOrThrow(String refreshToken){
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(refreshToken);
+        } catch (ExpiredJwtException e) {
+            throw new AuthHandler(ErrorStatus.EXPIRED_REFRESH_TOKEN);
+        } catch (Exception e) {
+            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+
+
     }
 
 

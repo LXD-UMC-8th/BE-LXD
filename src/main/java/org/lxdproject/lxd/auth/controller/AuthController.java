@@ -10,6 +10,7 @@ import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.auth.service.oauthClient.GoogleOAuthClient;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,5 +50,13 @@ public class AuthController implements AuthApi {
         AuthResponseDTO.SocialLoginResponseDTO socialLoginResponseDTO = authService.socialLogin(googleUserInfo);
 
         return ApiResponse.onSuccess(socialLoginResponseDTO);
+    }
+
+    @Override
+    public ApiResponse<AuthResponseDTO.ReissueResponseDTO> reissue(@RequestBody @Valid AuthRequestDTO.ReissueRequestDTO reissueRequestDTO) {
+
+        AuthResponseDTO.ReissueResponseDTO reissueResponseDTO = authService.reissue(reissueRequestDTO);
+
+        return ApiResponse.onSuccess(reissueResponseDTO);
     }
 }
