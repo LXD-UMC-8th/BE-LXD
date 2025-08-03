@@ -182,7 +182,7 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         FriendRequest friendRequest = friendRequestRepository
-                .findByRequesterIdAndReceiverId(requestDto.getRequesterId(), receiverId)
+                .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
@@ -199,7 +199,7 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         FriendRequest friendRequest = friendRequestRepository
-                .findByRequesterIdAndReceiverId(requesterId, requestDto.getReceiverId())
+                .findByRequesterIdAndReceiverIdAndStatus(requesterId, requestDto.getReceiverId(), FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {

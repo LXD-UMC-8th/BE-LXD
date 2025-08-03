@@ -5,7 +5,6 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.service.FriendService;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
