@@ -6,8 +6,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.config.security.SecurityConfig;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,11 +48,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
         // request 헤더에 토큰이 존재하지 않을 경우 로그인이 필요하다는 에러 처리
         if(!StringUtils.hasText(token)){
-            throw new GeneralException(ErrorStatus.REQUIRED_LOGIN);
+            throw new AuthHandler(ErrorStatus.REQUIRED_LOGIN);
         }
 
         // 토큰의 올바른 값인지, 만료 시간 내인지 등을 검사 후 만족하지 않을 시 에러 처리
         jwtTokenProvider.validateAccessTokenOrThrow(token);
+
+        // refresh 토큰일 경우, 토큰 에러 처리
+        if(!jwtTokenProvider.getTokenType(token).equals(TokenType.ACCESS.name())){
+            throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
+        }
 
 
         // 토큰 유효성 검사를 성공하면 이후 로직

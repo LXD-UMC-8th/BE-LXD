@@ -36,7 +36,7 @@ public class JwtTokenProvider {
                 .setSubject(String.valueOf(memberId))
                 .claim("role", role)
                 .claim("email", email)
-                .claim("type", tokenType.name())
+                .claim("tokenType", tokenType.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessToken().getExpiration()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -82,7 +82,6 @@ public class JwtTokenProvider {
             throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
 
-
     }
 
 
@@ -117,6 +116,10 @@ public class JwtTokenProvider {
             throw new MemberHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
         return getAuthentication(accessToken);
+    }
+
+    public String getTokenType(String token){
+        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().get("tokenType", String.class);
     }
 
 }
