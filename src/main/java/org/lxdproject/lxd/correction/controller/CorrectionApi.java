@@ -15,7 +15,7 @@ public interface CorrectionApi {
 
     @GetMapping("/diary/{diaryId}")
     @Operation(
-            summary = "일기 상세 내 교정 목록 조회 API",
+            summary = "특정 일기 교정 조회 API",
             description = "특정 일기에 작성된 교정 리스트를 최신순으로 조회합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -30,7 +30,7 @@ public interface CorrectionApi {
     );
 
     @Operation(
-            summary = "교정 등록 API",
+            summary = "교정 작성 API",
             description = "일기의 문장에서 특정 부분을 교정하고 피드백 코멘트를 작성하여 등록합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "교정 등록 성공"),
@@ -59,7 +59,7 @@ public interface CorrectionApi {
     );
 
     @Operation(
-            summary = "내가 제공한 교정 목록 조회 API",
+            summary = "나의 작성 교정 조회 API",
             description = "현재 로그인한 사용자가 다른 사람의 일기에 작성한 교정 리스트를 반환합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
