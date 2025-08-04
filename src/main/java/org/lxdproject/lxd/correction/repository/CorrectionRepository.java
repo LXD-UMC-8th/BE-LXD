@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CorrectionRepository extends JpaRepository<Correction, Long> {
-    Slice<Correction> findByAuthor(Member author, Pageable pageable);
-    Slice<Correction> findByDiaryId(Long diaryId, Pageable pageable);
+    Page<Correction> findByAuthor(Member author, Pageable pageable);
+    Page<Correction> findByDiaryId(Long diaryId, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Correction c WHERE c.id = :id")

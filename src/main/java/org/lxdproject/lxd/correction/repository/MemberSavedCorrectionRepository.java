@@ -2,6 +2,7 @@ package org.lxdproject.lxd.correction.repository;
 
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.member.entity.Member;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +21,7 @@ public interface MemberSavedCorrectionRepository extends JpaRepository<MemberSav
             @Param("correctionIds") List<Long> correctionIds
     );
 
-    Slice<MemberSavedCorrection> findByMember_Id(Long memberId, Pageable pageable);
+    Page<MemberSavedCorrection> findByMemberId(Long memberId, Pageable pageable);
     Optional<MemberSavedCorrection> findByCorrectionIdAndMember_Id(Long correctionId, Long memberId);
 }
 

@@ -2,12 +2,12 @@ package org.lxdproject.lxd.correction.dto;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
 
-import java.util.List;
 
 public class CorrectionResponseDTO {
 
@@ -15,9 +15,7 @@ public class CorrectionResponseDTO {
     @Builder
     public static class DiaryCorrectionsResponseDTO {
         private Long diaryId;
-        private int totalCount; // 전체 교정 수
-        private boolean hasNext; // 다음 페이지 존재 여부
-        private List<CorrectionDetailDTO> corrections;
+        private PageResponse<CorrectionDetailDTO> corrections;
     }
 
     @Getter
@@ -39,14 +37,14 @@ public class CorrectionResponseDTO {
     @Builder
     public static class MemberInfo {
         private Long memberId;
-        private String userId;
+        private String username;
         private String nickname;
         private String profileImageUrl;
 
         public static MemberInfo from(Member member) {
             return MemberInfo.builder()
                     .memberId(member.getId())
-                    .userId(member.getUsername())
+                    .username(member.getUsername())
                     .nickname(member.getNickname())
                     .profileImageUrl(member.getProfileImg())
                     .build();
@@ -60,7 +58,7 @@ public class CorrectionResponseDTO {
         private String title;
         private String thumbImg;
         private String createdAt;
-        private String userId;
+        private String username;
         private String userProfileImg;
 
         public static DiaryInfo from(Diary diary) {
@@ -69,7 +67,7 @@ public class CorrectionResponseDTO {
                     .title(diary.getTitle())
                     .thumbImg(diary.getThumbImg())
                     .createdAt(DateFormatUtil.formatDate(diary.getCreatedAt()))
-                    .userId(diary.getMember().getUsername())
+                    .username(diary.getMember().getUsername())
                     .userProfileImg(diary.getMember().getProfileImg())
                     .build();
         }
@@ -111,26 +109,7 @@ public class CorrectionResponseDTO {
     @Builder
     public static class ProvidedCorrectionsResponseDTO {
         private MemberInfo member;
-        private List<ProvidedCorrectionItem> corrections;
-        private int page;
-        private int size;
-        private boolean hasNext;
-
-        public static ProvidedCorrectionsResponseDTO from(
-                Member member,
-                List<ProvidedCorrectionItem> corrections,
-                int page,
-                int size,
-                boolean hasNext
-        ) {
-            return ProvidedCorrectionsResponseDTO.builder()
-                    .member(MemberInfo.from(member))
-                    .corrections(corrections)
-                    .page(page)
-                    .size(size)
-                    .hasNext(hasNext)
-                    .build();
-        }
+        private PageResponse<ProvidedCorrectionItem> corrections;
     }
 
     @Getter

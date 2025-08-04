@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
@@ -13,10 +14,7 @@ import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,20 +36,29 @@ public class MemberSavedCorrectionService {
             int page, int size
     ) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Slice<MemberSavedCorrection> slice = memberSavedCorrectionRepository.findByMember_Id(currentMemberId, pageable);
+        Page<MemberSavedCorrection> savedPage =
+                memberSavedCorrectionRepository.findByMemberId(currentMemberId, pageable);
 
         List<MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem> savedCorrectionDTOs =
-                slice.stream()
+                savedPage.stream()
                         .map(this::toSavedCorrectionDTO)
-                        .collect(Collectors.toList());
+                        .toList();
+
+        PageResponse<MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem> pageResponse =
+                new PageResponse<>(
+                        savedPage.getTotalElements(),
+                        savedCorrectionDTOs,
+                        savedPage.getNumber() + 1,
+                        savedPage.getSize(),
+                        savedPage.getTotalPages(),
+                        savedPage.hasNext()
+                );
 
         return MemberSavedCorrectionResponseDTO.SavedListResponseDTO.builder()
                 .memberId(currentMemberId)
-                .savedCorrections(savedCorrectionDTOs)
-                .page(page)
-                .size(size)
-                .hasNext(slice.hasNext())
+                .savedCorrections(pageResponse)
                 .build();
     }
 

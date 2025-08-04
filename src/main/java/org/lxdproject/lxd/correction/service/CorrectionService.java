@@ -2,6 +2,8 @@ package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.common.dto.CursorPageResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
@@ -33,8 +35,7 @@ public class CorrectionService {
     private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
-    public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(
-            Long diaryId, int page, int size) {
+    public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(Long diaryId, int page, int size) {
 
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -42,17 +43,12 @@ public class CorrectionService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Slice<Correction> correctionSlice = correctionRepository.findByDiaryId(diaryId, pageable);
+        Page<Correction> correctionPage = correctionRepository.findByDiaryId(diaryId, pageable);
 
-        if (correctionSlice.isEmpty()) {
-            return emptyDiaryCorrectionsResponse(diaryId);
-        }
+        Set<Long> likedIds = findLikedCorrectionIds(member, correctionPage.getContent());
 
-        Set<Long> likedIds = findLikedCorrectionIds(member, correctionSlice.getContent());
-
-        List<CorrectionResponseDTO.CorrectionDetailDTO> correctionDetailList = correctionSlice.stream()
+        List<CorrectionResponseDTO.CorrectionDetailDTO> correctionDetailList = correctionPage.stream()
                 .map(correction -> CorrectionResponseDTO.CorrectionDetailDTO.builder()
                         .correctionId(correction.getId())
                         .diaryId(correction.getDiary().getId())
@@ -63,22 +59,25 @@ public class CorrectionService {
                         .likeCount(correction.getLikeCount())
                         .commentCount(correction.getCommentCount())
                         .isLikedByMe(likedIds.contains(correction.getId()))
-                        .member(CorrectionResponseDTO.MemberInfo.builder()
-                                .memberId(correction.getAuthor().getId())
-                                .userId(correction.getAuthor().getUsername())
-                                .nickname(correction.getAuthor().getNickname())
-                                .profileImageUrl(correction.getAuthor().getProfileImg())
-                                .build())
+                        .member(CorrectionResponseDTO.MemberInfo.from(correction.getAuthor()))
                         .build())
                 .toList();
 
+        PageResponse<CorrectionResponseDTO.CorrectionDetailDTO> pageResponse = new PageResponse<>(
+                correctionPage.getTotalElements(),
+                correctionDetailList,
+                page + 1, // 클라이언트는 1부터
+                size,
+                correctionPage.getTotalPages(),
+                correctionPage.hasNext()
+        );
+
         return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
                 .diaryId(diaryId)
-                .totalCount(correctionDetailList.size())
-                .hasNext(correctionSlice.hasNext())
-                .corrections(correctionDetailList)
+                .corrections(pageResponse)
                 .build();
     }
+
 
     @Transactional
     public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(
@@ -151,7 +150,7 @@ public class CorrectionService {
                 .isLikedByMe(false)
                 .member(CorrectionResponseDTO.MemberInfo.builder()
                         .memberId(member.getId())
-                        .userId(member.getUsername())
+                        .username(member.getUsername())
                         .nickname(member.getNickname())
                         .profileImageUrl(member.getProfileImg())
                         .build())
@@ -162,30 +161,29 @@ public class CorrectionService {
     public CorrectionResponseDTO.ProvidedCorrectionsResponseDTO getMyProvidedCorrections(int page, int size) {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Slice<Correction> corrections = correctionRepository.findByAuthor(member, pageable);
 
-        List<CorrectionResponseDTO.ProvidedCorrectionItem> items = corrections.getContent().stream()
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Correction> correctionPage = correctionRepository.findByAuthor(member, pageable);
+
+        List<CorrectionResponseDTO.ProvidedCorrectionItem> items = correctionPage.getContent().stream()
                 .map(CorrectionResponseDTO.ProvidedCorrectionItem::from)
                 .toList();
 
-        return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.from(
-                member,
+        PageResponse<CorrectionResponseDTO.ProvidedCorrectionItem> pageResponse = new PageResponse<>(
+                correctionPage.getTotalElements(),
                 items,
-                page,
-                size,
-                corrections.hasNext()
+                correctionPage.getNumber() + 1,
+                correctionPage.getSize(),
+                correctionPage.getTotalPages(),
+                correctionPage.hasNext()
         );
-    }
 
-    private CorrectionResponseDTO.DiaryCorrectionsResponseDTO emptyDiaryCorrectionsResponse(Long diaryId) {
-        return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
-                .diaryId(diaryId)
-                .totalCount(0)
-                .hasNext(false)
-                .corrections(Collections.emptyList())
+        return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
+                .member(CorrectionResponseDTO.MemberInfo.from(member))
+                .corrections(pageResponse)
                 .build();
     }
+
 
     private Set<Long> findLikedCorrectionIds(Member member, List<Correction> corrections) {
         List<Long> correctionIds = corrections.stream()

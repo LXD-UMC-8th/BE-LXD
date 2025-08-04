@@ -15,7 +15,7 @@ public class MemberSavedCorrectionController implements MemberSavedCorrectionApi
 
     @Override
     public ApiResponse<MemberSavedCorrectionResponseDTO.SavedListResponseDTO> getSavedCorrections(int page, int size) {
-        return ApiResponse.onSuccess(memberSavedCorrectionService.getMySavedCorrections(page, size));
+        return ApiResponse.onSuccess(memberSavedCorrectionService.getMySavedCorrections(page - 1, size));
     }
 
     @Override
