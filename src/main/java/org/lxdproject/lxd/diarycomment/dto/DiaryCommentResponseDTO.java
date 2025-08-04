@@ -20,7 +20,7 @@ public class DiaryCommentResponseDTO {
     private int replyCount;
     private int likeCount;
     private boolean isLiked;
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Getter
     @Builder
@@ -36,7 +36,7 @@ public class DiaryCommentResponseDTO {
         private String content;
         private int likeCount;
         private boolean isLiked;
-        private LocalDateTime createdAt;
+        private String createdAt;
         private int replyCount;  //대댓글 개수
         private List<Comment> replies;  //대댓글
     }

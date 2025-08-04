@@ -5,6 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
@@ -98,7 +99,7 @@ public class DiaryCommentService {
                 .replyCount(0)
                 .likeCount(saved.getLikeCount())
                 .isLiked(false)
-                .createdAt(saved.getCreatedAt())
+                .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .build();
     }
 
