@@ -4,6 +4,7 @@ import java.util.List;
 
 public record CursorPageResponse<T> (
         List<T> content,
-        Long nextCursor,
+        int page,
+        int size,
         boolean hasNext
 ) {}

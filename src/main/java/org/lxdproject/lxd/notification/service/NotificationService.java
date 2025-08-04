@@ -84,17 +84,22 @@ public class NotificationService {
         };
     }
 
-    public CursorPageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, Long lastId, int size) {
+    public CursorPageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Notification> notifications = notificationRepository.findNotificationsWithCursor(memberId, isRead, lastId, size);
+        List<Notification> notifications = notificationRepository.findNotificationsWithMemberId(memberId, isRead, page, size);
+
+        boolean hasNext = notifications.size() > size;
+
+        if (hasNext) {
+            notifications = notifications.subList(0, size);
+        }
 
         List<NotificationResponseDTO> content = notifications.stream()
                 .map(notification -> {
                     Locale locale = member.getNativeLanguage().toLocale();
-
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
@@ -118,10 +123,7 @@ public class NotificationService {
                 })
                 .toList();
 
-        boolean hasNext = content.size() == size;
-        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
-
-        return new CursorPageResponse<>(content, nextCursor, hasNext);
+        return new CursorPageResponse<>(content, page + 1, size, hasNext);
     }
 
     @Transactional

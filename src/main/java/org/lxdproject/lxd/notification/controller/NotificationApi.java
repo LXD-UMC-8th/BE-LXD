@@ -35,8 +35,8 @@ public interface NotificationApi {
     @Operation(summary = "알림 목록 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
     public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(
-            @RequestParam(required = false) Long lastId, // 마지막 알림 ID(커서)
-            @RequestParam(defaultValue = "20") @ValidPageSize int size, // 페이지 크기
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean isRead // 필터링 조건
     );
 

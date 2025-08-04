@@ -17,8 +17,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     QNotification notification = QNotification.notification;
     QMember sender = QMember.member;
 
-    @Override
-    public List<Notification> findNotificationsWithCursor(Long memberId, Boolean isRead, Long lastId, int size) {
+    public List<Notification> findNotificationsWithMemberId(Long memberId, Boolean isRead, int page, int size) {
         BooleanBuilder where = new BooleanBuilder();
         where.and(notification.receiver.id.eq(memberId));
 
@@ -26,18 +25,16 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
             where.and(notification.isRead.eq(isRead));
         }
 
-        if (lastId != null) {
-            where.and(notification.id.lt(lastId));
-        }
-
         return queryFactory
                 .selectFrom(notification)
                 .join(notification.sender, sender).fetchJoin()
                 .where(where)
                 .orderBy(notification.id.desc())
-                .limit(size)
+                .offset((long) page * size)
+                .limit(size + 1) // hasNext 판별 위해 1개 더 조회
                 .fetch();
     }
+
 
     @Override
     public List<Notification> findUnreadWithSenderByReceiverId(Long receiverId) {

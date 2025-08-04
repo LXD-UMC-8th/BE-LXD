@@ -37,8 +37,8 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(Long lastId, int size, Boolean isRead) {
-        CursorPageResponse<NotificationResponseDTO> dto = notificationService.getNotifications(isRead, lastId, size);
+    public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(int page, int size, Boolean isRead) {
+        CursorPageResponse<NotificationResponseDTO> dto = notificationService.getNotifications(isRead, page-1, size);
         return ApiResponse.onSuccess(dto);
     }
 
