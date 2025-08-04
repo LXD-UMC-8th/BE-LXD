@@ -132,9 +132,8 @@ public class AuthService {
 
                 String newToken = createSecureToken();
                 redisService.setValues(newToken, email, Duration.ofMinutes(1L));
-
-                //TODO 임시적으로 프론트엔드 uri를 하드코딩 방식으로 구현했어서 추후 urlProperties.getFrontend() 방식으로 변경하기
-                response.sendRedirect("http://localhost:5173" + "/signup?token=" +newToken );
+                
+                response.sendRedirect(urlProperties.getFrontend() + "/signup?token=" +newToken );
             }
         }catch (IOException e) {
             log.error("redirect에 실패했습니다");
