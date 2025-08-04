@@ -2,8 +2,6 @@ package org.lxdproject.lxd.member.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -60,5 +58,5 @@ public interface MemberApi {
 
     @Operation(summary = "시스템 언어 변경 API", description = "로그인한 회원의 시스템 언어를 수정합니다.")
     @PatchMapping("/system-language")
-    ApiResponse<LanguageChangeResponseDTO> setLanguageSetting(@RequestBody LanguageSettingRequestDTO languageSetting);
+    ApiResponse<LanguageChangeResponseDTO> setLanguageSetting(@Valid @RequestBody LanguageSettingRequestDTO languageSetting);
 }
