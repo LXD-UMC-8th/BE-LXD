@@ -43,7 +43,7 @@ public class Member extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Language SystemLanguage;
+    private Language systemLanguage;
 
     // 권한
     @Enumerated(EnumType.STRING)
@@ -98,7 +98,7 @@ public class Member extends BaseEntity {
     private List<DiaryLike> diaryLikes = new ArrayList<>();
 
     public void updateSystemLanguage(Language systemLanguage) {
-        this.SystemLanguage = systemLanguage;
+        this.systemLanguage = systemLanguage;
     }
 
 }

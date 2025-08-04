@@ -6,7 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.common.dto.CursorPageResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -20,6 +20,10 @@ import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,17 +88,18 @@ public class NotificationService {
         };
     }
 
-    public CursorPageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, Long lastId, int size) {
+    public PageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Notification> notifications = notificationRepository.findNotificationsWithCursor(memberId, isRead, lastId, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        List<NotificationResponseDTO> content = notifications.stream()
+        Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, isRead, pageable);
+
+        List<NotificationResponseDTO> notificationS = notificationPage.stream()
                 .map(notification -> {
                     Locale locale = member.getNativeLanguage().toLocale();
-
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
@@ -118,10 +123,14 @@ public class NotificationService {
                 })
                 .toList();
 
-        boolean hasNext = content.size() == size;
-        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
-
-        return new CursorPageResponse<>(content, nextCursor, hasNext);
+        return new PageResponse<>(
+                notificationPage.getTotalElements(),
+                notificationS,
+                page + 1,
+                size,
+                notificationPage.getTotalPages(),
+                notificationPage.hasNext()
+        );
     }
 
     @Transactional
@@ -148,8 +157,12 @@ public class NotificationService {
     }
 
     @Transactional
-    public String markAllAsRead() {
+    public PageResponse<NotificationResponseDTO>  markAllAsRead(int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
         List<Notification> unreadList = notificationRepository.findUnreadWithSenderByReceiverId(memberId);
 
         for (Notification notification : unreadList) {
@@ -158,7 +171,43 @@ public class NotificationService {
 
         sseEmitterService.sendAllReadUpdate(memberId);
 
-        return unreadList.size() + "개의 알림이 읽음 처리 되었습니다.";
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, null, pageable);
+
+        List<NotificationResponseDTO> responses = notificationPage.stream()
+                .map(notification -> {
+                    Locale locale = member.getNativeLanguage().toLocale();
+                    String senderUsername = notification.getSender().getUsername();
+                    String diaryTitle = getDiaryTitleIfExists(notification);
+
+                    NotificationMessageContext context = NotificationMessageContext.of(
+                            notification,
+                            senderUsername,
+                            diaryTitle
+                    );
+
+                    List<MessagePart> parts = messageResolverManager.resolve(context, locale);
+
+                    return NotificationResponseDTO.builder()
+                            .id(notification.getId())
+                            .buttonField(notification.getNotificationType() == NotificationType.FRIEND_REQUEST)
+                            .profileImg(notification.getSender().getProfileImg())
+                            .messageParts(parts)
+                            .redirectUrl(notification.getRedirectUrl())
+                            .isRead(notification.isRead())
+                            .createdAt(DateFormatUtil.formatDate(notification.getCreatedAt()))
+                            .build();
+                })
+                .toList();
+
+        return new PageResponse<>(
+                notificationPage.getTotalElements(),
+                responses,
+                page + 1,
+                size,
+                notificationPage.getTotalPages(),
+                notificationPage.hasNext()
+        );
     }
 
 }

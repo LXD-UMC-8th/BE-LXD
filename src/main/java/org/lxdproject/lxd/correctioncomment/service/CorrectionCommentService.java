@@ -85,7 +85,8 @@ public class CorrectionCommentService {
                 content,
                 commentPage.getNumber()+1,
                 commentPage.getSize(),
-                commentPage.getTotalPages()
+                commentPage.getTotalPages(),
+                commentPage.hasNext()
         );
     }
 

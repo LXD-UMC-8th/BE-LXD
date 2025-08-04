@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.CursorPageResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
@@ -37,8 +37,8 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(Long lastId, int size, Boolean isRead) {
-        CursorPageResponse<NotificationResponseDTO> dto = notificationService.getNotifications(isRead, lastId, size);
+    public ApiResponse<PageResponse<NotificationResponseDTO>> getNotifications(int page, int size, Boolean isRead) {
+        PageResponse<NotificationResponseDTO> dto = notificationService.getNotifications(isRead, page-1, size);
         return ApiResponse.onSuccess(dto);
     }
 
@@ -48,7 +48,7 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<String> readAllNotifications() {
-        return ApiResponse.onSuccess(notificationService.markAllAsRead());
+    public ApiResponse<PageResponse<NotificationResponseDTO>> readAllNotifications(int page, int size) {
+        return ApiResponse.onSuccess(notificationService.markAllAsRead(page, size));
     }
 }

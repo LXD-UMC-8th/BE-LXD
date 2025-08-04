@@ -55,10 +55,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         jwtTokenProvider.validateAccessTokenOrThrow(token);
 
         // refresh 토큰일 경우, 토큰 에러 처리
-        if(!jwtTokenProvider.getTokenType(token).equals(TokenType.ACCESS.name())){
+        String tokenType = jwtTokenProvider.getTokenType(token);
+        if (tokenType == null || !tokenType.equals(TokenType.ACCESS.name())) {
             throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
-
 
         // 토큰 유효성 검사를 성공하면 이후 로직
         Authentication authentication = jwtTokenProvider.getAuthentication(token);

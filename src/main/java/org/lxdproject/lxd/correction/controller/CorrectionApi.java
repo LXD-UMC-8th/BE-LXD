@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public interface CorrectionApi {
 
     @GetMapping("/diary/{diaryId}")
     @Operation(
-            summary = "일기 상세 내 교정 목록 조회 API",
+            summary = "특정 일기 교정 조회 API",
             description = "특정 일기에 작성된 교정 리스트를 최신순으로 조회합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -25,12 +26,12 @@ public interface CorrectionApi {
     )
     ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             @PathVariable Long diaryId,
-            @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
     );
 
     @Operation(
-            summary = "교정 등록 API",
+            summary = "교정 작성 API",
             description = "일기의 문장에서 특정 부분을 교정하고 피드백 코멘트를 작성하여 등록합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "교정 등록 성공"),
@@ -59,7 +60,7 @@ public interface CorrectionApi {
     );
 
     @Operation(
-            summary = "내가 제공한 교정 목록 조회 API",
+            summary = "나의 작성 교정 조회 API",
             description = "현재 로그인한 사용자가 다른 사람의 일기에 작성한 교정 리스트를 반환합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -69,7 +70,7 @@ public interface CorrectionApi {
     @GetMapping("/provided")
     ApiResponse<CorrectionResponseDTO.ProvidedCorrectionsResponseDTO> getMyProvidedCorrections(
 
-            @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0")
+            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1")
             @RequestParam(defaultValue = "0") int page,
 
             @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10")

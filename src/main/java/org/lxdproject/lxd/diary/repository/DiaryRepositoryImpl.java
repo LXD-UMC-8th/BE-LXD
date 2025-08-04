@@ -72,7 +72,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
         return MyDiarySliceResponseDTO.builder()
                 .diaries(content)
-                .page(pageable.getPageNumber())
+                .page(pageable.getPageNumber() + 1)
                 .size(pageable.getPageSize())
                 .hasNext(hasNext)
                 .build();
@@ -127,7 +127,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
         return MyDiarySliceResponseDTO.builder()
                 .diaries(content)
-                .page(pageable.getPageNumber())
+                .page(pageable.getPageNumber() + 1)
                 .size(pageable.getPageSize())
                 .hasNext(hasNext)
                 .build();
@@ -263,7 +263,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         List<DiarySummaryResponseDTO> dtoList = diaries.stream()
                 .map(d -> DiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
-                        .createdAt(d.getCreatedAt().toString())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
                         .visibility(d.getVisibility())
                         .thumbnailUrl(d.getThumbImg())
@@ -320,7 +320,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
                         .diaryId(d.getId())
-                        .createdAt(d.getCreatedAt().toString())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
                         .visibility(d.getVisibility())
                         .thumbnailUrl(d.getThumbImg())

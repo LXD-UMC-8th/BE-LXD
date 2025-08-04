@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.QNotification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -18,26 +21,33 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     QMember sender = QMember.member;
 
     @Override
-    public List<Notification> findNotificationsWithCursor(Long memberId, Boolean isRead, Long lastId, int size) {
-        BooleanBuilder where = new BooleanBuilder();
-        where.and(notification.receiver.id.eq(memberId));
-
+    public Page<Notification> findPageByMemberId(Long memberId, Boolean isRead, Pageable pageable) {
+        BooleanBuilder where = new BooleanBuilder()
+                .and(notification.receiver.id.eq(memberId));
         if (isRead != null) {
             where.and(notification.isRead.eq(isRead));
         }
 
-        if (lastId != null) {
-            where.and(notification.id.lt(lastId));
-        }
-
-        return queryFactory
+        // fetch join한 contentQuery
+        List<Notification> content = queryFactory
                 .selectFrom(notification)
                 .join(notification.sender, sender).fetchJoin()
                 .where(where)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .orderBy(notification.id.desc())
-                .limit(size)
                 .fetch();
+
+        // countQuery
+        long count = queryFactory
+                .select(notification.count())
+                .from(notification)
+                .where(where)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, count);
     }
+
 
     @Override
     public List<Notification> findUnreadWithSenderByReceiverId(Long receiverId) {

@@ -42,9 +42,9 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ApiResponse<AuthResponseDTO.SocialLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.SocialLoginRequestDTO SocialLoginRequestDTO) {
+    public ApiResponse<AuthResponseDTO.SocialLoginResponseDTO>loginWithGoogle(@RequestBody AuthRequestDTO.SocialLoginRequestDTO socialLoginRequestDTO) {
 
-        String accessToken = googleOAuthClient.requestAccessToken(SocialLoginRequestDTO.getCode());
+        String accessToken = googleOAuthClient.requestAccessToken(socialLoginRequestDTO.getCode());
         GoogleUserInfo googleUserInfo = googleOAuthClient.requestUserInfo(accessToken);
 
         AuthResponseDTO.SocialLoginResponseDTO socialLoginResponseDTO = authService.socialLogin(googleUserInfo);
@@ -69,7 +69,7 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ApiResponse<String> logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
+    public ApiResponse<String> logout(@RequestBody AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
 
         authService.logout(logoutRequestDTO);
 

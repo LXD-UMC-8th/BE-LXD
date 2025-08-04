@@ -2,9 +2,7 @@ package org.lxdproject.lxd.correction.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import org.lxdproject.lxd.common.dto.PageResponse;
 
 public class MemberSavedCorrectionResponseDTO {
 
@@ -12,10 +10,7 @@ public class MemberSavedCorrectionResponseDTO {
     @Builder
     public static class SavedListResponseDTO {
         private Long memberId;
-        private List<SavedCorrectionItem> savedCorrections;
-        private int page;
-        private int size;
-        private boolean hasNext;
+        private PageResponse<SavedCorrectionItem> savedCorrections;
 
         @Getter
         @Builder

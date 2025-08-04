@@ -6,6 +6,7 @@ import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
 
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"requester_id", "receiver_id"})})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

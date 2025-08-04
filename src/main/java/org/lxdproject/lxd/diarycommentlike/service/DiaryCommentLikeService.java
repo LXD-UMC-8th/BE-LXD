@@ -1,6 +1,10 @@
 package org.lxdproject.lxd.diarycommentlike.service;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.diarycommentlike.dto.DiaryCommentLikeResponseDTO;
@@ -20,18 +24,14 @@ public class DiaryCommentLikeService {
     private final DiaryCommentRepository commentRepository;
     private final DiaryCommentLikeRepository likeRepository;
 
-    public DiaryCommentLikeResponseDTO toggleLike(Long memberId, Long diaryId, Long commentId) {
+    public DiaryCommentLikeResponseDTO toggleLike(Long commentId) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         DiaryComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
-
-
-        if (!comment.getDiary().getId().equals(diaryId)) {
-            throw new IllegalArgumentException("해당 댓글은 지정된 일기에 속하지 않습니다.");
-        }
+                .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         Optional<DiaryCommentLike> existing = likeRepository.findByMemberIdAndCommentId(memberId, commentId);
 

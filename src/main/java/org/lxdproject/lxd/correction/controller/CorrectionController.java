@@ -2,6 +2,7 @@ package org.lxdproject.lxd.correction.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.correction.service.CorrectionService;
@@ -16,7 +17,9 @@ public class CorrectionController implements CorrectionApi {
     @Override
     public ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             Long diaryId, int page, int size) {
-        return ApiResponse.onSuccess(correctionService.getCorrectionsByDiaryId(diaryId, page, size));
+        return ApiResponse.onSuccess(
+                correctionService.getCorrectionsByDiaryId(diaryId, page - 1, size)
+        );
     }
 
     @Override
@@ -36,6 +39,6 @@ public class CorrectionController implements CorrectionApi {
     public ApiResponse<CorrectionResponseDTO.ProvidedCorrectionsResponseDTO> getMyProvidedCorrections(
            int page, int size
     ) {
-        return ApiResponse.onSuccess(correctionService.getMyProvidedCorrections(page, size));
+        return ApiResponse.onSuccess(correctionService.getMyProvidedCorrections(page- 1, size));
     }
 }

@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -123,7 +125,9 @@ public class DiaryService {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
-        s3Uploader.deleteFileByUrl(diary.getThumbImg());
+        if (diary.getThumbImg() != null && !diary.getThumbImg().equals(request.getThumbImg())) {
+            s3Uploader.deleteFileByUrl(diary.getThumbImg());
+        }
 
         String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
 
@@ -147,7 +151,7 @@ public class DiaryService {
         // 라이브러리에서 삽입하는 스타일 태그 제거
         StringBuilder html = new StringBuilder();
         for (diff_match_patch.Diff diff : diffs) {
-            String text = diff.text;
+            String text = StringEscapeUtils.escapeHtml4(diff.text);
 
             switch (diff.operation) {
                 case INSERT:
