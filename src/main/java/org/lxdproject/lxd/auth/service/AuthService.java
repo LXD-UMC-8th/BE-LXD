@@ -131,9 +131,9 @@ public class AuthService {
                 redisService.deleteValues(token); // 재사용 방지
 
                 String newToken = createSecureToken();
-                redisService.setValues(newToken, email, Duration.ofMinutes(1L));
+                redisService.setValues(newToken, email, Duration.ofMinutes(3L));
                 
-                response.sendRedirect(urlProperties.getFrontend() + "/signup?token=" +newToken );
+                response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" +newToken );
             }
         }catch (IOException e) {
             log.error("redirect에 실패했습니다");
