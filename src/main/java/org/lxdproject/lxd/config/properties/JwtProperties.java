@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.config.security.jwt;
+package org.lxdproject.lxd.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;

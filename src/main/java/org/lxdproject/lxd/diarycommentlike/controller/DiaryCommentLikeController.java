@@ -17,16 +17,9 @@ public class DiaryCommentLikeController implements DiaryCommentLikeApi {
     private final DiaryCommentLikeService diaryCommentLikeService;
 
     @Override
-    public ResponseEntity<ApiResponse<DiaryCommentLikeResponseDTO>> toggleCommentLike(
-            Long diaryId,
-            Long commentId,
-            @AuthenticationPrincipal(expression = "username") String memberIdStr
-    ) {
-        Long memberId = Long.parseLong(memberIdStr);
-
-        DiaryCommentLikeResponseDTO result = diaryCommentLikeService.toggleLike(memberId, diaryId, commentId);
-
-        return ResponseEntity.ok(ApiResponse.onSuccess(SuccessStatus._OK, result));
+    public ApiResponse<DiaryCommentLikeResponseDTO> toggleCommentLike(Long commentId) {
+        DiaryCommentLikeResponseDTO result = diaryCommentLikeService.toggleLike(commentId);
+        return ApiResponse.onSuccess(SuccessStatus._OK, result);
     }
 }
 

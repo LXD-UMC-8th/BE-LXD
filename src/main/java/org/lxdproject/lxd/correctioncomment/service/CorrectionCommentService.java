@@ -1,6 +1,14 @@
 package org.lxdproject.lxd.correctioncomment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.correctioncomment.dto.*;
@@ -11,8 +19,11 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,68 +33,80 @@ public class CorrectionCommentService {
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
 
-    public CorrectionCommentResponseDTO createComment(Long correctionId, CorrectionCommentRequestDTO request, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+    @Transactional
+    public CorrectionCommentResponseDTO writeComment(Long correctionId, CorrectionCommentRequestDTO request) {
+
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Correction correction = correctionRepository.findById(correctionId)
-                .orElseThrow(() -> new IllegalArgumentException("교정 없음"));
+                .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
 
         CorrectionComment comment = CorrectionComment.builder()
                 .member(member)
                 .correction(correction)
-                .commentText(request.getCommentText())
-                .likeCount(0)
+                .content(request.getContent())
                 .build();
 
         CorrectionComment saved = commentRepository.save(comment);
 
         return CorrectionCommentResponseDTO.builder()
                 .commentId(saved.getId())
+                .memberId(member.getId())
+                .username(member.getUsername())
                 .nickname(member.getNickname())
                 .profileImage(member.getProfileImg())
-                .content(saved.getCommentText())
-                .likeCount(saved.getLikeCount())
-                .isLiked(false)
-                .createdAt(saved.getCreatedAt())
+                .content(saved.getContent())
+                .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .build();
     }
 
-    public CorrectionCommentPageResponseDTO getComments(Long correctionId, Pageable pageable) {
-        Page<CorrectionComment> page = commentRepository.findAllByCorrectionId(correctionId, pageable);
-        List<CorrectionCommentResponseDTO> comments = page.stream().map(comment -> CorrectionCommentResponseDTO.builder()
-                .commentId(comment.getId())
-                .nickname(comment.getMember().getNickname())
-                .profileImage(comment.getMember().getProfileImg())
-                .content(comment.getCommentText())
-                .likeCount(comment.getLikeCount())
-                .isLiked(false)
-                .createdAt(comment.getCreatedAt())
-                .build()).toList();
 
-        return CorrectionCommentPageResponseDTO.builder()
-                .comments(comments)
-                .totalElements(page.getTotalElements())
-                .build();
+    @Transactional(readOnly = true)
+    public PageResponse<CorrectionCommentResponseDTO> getComments(Long correctionId, Pageable pageable) {
+        Correction correction = correctionRepository.findById(correctionId)
+                .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+
+        Page<CorrectionComment> commentPage = commentRepository.findByCorrection(correction, pageable);
+
+        List<CorrectionCommentResponseDTO> content = commentPage.stream()
+                .map(comment -> CorrectionCommentResponseDTO.builder()
+                        .commentId(comment.getId())
+                        .memberId(comment.getMember().getId())
+                        .username(comment.getMember().getUsername())
+                        .nickname(comment.getMember().getNickname())
+                        .profileImage(comment.getMember().getProfileImg())
+                        .content(comment.getDisplayContent())
+                        .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
+                        .build())
+                .toList();
+
+        return new PageResponse<>(
+                commentPage.getTotalElements(),
+                content,
+                commentPage.getNumber()+1,
+                commentPage.getSize(),
+                commentPage.getTotalPages(),
+                commentPage.hasNext()
+        );
     }
 
-    public CorrectionCommentDeleteResponseDTO deleteComment(Long correctionId, Long commentId, Long memberId) {
+    //삭제
+    @Transactional
+    public CorrectionCommentDeleteResponseDTO deleteComment(Long commentId) {
         CorrectionComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
-        if (!comment.getCorrection().getId().equals(correctionId)) {
-            throw new IllegalArgumentException("correction 불일치");
-        }
-        if (!comment.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("작성자 불일치");
+                .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
+
+        if (!comment.getMember().getId().equals(SecurityUtil.getCurrentMemberId())) {
+            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        comment.softDelete(); // soft delete
+        comment.softDelete();
+
         return CorrectionCommentDeleteResponseDTO.builder()
                 .commentId(comment.getId())
-                .isDeleted(true)
-                .content(comment.getCommentText())
-                .deletedAt(comment.getUpdatedAt())
+                .isDeleted(comment.isDeleted())
+                .content(comment.getDisplayContent())
+                .deletedAt(comment.getDeletedAt())
                 .build();
-
     }
 }
-

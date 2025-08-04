@@ -10,12 +10,16 @@ import java.util.List;
 @Builder
 public class DiaryCommentResponseDTO {
     private Long commentId; // 댓글 ID
-    private Long userId; // 작성자 ID
+    private Long memberId; // 작성자 ID
+    private String username;
     private String nickname;  // 작성자 닉네임
     private Long diaryId;
+    private Long parentId; // nullable
     private String profileImage;
     private String commentText;
-    private Long parentId; // nullable
+    private int replyCount;
+    private int likeCount;
+    private boolean isLiked;
     private LocalDateTime createdAt;
 
     @Getter
@@ -25,15 +29,16 @@ public class DiaryCommentResponseDTO {
     public static class Comment {
         private Long commentId;
         private Long parentId;
-        private Long userId;
+        private Long memberId;
+        private String username;
         private String nickname;
         private String profileImage;
         private String content;
         private int likeCount;
         private boolean isLiked;
         private LocalDateTime createdAt;
-        private List<Comment> replies;
-
+        private int replyCount;  //대댓글 개수
+        private List<Comment> replies;  //대댓글
     }
 
     @Getter

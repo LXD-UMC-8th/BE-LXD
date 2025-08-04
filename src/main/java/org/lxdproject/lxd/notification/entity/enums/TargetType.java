@@ -1,8 +1,9 @@
 package org.lxdproject.lxd.notification.entity.enums;
 
 public enum TargetType {
-    COMMENT,
-    DIARY,
+    DIARY_COMMENT,
+    CORRECTION_COMMENT,
+    CORRECTION,
     MEMBER
 }
 

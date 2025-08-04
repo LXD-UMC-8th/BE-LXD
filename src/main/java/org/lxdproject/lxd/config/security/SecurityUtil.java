@@ -27,7 +27,7 @@ public class SecurityUtil {
             String principalStr = authentication.getName();
             return Long.valueOf(principalStr);
         } catch (Exception e) {
-            throw new AuthHandler(ErrorStatus.INVALID_TOKEN);
+            throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
     }
 

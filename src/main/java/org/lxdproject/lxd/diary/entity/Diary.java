@@ -7,14 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
-import org.hibernate.annotations.Where;
 import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.dto.DiaryRequestDTO;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
-import org.lxdproject.lxd.diary.entity.mapping.DiaryLike;
+import org.lxdproject.lxd.diarylike.entity.DiaryLike;
 import org.lxdproject.lxd.member.entity.Member;
 
 import java.util.ArrayList;

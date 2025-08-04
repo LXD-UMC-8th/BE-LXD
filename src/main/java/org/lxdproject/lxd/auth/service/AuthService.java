@@ -2,8 +2,10 @@ package org.lxdproject.lxd.auth.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
@@ -11,6 +13,7 @@ import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
+import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
@@ -61,10 +64,14 @@ public class AuthService {
         }
 
         // 인증 완료 후, 토큰 생성
-        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
+
+        redisService.setValues(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
+                refreshToken,
                 member
         );
     }
@@ -122,7 +129,11 @@ public class AuthService {
                 response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
             } else {
                 redisService.deleteValues(token); // 재사용 방지
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/success");
+
+                String newToken = createSecureToken();
+                redisService.setValues(newToken, email, Duration.ofMinutes(1L));
+                
+                response.sendRedirect(urlProperties.getFrontend() + "/signup?token=" +newToken );
             }
         }catch (IOException e) {
             log.error("redirect에 실패했습니다");
@@ -152,22 +163,87 @@ public class AuthService {
                     .build();
         }
 
-        // 기존 유저 -> 로그인 후 jwt 토큰 발급
-        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name());
+        // 기존 유저 -> 로그인 후 액세스 토큰 및 리프레쉬 토큰 발급
+        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
+
+        // redis에 refreshToken 저장
+        redisService.setValues(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
                 .isNewMember(Boolean.FALSE) // 기존 유저
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
                         .email(member.getEmail())
                         .username(member.getUsername())
                         .profileImg(member.getProfileImg())
                         .nickname(member.getNickname())
-                        .language(member.getLanguage().name())
+                        .nativeLanguage(member.getNativeLanguage().name())
+                        .studyLanguage(member.getLanguage().name())
                         .loginType(oAuthUserInfo.getLoginType())
                         .build())
                 .build();
 
+    }
+
+    public AuthResponseDTO.ReissueResponseDTO reissue(AuthRequestDTO.@Valid ReissueRequestDTO reissueRequestDTO) {
+
+        String refreshToken = reissueRequestDTO.getRefreshToken();
+
+        // refresh 토큰 유효성 검사
+        jwtTokenProvider.validateRefreshTokenOrThrow(refreshToken);
+
+        String email = redisService.getValues(refreshToken);
+
+        if(email == null) {
+            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+
+        String newAccessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
+        String newRefreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
+
+        redisService.deleteValues(refreshToken);
+
+        return new AuthResponseDTO.ReissueResponseDTO().builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+
+    }
+
+    public void logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
+
+        String refreshToken = logoutRequestDTO.getRefreshToken();
+
+        // refresh 토큰 유효성 검사
+        jwtTokenProvider.validateRefreshTokenOrThrow(refreshToken);
+
+        String email = redisService.getValues(refreshToken);
+
+        if(email == null) {
+            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+
+        redisService.deleteValues(refreshToken);
+
+    }
+
+    public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
+
+        String email = redisService.getValues(token);
+
+        if(email == null) {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
+
+        return AuthResponseDTO.GetEmailByTokenResponseDTO.builder()
+                .email(email)
+                .build();
     }
 }

@@ -6,11 +6,9 @@ import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diarycomment.dto.*;
 import org.lxdproject.lxd.diarycomment.service.DiaryCommentService;
-import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,7 +32,7 @@ public class DiaryCommentController implements DiaryCommentApi {
     public ApiResponse<DiaryCommentResponseDTO.CommentList> getComments(
             Long diaryId, int page, int size
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
         DiaryCommentResponseDTO.CommentList response =
                 diaryCommentService.getComments(diaryId, pageable);
         return ApiResponse.of(SuccessStatus._OK, response);

@@ -3,6 +3,8 @@ package org.lxdproject.lxd.notification.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.notification.dto.NotificationReadUpdateDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -19,13 +21,25 @@ public class SseEmitterService {
     public SseEmitter connect() {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 3600초 = 1시간 동안 연결 유지
+        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1시간
         emitters.put(memberId, emitter);
 
         // 연결 종료 시 제거
         emitter.onCompletion(() -> emitters.remove(memberId));
         emitter.onTimeout(() -> emitters.remove(memberId));
         emitter.onError(e -> emitters.remove(memberId));
+
+        try {
+            log.info("[SSE] 연결 확인 이벤트 전송 - memberId: {}", memberId);
+            emitter.send(SseEmitter.event()
+                    .name("connect")
+                    .data("[SSE] 연결 확인")
+            );
+        } catch (IOException e) {
+            log.error("[SSE] 연결 확인 이벤트 전송 실패 - memberId: {}", memberId, e);
+            emitters.remove(memberId);
+            emitter.completeWithError(e);
+        }
 
         return emitter;
     }
@@ -46,6 +60,44 @@ public class SseEmitterService {
             log.warn("[SSE] 알림 전송 실패: 연결 없음 - memberId: {}", memberId);
         }
     }
+
+    public void sendNotificationReadUpdate(Notification notification) {
+        Long receiverId = notification.getReceiver().getId();
+
+        NotificationReadUpdateDTO dto = new NotificationReadUpdateDTO(
+                notification.getId(), true
+        );
+
+        SseEmitter emitter = emitters.get(receiverId);
+        if (emitter != null) {
+            try {
+                log.info("[SSE] 알림 읽음 상태 전송 - to: {}, notificationId: {}", receiverId, notification.getId());
+                emitter.send(SseEmitter.event()
+                        .name("notification-read")
+                        .data(dto));
+            } catch (IOException e) {
+                emitters.remove(receiverId);
+                log.error("[SSE] 알림 읽음 상태 전송 실패 - receiverId: {}", receiverId, e);
+            }
+        }
+        else {
+            log.warn("[SSE] 알림 읽음 상태 전송 실패: 연결 없음 - receiverId: {}", receiverId);
+        }
+    }
+
+    public void sendAllReadUpdate(Long receiverId) {
+        SseEmitter emitter = emitters.get(receiverId);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("notification-all-read")
+                        .data("ALL_READ"));
+            } catch (IOException e) {
+                emitters.remove(receiverId);
+            }
+        }
+    }
+
 
 }
 

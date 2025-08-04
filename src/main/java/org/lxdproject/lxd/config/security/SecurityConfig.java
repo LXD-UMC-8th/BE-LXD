@@ -1,6 +1,8 @@
 package org.lxdproject.lxd.config.security;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.SecurityExceptionHandler;
 import org.lxdproject.lxd.config.security.jwt.JwtAuthenticationFilter;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,26 +27,31 @@ import java.util.List;
 public class SecurityConfig {
 
     // 인증 없이 접근 가능한 화이트리스트 경로 정의
-    private static final String[] WHITELIST = {
+    public static final String[] WHITELIST = {
             "/",
             "/health",
             "/test/**",
             "/members/join",
-            "/members/check-email",
-            "/members/check-nickname",
+            "/members/check-username",
             "/members/password-verify",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/auth/login",
             "/auth/google/login",
             "/auth/emails/verification-requests",
-            "/auth/emails/verifications"
+            "/auth/emails/verifications",
+            "/auth/email",
+            "/auth/email/**", // 쿼리 파라미터가 있는 경우 /** uri 추가로 붙여주기
+            "/auth/reissue",
+            "/auth/logout"
     };
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final SecurityExceptionHandler securityExceptionHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
@@ -58,8 +65,8 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityExceptionHandler, JwtAuthenticationFilter.class);
 
         return http.build();
     }

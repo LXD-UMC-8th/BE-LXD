@@ -4,8 +4,12 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.auth.enums.TokenType;
+import org.lxdproject.lxd.config.properties.JwtProperties;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -26,12 +30,13 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
 
-    public String generateToken(Long memberId, String email, String role) {
+    public String generateToken(Long memberId, String email, String role, TokenType tokenType) {
 
         return Jwts.builder()
                 .setSubject(String.valueOf(memberId))
                 .claim("role", role)
                 .claim("email", email)
+                .claim("tokenType", tokenType.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessToken().getExpiration()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -49,6 +54,36 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
+    // 액세스 토큰 전용 유효성 검사 메서드
+    public void validateAccessTokenOrThrow(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw new AuthHandler(ErrorStatus.EXPIRED_ACCESS_TOKEN);
+        } catch (Exception e) {
+            throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
+        }
+    }
+
+    // 리프레쉬 토큰 전용 유효성 검사 메서드
+    public void validateRefreshTokenOrThrow(String refreshToken){
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(refreshToken);
+        } catch (ExpiredJwtException e) {
+            throw new AuthHandler(ErrorStatus.EXPIRED_REFRESH_TOKEN);
+        } catch (Exception e) {
+            throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+
+    }
+
 
     public Authentication getAuthentication(String token) {
 
@@ -78,9 +113,13 @@ public class JwtTokenProvider {
     public Authentication extractAuthentication(HttpServletRequest request){
         String accessToken = resolveToken(request);
         if(accessToken == null || !validateToken(accessToken)) {
-            throw new MemberHandler(ErrorStatus.INVALID_TOKEN);
+            throw new MemberHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }
         return getAuthentication(accessToken);
+    }
+
+    public String getTokenType(String token){
+        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().get("tokenType", String.class);
     }
 
 }

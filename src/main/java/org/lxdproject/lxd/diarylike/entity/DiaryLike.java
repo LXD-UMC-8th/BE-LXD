@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.diary.entity.mapping;
+package org.lxdproject.lxd.diarylike.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
