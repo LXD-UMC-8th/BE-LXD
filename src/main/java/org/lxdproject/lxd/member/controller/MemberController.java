@@ -66,7 +66,7 @@ public class MemberController implements MemberApi {
     @Override
     public ApiResponse<LanguageChangeResponseDTO> setLanguageSetting(@Valid @RequestBody LanguageSettingRequestDTO request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        LanguageChangeResponseDTO response = memberService.setLanguage(memberId, request);
+        LanguageChangeResponseDTO response = memberService.setSystemLanguage(memberId, request);
         return ApiResponse.of(SuccessStatus._OK, response);
     }
 }

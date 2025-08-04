@@ -146,15 +146,14 @@ public class MemberService {
     }
 
     @Transactional
-    public LanguageChangeResponseDTO setLanguage(Long memberId, LanguageSettingRequestDTO request) {
+    public LanguageChangeResponseDTO setSystemLanguage(Long memberId, LanguageSettingRequestDTO request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         member.updateSystemLanguage(request.getSystemLanguage());
 
-        LanguageChangeResponseDTO response = new LanguageChangeResponseDTO();
-        response.setSystemLanguage(member.getSystemLanguage());
-
-        return response;
+        return LanguageChangeResponseDTO.builder()
+                .systemLanguage(member.getSystemLanguage())
+                .build();
     }
 }
