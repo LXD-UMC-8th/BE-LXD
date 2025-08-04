@@ -21,13 +21,23 @@ public class SseEmitterService {
     public SseEmitter connect() {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 3600초 = 1시간 동안 연결 유지
+        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1시간
         emitters.put(memberId, emitter);
 
         // 연결 종료 시 제거
         emitter.onCompletion(() -> emitters.remove(memberId));
         emitter.onTimeout(() -> emitters.remove(memberId));
         emitter.onError(e -> emitters.remove(memberId));
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connect")
+                    .data("connected")
+            );
+        } catch (IOException e) {
+            emitters.remove(memberId);
+            emitter.completeWithError(e);
+        }
 
         return emitter;
     }
