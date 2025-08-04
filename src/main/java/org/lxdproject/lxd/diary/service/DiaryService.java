@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -149,7 +151,7 @@ public class DiaryService {
         // 라이브러리에서 삽입하는 스타일 태그 제거
         StringBuilder html = new StringBuilder();
         for (diff_match_patch.Diff diff : diffs) {
-            String text = diff.text;
+            String text = StringEscapeUtils.escapeHtml4(diff.text);
 
             switch (diff.operation) {
                 case INSERT:
