@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diarycomment.converter;
 
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.member.entity.Member;
@@ -28,7 +29,7 @@ public class DiaryCommentConverter {
                 .content(comment.getCommentText())
                 .likeCount(comment.getLikeCount())
                 .isLiked(likedCommentIds.contains(comment.getId()))
-                .createdAt(comment.getCreatedAt())
+                .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
                 .replyCount(comment.getReplyCount())
                 .replies(replies)
                 .build();
