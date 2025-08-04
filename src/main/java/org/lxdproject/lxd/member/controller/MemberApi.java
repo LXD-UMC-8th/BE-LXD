@@ -1,6 +1,9 @@
 package org.lxdproject.lxd.member.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,24 +46,12 @@ public interface MemberApi {
     })
     public ApiResponse<MemberResponseDTO.CheckUsernameResponseDTO> checkUsername(@RequestParam String username);
 
-    @PatchMapping (
-            value    = "/profile",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
-    )
-    @Operation(
-            summary     = "프로필 수정 api",
-            description = "프로필 화면에서 수정합니다.",
-            responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "프로필 수정 성공"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 형식 또는 유효성 실패"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
-            }
-    )
-    ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(
-
-            @RequestPart(value = "data", required = false) MemberRequestDTO.ProfileUpdateDTO updateDTO,
+    @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로필 수정", description = "닉네임과 프로필 이미지를 수정합니다.")
+    public ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(
+            @RequestPart("data") String data,
             @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
-    );
+    ) throws JsonProcessingException;
 
     @Operation(summary = "언어 조회 API", description = "로그인한 회원의 모국어, 학습언어, 시스템 언어를 조회합니다.")
     @GetMapping("/language")

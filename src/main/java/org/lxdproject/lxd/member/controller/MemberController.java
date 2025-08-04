@@ -1,8 +1,12 @@
 package org.lxdproject.lxd.member.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
@@ -19,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController implements MemberApi {
 
     private final MemberService memberService;
+    private final ObjectMapper objectMapper;
+
 
     @Override
     public ApiResponse<MemberResponseDTO.JoinResponseDTO> join(@RequestPart(value = "data") @Valid MemberRequestDTO.JoinRequestDTO joinRequestDTO, @RequestPart(required = false) MultipartFile profileImg) {
@@ -39,10 +45,15 @@ public class MemberController implements MemberApi {
 
     @Override
     public ApiResponse<MemberResponseDTO.MemberInfoDTO> updateProfileInfo(
-            @RequestPart(value = "data", required = false) MemberRequestDTO.ProfileUpdateDTO updateDTO,
+            @RequestPart("data") String data,
             @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
     ) {
-        return ApiResponse.onSuccess(memberService.updateMemberInfo(updateDTO, profileImg));
+        try {
+            MemberRequestDTO.ProfileUpdateDTO dto = objectMapper.readValue(data, MemberRequestDTO.ProfileUpdateDTO.class);
+            return ApiResponse.onSuccess(memberService.updateMemberInfo(dto, profileImg));
+        } catch (JsonProcessingException e) {
+            throw new MemberHandler(ErrorStatus.INVALID_PROFILE_DATA);
+        }
     }
 
     @Override
