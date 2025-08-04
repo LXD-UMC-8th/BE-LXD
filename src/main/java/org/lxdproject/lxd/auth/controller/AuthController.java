@@ -69,7 +69,7 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ApiResponse<String> logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
+    public ApiResponse<String> logout(@RequestBody AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
 
         authService.logout(logoutRequestDTO);
 
