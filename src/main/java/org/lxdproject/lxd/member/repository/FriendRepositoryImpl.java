@@ -20,11 +20,10 @@ public class FriendRepositoryImpl implements FriendRepository {
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
 
-    QFriendship friendship = QFriendship.friendship;
-    QMember requester = new QMember("requester");
-    QMember receiver = new QMember("receiver");
-
-
+    private static final QFriendship friendship = QFriendship.friendship;
+    private static final QMember requester = new QMember("requester");
+    private static final QMember receiver = new QMember("receiver");
+    
     @Override
     public List<Member> findFriendsByMemberId(Long memberId) {
         // 내가 요청자였던 경우: receiver가 친구
