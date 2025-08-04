@@ -2,6 +2,7 @@ package org.lxdproject.lxd.diarycomment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 
 import java.time.LocalDateTime;
@@ -13,14 +14,14 @@ public class DiaryCommentDeleteResponseDTO {
     private Long commentId;
     private boolean isDeleted;
     private String content;
-    private LocalDateTime deletedAt;
+    private String deletedAt;
 
     public static DiaryCommentDeleteResponseDTO from(DiaryComment comment) {
         return DiaryCommentDeleteResponseDTO.of(
                 comment.getId(),
                 comment.isDeleted(),
                 comment.getCommentText(),
-                comment.getDeletedAt()
+                DateFormatUtil.formatDate(comment.getDeletedAt())
         );
     }
 }
