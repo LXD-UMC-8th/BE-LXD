@@ -72,7 +72,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
         return MyDiarySliceResponseDTO.builder()
                 .diaries(content)
-                .page(pageable.getPageNumber())
+                .page(pageable.getPageNumber() + 1)
                 .size(pageable.getPageSize())
                 .hasNext(hasNext)
                 .build();
@@ -127,7 +127,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
         return MyDiarySliceResponseDTO.builder()
                 .diaries(content)
-                .page(pageable.getPageNumber())
+                .page(pageable.getPageNumber() + 1)
                 .size(pageable.getPageSize())
                 .hasNext(hasNext)
                 .build();
