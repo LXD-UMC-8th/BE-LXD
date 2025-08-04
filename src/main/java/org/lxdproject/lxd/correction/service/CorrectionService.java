@@ -2,7 +2,6 @@ package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
-import org.lxdproject.lxd.common.dto.CursorPageResponse;
 import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
