@@ -1,6 +1,5 @@
 package org.lxdproject.lxd.member.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
@@ -9,12 +8,12 @@ import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.common.util.S3Uploader;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
-import org.lxdproject.lxd.member.dto.MemberRequestDTO;
-import org.lxdproject.lxd.member.dto.MemberResponseDTO;
+import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -132,5 +131,30 @@ public class MemberService {
                 .nickname(member.getNickname())
                 .profileImg(member.getProfileImg())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public LanguageSettingResponseDTO getLanguageSetting(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return LanguageSettingResponseDTO.builder()
+                .nativeLanguage(member.getNativeLanguage())
+                .studyLanguage(member.getLanguage())
+                .systemLanguage(member.getSystemLanguage())
+                .build();
+    }
+
+    @Transactional
+    public LanguageChangeResponseDTO setLanguage(Long memberId, LanguageSettingRequestDTO request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.updateSystemLanguage(request.getSystemLanguage());
+
+        LanguageChangeResponseDTO response = new LanguageChangeResponseDTO();
+        response.setSystemLanguage(member.getSystemLanguage());
+
+        return response;
     }
 }

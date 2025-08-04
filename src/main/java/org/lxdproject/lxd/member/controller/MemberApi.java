@@ -7,8 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.member.dto.MemberRequestDTO;
-import org.lxdproject.lxd.member.dto.MemberResponseDTO;
+import org.lxdproject.lxd.member.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,4 +61,13 @@ public interface MemberApi {
             @RequestPart(value = "data", required = false) MemberRequestDTO.ProfileUpdateDTO updateDTO,
             @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
     );
+
+    @Operation(summary = "언어 조회 API", description = "로그인한 회원의 모국어, 학습언어, 시스템 언어를 조회합니다.")
+    @GetMapping("/language")
+    ApiResponse<LanguageSettingResponseDTO> getLanguageSetting();
+
+
+    @Operation(summary = "시스템 언어 변경 API", description = "로그인한 회원의 시스템 언어를 수정합니다.")
+    @PatchMapping("/system-language")
+    ApiResponse<LanguageChangeResponseDTO> setLanguageSetting(@RequestBody LanguageSettingRequestDTO languageSetting);
 }

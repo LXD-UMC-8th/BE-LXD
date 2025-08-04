@@ -3,9 +3,10 @@ package org.lxdproject.lxd.member.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
-import org.lxdproject.lxd.member.dto.MemberRequestDTO;
-import org.lxdproject.lxd.member.dto.MemberResponseDTO;
+import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.service.MemberService;
 import org.springframework.validation.annotation.Validated;
@@ -42,5 +43,19 @@ public class MemberController implements MemberApi {
             @RequestPart(value = "profileImg", required = false) MultipartFile profileImg
     ) {
         return ApiResponse.onSuccess(memberService.updateMemberInfo(updateDTO, profileImg));
+    }
+
+    @Override
+    public ApiResponse<LanguageSettingResponseDTO> getLanguageSetting() {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        LanguageSettingResponseDTO response = memberService.getLanguageSetting(memberId);
+        return ApiResponse.of(SuccessStatus._OK, response);
+    }
+
+    @Override
+    public ApiResponse<LanguageChangeResponseDTO> setLanguageSetting(@RequestBody LanguageSettingRequestDTO request) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        LanguageChangeResponseDTO response = memberService.setLanguage(memberId, request);
+        return ApiResponse.of(SuccessStatus._OK, response);
     }
 }
