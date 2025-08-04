@@ -70,7 +70,7 @@ public interface DiaryApi {
     );
 
     @GetMapping("/random-question")
-    @Operation(summary = "일기 작성 시 랜덤 질문 조회 API", description = "쿼리 파라미터로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
+    @Operation(summary = "질문 랜덤 조회 API", description = "쿼리 파라미터로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
     @Parameters({
             @Parameter(name = "language", description = "KO 또는 ENG 중 원하는 랜덤 질문의 언어를 선택합니다.", required = true)
     })
@@ -82,7 +82,7 @@ public interface DiaryApi {
     ApiResponse<QuestionResponseDTO> getRandomQuestion(@RequestParam("language") Language language);
 
     @GetMapping("/my")
-    @Operation(summary = "내가 작성한 일기 목록 조회 API", description = "현재 로그인한 사용자가 작성한 일기 목록을 조회합니다. likedOnly=true 시 좋아요 누른 내 일기만 조회됩니다.")
+    @Operation(summary = "나의 일기 목록 조회 API", description = "현재 로그인한 사용자가 작성한 일기 목록을 조회합니다. likedOnly=true 시 좋아요 누른 내 일기만 조회됩니다.")
     @Parameters({
             @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
             @Parameter(name = "size", description = "페이지 크기", example = "10"),
@@ -159,7 +159,7 @@ public interface DiaryApi {
     );
 
     @GetMapping("/liked")
-    @Operation(summary = "좋아요 누른 일기 목록 조회 API", description = "로그인한 사용자가 좋아요한 일기 중 자신의 글 제외 + 공개 또는 친구공개 글만 조회합니다.")
+    @Operation(summary = "좋아요 누른 일기 조회 API", description = "로그인한 사용자가 좋아요한 일기 중 자신의 글 제외 + 공개 또는 친구공개 글만 조회합니다.")
     @Parameters({
             @Parameter(name = "page", description = "페이지 번호 (1부터 시작)", example = "1"),
             @Parameter(name = "size", description = "페이지 크기", example = "10")
@@ -190,7 +190,7 @@ public interface DiaryApi {
             @RequestParam(required = false) Language language
     );
 
-    @Operation(summary = "내 다이어리 요약 조회 API", description = "로그인한 사용자의 다이어리 요약 정보를 조회합니다.")
+    @Operation(summary = "나의 일기 정보 요약 API", description = "로그인한 사용자의 다이어리 요약 정보를 조회합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 누락 또는 만료", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -198,7 +198,7 @@ public interface DiaryApi {
     @GetMapping("/my/diary-summary")
     ApiResponse<MemberDiarySummaryResponseDTO> getMyDiarySummary();
 
-    @Operation(summary = "특정 사용자 다이어리 요약 조회 API", description = "사용자 ID를 기반으로 다이어리 요약 정보를 조회합니다.")
+    @Operation(summary = "특정 사용자 일기 정보 요약 API", description = "사용자 ID를 기반으로 다이어리 요약 정보를 조회합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 누락 또는 만료", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -208,7 +208,7 @@ public interface DiaryApi {
     ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(@PathVariable Long memberId);
 
     @GetMapping("/member/{memberId}")
-    @Operation(summary = "작성자 별 작성 일기 목록 조회 API", description = "작성자의 일기 목록을 조회합니다.")
+    @Operation(summary = "특정 사용자 일기 목록 조회 API", description = "작성자의 일기 목록을 조회합니다.")
     @Parameters({
             @Parameter(name = "memberId", description = "조회할 작성자의 ID", required = true)
     })
