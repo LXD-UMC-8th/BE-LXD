@@ -123,7 +123,9 @@ public class DiaryService {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
-        s3Uploader.deleteFileByUrl(diary.getThumbImg());
+        if (diary.getThumbImg() != null && !diary.getThumbImg().equals(request.getThumbImg())) {
+            s3Uploader.deleteFileByUrl(diary.getThumbImg());
+        }
 
         String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
 
