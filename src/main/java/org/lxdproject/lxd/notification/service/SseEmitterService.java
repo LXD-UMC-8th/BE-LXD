@@ -30,11 +30,13 @@ public class SseEmitterService {
         emitter.onError(e -> emitters.remove(memberId));
 
         try {
+            log.info("[SSE] 연결 확인 이벤트 전송 - memberId: {}", memberId);
             emitter.send(SseEmitter.event()
                     .name("connect")
-                    .data("connected")
+                    .data("[SSE] 연결 확인")
             );
         } catch (IOException e) {
+            log.error("[SSE] 연결 확인 이벤트 전송 실패 - memberId: {}", memberId, e);
             emitters.remove(memberId);
             emitter.completeWithError(e);
         }
