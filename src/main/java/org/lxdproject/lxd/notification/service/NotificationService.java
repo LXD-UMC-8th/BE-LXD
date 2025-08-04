@@ -157,8 +157,12 @@ public class NotificationService {
     }
 
     @Transactional
-    public String markAllAsRead() {
+    public PageResponse<NotificationResponseDTO>  markAllAsRead(int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
         List<Notification> unreadList = notificationRepository.findUnreadWithSenderByReceiverId(memberId);
 
         for (Notification notification : unreadList) {
@@ -167,7 +171,43 @@ public class NotificationService {
 
         sseEmitterService.sendAllReadUpdate(memberId);
 
-        return unreadList.size() + "개의 알림이 읽음 처리 되었습니다.";
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, null, pageable);
+
+        List<NotificationResponseDTO> responses = notificationPage.stream()
+                .map(notification -> {
+                    Locale locale = member.getNativeLanguage().toLocale();
+                    String senderUsername = notification.getSender().getUsername();
+                    String diaryTitle = getDiaryTitleIfExists(notification);
+
+                    NotificationMessageContext context = NotificationMessageContext.of(
+                            notification,
+                            senderUsername,
+                            diaryTitle
+                    );
+
+                    List<MessagePart> parts = messageResolverManager.resolve(context, locale);
+
+                    return NotificationResponseDTO.builder()
+                            .id(notification.getId())
+                            .buttonField(notification.getNotificationType() == NotificationType.FRIEND_REQUEST)
+                            .profileImg(notification.getSender().getProfileImg())
+                            .messageParts(parts)
+                            .redirectUrl(notification.getRedirectUrl())
+                            .isRead(notification.isRead())
+                            .createdAt(DateFormatUtil.formatDate(notification.getCreatedAt()))
+                            .build();
+                })
+                .toList();
+
+        return new PageResponse<>(
+                notificationPage.getTotalElements(),
+                responses,
+                page + 1,
+                size,
+                notificationPage.getTotalPages(),
+                notificationPage.hasNext()
+        );
     }
 
 }

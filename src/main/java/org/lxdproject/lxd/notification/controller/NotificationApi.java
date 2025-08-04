@@ -25,15 +25,15 @@ public interface NotificationApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요 (JWT 누락 또는 만료)", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    public SseEmitter subscribe();
+    SseEmitter subscribe();
 
     @Operation(summary = "테스트 알림 전송 API", description = "Redis로 테스트 알림 메시지를 전송합니다.")
     @PostMapping("/test")
-    public ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO);
+    ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO);
 
     @Operation(summary = "나의 알림 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
-    public ApiResponse<PageResponse<NotificationResponseDTO>> getNotifications(
+    ApiResponse<PageResponse<NotificationResponseDTO>> getNotifications(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean isRead // 필터링 조건
@@ -41,9 +41,12 @@ public interface NotificationApi {
 
     @Operation(summary = "나의 알림 읽음 API", description = "알림을 읽음 처리하고 리다이렉트 url을 반환합니다.")
     @PatchMapping("/{notificationId}/read-redirect")
-    public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable Long notificationId);
+    ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable Long notificationId);
 
     @Operation(summary = "나의 알림 모두 읽음 API", description = "로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다.")
     @PatchMapping("/read-all")
-    public ApiResponse<String> readAllNotifications();
+    ApiResponse<PageResponse<NotificationResponseDTO>> readAllNotifications(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    );
 }

@@ -48,7 +48,7 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
-    public ApiResponse<String> readAllNotifications() {
-        return ApiResponse.onSuccess(notificationService.markAllAsRead());
+    public ApiResponse<PageResponse<NotificationResponseDTO>> readAllNotifications(int page, int size) {
+        return ApiResponse.onSuccess(notificationService.markAllAsRead(page, size));
     }
 }
