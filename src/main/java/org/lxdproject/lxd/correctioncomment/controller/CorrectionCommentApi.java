@@ -25,7 +25,7 @@ public interface CorrectionCommentApi {
 
     @Operation(summary = "교정 댓글 조회 API", description = "교정 댓글 목록을 조회합니다.")
     @GetMapping
-    public ApiResponse<PageResponse<CorrectionCommentResponseDTO>> getComments(
+    ApiResponse<PageResponse<CorrectionCommentResponseDTO>> getComments(
             @PathVariable Long correctionId,
             @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "페이지당 개수", example = "10") @RequestParam(defaultValue = "10") int size
