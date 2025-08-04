@@ -46,7 +46,7 @@ public interface DiaryApi {
     public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long diaryId);
 
     @DeleteMapping("/{diaryId}")
-    @Operation(summary = "일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다. 해당하는 이미지 또한 S3 버킷에서 삭제합니다.")
+    @Operation(summary = "나의 일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다. 해당하는 이미지 또한 S3 버킷에서 삭제합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "일기 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -99,7 +99,7 @@ public interface DiaryApi {
     );
 
     @PatchMapping("/{diaryId}")
-    @Operation(summary = "일기 수정 API", description = "title, content, style, visibility, commentPermission, language, thumbImg 필드를 수정합니다.")
+    @Operation(summary = "나의 일기 수정 API", description = "title, content, style, visibility, commentPermission, language, thumbImg 필드를 수정합니다.")
     @Parameters({
             @Parameter(name = "diaryId", description = "수정할 일기의 ID", required = true)
     })

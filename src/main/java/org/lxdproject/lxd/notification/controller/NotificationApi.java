@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public interface NotificationApi {
 
     @GetMapping(value = "/subscribe", produces = "text/event-stream")
-    @Operation(summary = "알림 구독 API", description = "사용자별로 알림 연결을 맺고 유지합니다.")
+    @Operation(summary = "특정 사용자 알림 구독 API", description = "사용자별로 알림 연결을 맺고 유지합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "알림 구독 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요 (JWT 누락 또는 만료)", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -32,7 +32,7 @@ public interface NotificationApi {
     @PostMapping("/test")
     public ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO);
 
-    @Operation(summary = "알림 목록 조회 API", description = "나의 알림 목록을 조회합니다.")
+    @Operation(summary = "나의 알림 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
     public ApiResponse<CursorPageResponse<NotificationResponseDTO>> getNotifications(
             @RequestParam(defaultValue = "1") int page,
@@ -40,11 +40,11 @@ public interface NotificationApi {
             @RequestParam(required = false) Boolean isRead // 필터링 조건
     );
 
-    @Operation(summary = "알림 읽음과 리다이렉트 API", description = "알림을 읽음 처리하고 리다이렉트 url을 반환합니다.")
+    @Operation(summary = "나의 알림 읽음 API", description = "알림을 읽음 처리하고 리다이렉트 url을 반환합니다.")
     @PatchMapping("/{notificationId}/read-redirect")
     public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable Long notificationId);
 
-    @Operation(summary = "모든 알림 읽음 처리 API", description = "로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다.")
+    @Operation(summary = "나의 알림 모두 읽음 API", description = "로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다.")
     @PatchMapping("/read-all")
     public ApiResponse<String> readAllNotifications();
 }
