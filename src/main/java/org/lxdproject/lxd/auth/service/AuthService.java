@@ -209,6 +209,7 @@ public class AuthService {
         String newRefreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
 
         redisService.deleteValues(refreshToken);
+        redisService.setValues(newRefreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return new AuthResponseDTO.ReissueResponseDTO().builder()
                 .accessToken(newAccessToken)
