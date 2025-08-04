@@ -192,7 +192,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         List<DiarySummaryResponseDTO> dtoList = diaries.stream()
                 .map(d -> DiarySummaryResponseDTO.builder()
                         .diaryId(d.getId())
-                        .createdAt(d.getCreatedAt().toString())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
                         .visibility(d.getVisibility())
                         .thumbnailUrl(d.getThumbImg())
