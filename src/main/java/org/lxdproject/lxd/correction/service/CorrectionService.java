@@ -8,6 +8,10 @@ import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
 import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,8 @@ public class CorrectionService {
     private final DiaryRepository diaryRepository;
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
     private final MemberRepository memberRepository;
+
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(Long diaryId, int page, int size) {
@@ -136,6 +142,19 @@ public class CorrectionService {
 
         Correction saved = correctionRepository.save(correction);
         diary.increaseCorrectionCount();
+
+        Member diaryOwner = diary.getMember();
+        if (!member.equals(diaryOwner)) {
+            NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                    .receiverId(diaryOwner.getId())
+                    .notificationType(NotificationType.CORRECTION_ADDED)
+                    .targetType(TargetType.CORRECTION)
+                    .targetId(saved.getId())
+                    .redirectUrl("/diaries/" + diary.getId()) // Todo 리다이렉트 어디로?
+                    .build();
+
+            notificationService.saveAndPublishNotification(dto);
+        }
 
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
                 .correctionId(saved.getId())
