@@ -16,6 +16,10 @@ import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +37,8 @@ public class CorrectionCommentService {
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
 
+    private final NotificationService notificationService;
+
     @Transactional
     public CorrectionCommentResponseDTO writeComment(Long correctionId, CorrectionCommentRequestDTO request) {
 
@@ -48,6 +54,20 @@ public class CorrectionCommentService {
                 .build();
 
         CorrectionComment saved = commentRepository.save(comment);
+
+        // 알림 전송 (댓글 작성자 != 교정 작성자)
+        Member correctionAuthor = correction.getAuthor();
+        if (!member.equals(correctionAuthor)) {
+            NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                    .receiverId(correctionAuthor.getId())
+                    .notificationType(NotificationType.CORRECTION_REPLIED)
+                    .targetType(TargetType.CORRECTION_COMMENT)
+                    .targetId(saved.getId())
+                    .redirectUrl("/corrections/" + correction.getId()) // Todo 리다이렉트 어디로?
+                    .build();
+
+            notificationService.saveAndPublishNotification(dto);
+        }
 
         return CorrectionCommentResponseDTO.builder()
                 .commentId(saved.getId())
