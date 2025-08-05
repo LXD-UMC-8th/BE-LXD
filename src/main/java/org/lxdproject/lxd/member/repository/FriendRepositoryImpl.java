@@ -27,10 +27,8 @@ public class FriendRepositoryImpl implements FriendRepository {
 
     @Override
     public List<Member> findFriendsByMemberId(Long memberId) {
-        // union으로 쿼리 한 번에 조회
         List<Member> friends = new ArrayList<>();
-
-        // 내가 요청자인 경우
+        // 단방향 요청으로 수정
         friends.addAll(queryFactory
                 .select(friendship.receiver)
                 .from(friendship)
@@ -39,17 +37,6 @@ public class FriendRepositoryImpl implements FriendRepository {
                         friendship.deletedAt.isNull()
                 )
                 .fetch());
-
-        // 내가 수신자인 경우
-        friends.addAll(queryFactory
-                .select(friendship.requester)
-                .from(friendship)
-                .where(
-                        friendship.receiver.id.eq(memberId),
-                        friendship.deletedAt.isNull()
-                )
-                .fetch());
-
         return friends;
     }
 
