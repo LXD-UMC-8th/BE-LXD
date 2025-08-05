@@ -13,6 +13,10 @@ import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.member.repository.FriendRepository;
 import org.lxdproject.lxd.member.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +28,8 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
+
+    private final NotificationService notificationService;
 
     public FriendListResponseDTO getFriendList(Long memberId) {
         Member member = findMemberById(memberId);
@@ -78,6 +84,16 @@ public class FriendService {
                 .build();
 
         friendRequestRepository.save(friendRequest);
+
+        NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                .receiverId(receiver.getId())
+                .notificationType(NotificationType.FRIEND_REQUEST)
+                .targetType(TargetType.MEMBER)
+                .targetId(receiver.getId())
+                .redirectUrl("/members/" + requester.getId()) // Todo 리다이렉트 어디로?
+                .build();
+
+        notificationService.saveAndPublishNotification(dto);
     }
 
     public void acceptFriendRequest(Long receiverId, FriendRequestAcceptRequestDTO requestDto) {
