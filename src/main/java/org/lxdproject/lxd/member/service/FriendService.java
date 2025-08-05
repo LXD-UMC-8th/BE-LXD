@@ -66,7 +66,7 @@ public class FriendService {
             throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_ALREADY_SENT);
         }
 
-        boolean alreadyFriends = friendRepository.existsByRequesterAndReceiverOrReceiverAndRequester(requester, receiver);
+        boolean alreadyFriends = friendRepository.existsFriendshipByRequesterAndReceiver(requester, receiver);
         if (alreadyFriends) {
             throw new FriendHandler(ErrorStatus.ALREADY_FRIENDS);
         }
@@ -111,7 +111,7 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 존재 여부 확인
-        boolean exists = friendRepository.existsByRequesterAndReceiverOrReceiverAndRequester(current, target);
+        boolean exists = friendRepository.existsFriendshipByRequesterAndReceiver(current, target);
         if (!exists) {
             throw new FriendHandler(ErrorStatus.NOT_FRIEND);
         }
