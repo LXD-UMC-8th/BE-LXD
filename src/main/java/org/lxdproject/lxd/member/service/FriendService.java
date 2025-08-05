@@ -118,6 +118,16 @@ public class FriendService {
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
         friendRepository.saveFriendship(receiver, requester); // 양방향 저장
+
+        NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                .receiverId(requester.getId()) // 친구 요청 보낸 사람에게 알림 전송
+                .notificationType(NotificationType.FRIEND_ACCEPTED)
+                .targetType(TargetType.MEMBER)
+                .targetId(receiver.getId()) // 친구 요청 수락한 사람
+                .redirectUrl("/members/" + receiver.getId()) // Todo 리다이렉트 어디로?
+                .build();
+
+        notificationService.saveAndPublishNotification(dto);
     }
 
     public void deleteFriend(Long currentMemberId, Long friendId) {
