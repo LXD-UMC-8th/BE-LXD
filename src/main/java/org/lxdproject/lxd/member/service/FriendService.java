@@ -89,7 +89,7 @@ public class FriendService {
                 .receiverId(receiver.getId())
                 .notificationType(NotificationType.FRIEND_REQUEST)
                 .targetType(TargetType.MEMBER)
-                .targetId(receiver.getId())
+                .targetId(requester.getId())
                 .redirectUrl("/members/" + requester.getId())
                 .build();
 
