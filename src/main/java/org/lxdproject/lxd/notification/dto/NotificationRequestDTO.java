@@ -2,11 +2,13 @@ package org.lxdproject.lxd.notification.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 
 @Getter
+@Builder
 public class NotificationRequestDTO {
     private TargetType targetType;
     private Long targetId;
