@@ -23,8 +23,7 @@ public class DiaryCommentController implements DiaryCommentApi {
             Long diaryId,
             DiaryCommentRequestDTO request
     ) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        DiaryCommentResponseDTO response = diaryCommentService.writeComment(memberId, diaryId, request);
+        DiaryCommentResponseDTO response = diaryCommentService.writeComment(diaryId, request);
         return ApiResponse.of(SuccessStatus._OK, response);
     }
 
