@@ -17,10 +17,10 @@ public class DiaryLikeResponseDTO {
         @Schema(description = "일기 ID")
         private Long diaryId;
 
-        @Schema(description = "좋아요를 누른 사용자 ID")
+        @Schema(description = "좋아요를 누르거나 해제한 사용자 ID")
         private Long memberId;
 
-        @Schema(description = "좋아요 상태")
+        @Schema(description = "좋아요 상태, 결과가 좋아요 해제되었으면 false / 결과가 좋아요가 생성되었으면 true ")
         private Boolean liked;
 
         @Schema(description = "해당 일기의 좋아요 수")
