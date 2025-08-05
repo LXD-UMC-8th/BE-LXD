@@ -90,7 +90,7 @@ public class FriendService {
                 .notificationType(NotificationType.FRIEND_REQUEST)
                 .targetType(TargetType.MEMBER)
                 .targetId(receiver.getId())
-                .redirectUrl("/members/" + requester.getId()) // Todo 리다이렉트 어디로?
+                .redirectUrl("/members/" + requester.getId())
                 .build();
 
         notificationService.saveAndPublishNotification(dto);
@@ -124,7 +124,7 @@ public class FriendService {
                 .notificationType(NotificationType.FRIEND_ACCEPTED)
                 .targetType(TargetType.MEMBER)
                 .targetId(receiver.getId()) // 친구 요청 수락한 사람
-                .redirectUrl("/members/" + receiver.getId()) // Todo 리다이렉트 어디로?
+                .redirectUrl("/members/" + receiver.getId())
                 .build();
 
         notificationService.saveAndPublishNotification(dto);

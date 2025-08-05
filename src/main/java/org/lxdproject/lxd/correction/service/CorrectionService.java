@@ -150,7 +150,7 @@ public class CorrectionService {
                     .notificationType(NotificationType.CORRECTION_ADDED)
                     .targetType(TargetType.CORRECTION)
                     .targetId(saved.getId())
-                    .redirectUrl("/diaries/" + diary.getId()) // Todo 리다이렉트 어디로?
+                    .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId())
                     .build();
 
             notificationService.saveAndPublishNotification(dto);

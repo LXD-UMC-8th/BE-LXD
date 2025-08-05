@@ -101,7 +101,7 @@ public class DiaryCommentService {
                     .notificationType(NotificationType.COMMENT_ADDED)
                     .targetType(TargetType.DIARY_COMMENT)
                     .targetId(saved.getId())
-                    .redirectUrl("/diaries/" + diary.getId()) // Todo 리다이렉트 어디로?
+                    .redirectUrl("/diaries/" + diary.getId() + "/comments/" + saved.getId())
                     .build();
 
             notificationService.saveAndPublishNotification(dto);

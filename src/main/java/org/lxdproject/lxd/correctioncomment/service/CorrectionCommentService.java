@@ -63,7 +63,7 @@ public class CorrectionCommentService {
                     .notificationType(NotificationType.CORRECTION_REPLIED)
                     .targetType(TargetType.CORRECTION_COMMENT)
                     .targetId(saved.getId())
-                    .redirectUrl("/corrections/" + correction.getId()) // Todo 리다이렉트 어디로?
+                    .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId() + "/comments/" + saved.getId())
                     .build();
 
             notificationService.saveAndPublishNotification(dto);
