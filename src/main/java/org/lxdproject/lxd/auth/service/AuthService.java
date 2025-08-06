@@ -21,6 +21,8 @@ import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -92,8 +94,9 @@ public class AuthService {
 
         // HTML 형식으로 이메일 전송
         try {
-            Path path = Paths.get("src/main/resources/templates/email.html");
-            String htmlTemplate = Files.readString(path, StandardCharsets.UTF_8);
+            Resource resource = new ClassPathResource("templates/email.html");
+            String htmlTemplate = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
             String htmlContent = htmlTemplate.replace("{{verificationLink}}", verificationLink);
             mailService.sendEmailFromMimeMessage(sendVerificationRequestDTO.getEmail(), title, htmlContent);
             htmlSent = true;
