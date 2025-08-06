@@ -3,6 +3,8 @@ package org.lxdproject.lxd.member.repository;
 import org.lxdproject.lxd.member.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,6 +15,9 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     Optional<FriendRequest> findByRequesterIdAndReceiverId(Long requesterId, Long receiverId);
     Optional<FriendRequest> findByRequesterIdAndReceiverIdAndStatus(Long requesterId, Long receiverId, FriendRequestStatus status);
 
-    List<FriendRequest> findByRequesterAndStatus(Member requester, FriendRequestStatus status);
-    List<FriendRequest> findByReceiverAndStatus(Member receiver, FriendRequestStatus status);
+    int countByRequesterAndStatus(Member requester, FriendRequestStatus status);
+    int countByReceiverAndStatus(Member receiver, FriendRequestStatus status);
+
+    Page<FriendRequest> findByRequesterAndStatus(Member requester, FriendRequestStatus status, Pageable pageable);
+    Page<FriendRequest> findByReceiverAndStatus(Member receiver, FriendRequestStatus status, Pageable pageable);
 }

@@ -1,10 +1,11 @@
 package org.lxdproject.lxd.member.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.FriendRequest;
@@ -13,7 +14,14 @@ import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.member.repository.FriendRepository;
 import org.lxdproject.lxd.member.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,15 +33,17 @@ public class FriendService {
     private final MemberRepository memberRepository;
     private final FriendRequestRepository friendRequestRepository;
 
-    public FriendListResponseDTO getFriendList(Long memberId) {
+    private final NotificationService notificationService;
+
+    @Transactional(readOnly = true)
+    public FriendListResponseDTO getFriendList(Long memberId, Pageable pageable) {
         Member member = findMemberById(memberId);
 
-        List<Member> friends = getFriends(memberId);
-        int totalFriends = friends.size();
+        Page<Member> friendsPage = getFriends(memberId, pageable);
 
         int totalRequests = getSentRequestCount(member) + getReceivedRequestCount(member);
 
-        List<FriendResponseDTO> friendDtos = friends.stream()
+        List<FriendResponseDTO> friendDtos = friendsPage.stream()
                 .map(friend -> new FriendResponseDTO(
                         friend.getId(),
                         friend.getUsername(),
@@ -41,7 +51,16 @@ public class FriendService {
                         friend.getProfileImg()))
                 .toList();
 
-        return new FriendListResponseDTO(totalFriends, totalRequests, friendDtos);
+        PageResponse<FriendResponseDTO> pageResponse = new PageResponse<>(
+                friendsPage.getTotalElements(), // 또는 -1
+                friendDtos,
+                friendsPage.getNumber() + 1,     // 0-based → 1-based
+                friendsPage.getSize(),
+                friendsPage.getTotalPages(),
+                friendsPage.hasNext()
+        );
+
+        return new FriendListResponseDTO(totalRequests, pageResponse);
     }
 
     public void sendFriendRequest(Long requesterId, FriendRequestCreateRequestDTO requestDto) {
@@ -59,14 +78,14 @@ public class FriendService {
 
         boolean alreadyRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 requester, receiver, FriendRequestStatus.PENDING);
-        // 양방향 친구 요청 확인 추가
+
         boolean reverseRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 receiver, requester, FriendRequestStatus.PENDING);
         if (alreadyRequested || reverseRequested) {
             throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_ALREADY_SENT);
         }
 
-        boolean alreadyFriends = friendRepository.existsByRequesterAndReceiverOrReceiverAndRequester(requester, receiver);
+        boolean alreadyFriends = friendRepository.existsFriendshipByRequesterAndReceiver(requester, receiver);
         if (alreadyFriends) {
             throw new FriendHandler(ErrorStatus.ALREADY_FRIENDS);
         }
@@ -78,30 +97,45 @@ public class FriendService {
                 .build();
 
         friendRequestRepository.save(friendRequest);
+
+        NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                .receiverId(receiver.getId())
+                .notificationType(NotificationType.FRIEND_REQUEST)
+                .targetType(TargetType.MEMBER)
+                .targetId(requester.getId())
+                .redirectUrl("/members/" + requester.getId())
+                .build();
+
+        notificationService.saveAndPublishNotification(dto);
     }
 
+    @Transactional
     public void acceptFriendRequest(Long receiverId, FriendRequestAcceptRequestDTO requestDto) {
         Long requesterId = requestDto.getRequesterId();
-
-        if (receiverId.equals(requesterId)) {
-            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
-        }
-
-        FriendRequest request = friendRequestRepository.findByRequesterIdAndReceiverId(requesterId, receiverId)
+        FriendRequest request = friendRequestRepository
+                .findByRequesterIdAndReceiverId(requesterId, receiverId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_NOT_FOUND));
 
-        if (!request.getStatus().equals(FriendRequestStatus.PENDING)) {
+        if (request.getStatus() != FriendRequestStatus.PENDING) {
             throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // 요청 상태 변경
-        request.accept();
-
-        // 친구 관계 저장 (양방향)
+        // 친구 관계 양방향 저장
         Member requester = request.getRequester();
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
-        friendRepository.saveFriendship(receiver, requester); // 양방향 저장
+
+        friendRequestRepository.delete(request);
+
+        NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                .receiverId(requester.getId()) // 친구 요청 보낸 사람에게 알림 전송
+                .notificationType(NotificationType.FRIEND_ACCEPTED)
+                .targetType(TargetType.MEMBER)
+                .targetId(receiver.getId()) // 친구 요청 수락한 사람
+                .redirectUrl("/members/" + receiver.getId())
+                .build();
+
+        notificationService.saveAndPublishNotification(dto);
     }
 
     public void deleteFriend(Long currentMemberId, Long friendId) {
@@ -110,40 +144,53 @@ public class FriendService {
         Member target = memberRepository.findById(friendId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 존재 여부 확인
-        boolean exists = friendRepository.existsByRequesterAndReceiverOrReceiverAndRequester(current, target);
+        boolean exists = friendRepository.existsFriendshipByRequesterAndReceiver(current, target);
         if (!exists) {
             throw new FriendHandler(ErrorStatus.NOT_FRIEND);
         }
 
-        // soft delete
         friendRepository.softDeleteFriendship(current, target);
     }
 
-    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId) {
+    @Transactional(readOnly = true)
+    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
         Member currentMember = findMemberById(memberId);
 
-        List<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING);
-        List<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING);
+        Page<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING, sentPage);
+        Page<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING, receivedPage);
 
-        int sentCount = sent.size();
-        int receivedCount = received.size();
-        int totalFriends = getFriends(memberId).size();
+        Long totalFriends = friendRepository.countFriendsByMemberId(memberId);
 
-        List<FriendResponseDTO> sentDtos = sent.stream()
+        List<FriendResponseDTO> sentDtos = sent.getContent().stream()
                 .map(req -> mapToDto(req.getReceiver()))
                 .toList();
 
-        List<FriendResponseDTO> receivedDtos = received.stream()
+        List<FriendResponseDTO> receivedDtos = received.getContent().stream()
                 .map(req -> mapToDto(req.getRequester()))
                 .toList();
 
-        return new FriendRequestListResponseDTO(
-                sentCount,
-                receivedCount,
-                totalFriends,
+        PageResponse<FriendResponseDTO> sentResponse = new PageResponse<>(
+                sent.getTotalElements(),
                 sentDtos,
-                receivedDtos
+                sent.getNumber() + 1,
+                sent.getSize(),
+                sent.getTotalPages(),
+                sent.hasNext()
+        );
+
+        PageResponse<FriendResponseDTO> receivedResponse = new PageResponse<>(
+                received.getTotalElements(),
+                receivedDtos,
+                received.getNumber() + 1,
+                received.getSize(),
+                received.getTotalPages(),
+                received.hasNext()
+        );
+
+        return new FriendRequestListResponseDTO(
+                totalFriends,
+                sentResponse,
+                receivedResponse
         );
     }
 
@@ -152,20 +199,16 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
     }
 
-    private List<Member> getFriends(Long memberId) {
-        return friendRepository.findFriendsByMemberId(memberId);
+    private Page<Member> getFriends(Long memberId, Pageable pageable) {
+        return friendRepository.findFriendsByMemberId(memberId, pageable);
     }
 
     private int getSentRequestCount(Member member) {
-        return friendRequestRepository
-                .findByRequesterAndStatus(member, FriendRequestStatus.PENDING)
-                .size();
+        return friendRequestRepository.countByRequesterAndStatus(member, FriendRequestStatus.PENDING);
     }
 
     private int getReceivedRequestCount(Member member) {
-        return friendRequestRepository
-                .findByReceiverAndStatus(member, FriendRequestStatus.PENDING)
-                .size();
+        return friendRequestRepository.countByReceiverAndStatus(member, FriendRequestStatus.PENDING);
     }
 
     private FriendResponseDTO mapToDto(Member member) {
@@ -179,37 +222,20 @@ public class FriendService {
 
     @Transactional
     public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
-        Long receiverId = SecurityUtil.getCurrentMemberId();
-        Member receiver = memberRepository.findById(receiverId)
-                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-        FriendRequest friendRequest = friendRequestRepository
-                .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), receiverId, FriendRequestStatus.PENDING)
+        FriendRequest request = friendRequestRepository
+                .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), SecurityUtil.getCurrentMemberId(), FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
-        if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
-            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST_STATUS);
-        }
-
-        friendRequest.reject(); // 상태 변경
-        friendRequestRepository.save(friendRequest);
+        friendRequestRepository.delete(request);
     }
 
     @Transactional
     public void cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
-        Long requesterId = SecurityUtil.getCurrentMemberId();
-        Member requester = memberRepository.findById(requesterId)
-                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-        FriendRequest friendRequest = friendRequestRepository
-                .findByRequesterIdAndReceiverIdAndStatus(requesterId, requestDto.getReceiverId(), FriendRequestStatus.PENDING)
+        FriendRequest request = friendRequestRepository
+                .findByRequesterIdAndReceiverIdAndStatus(SecurityUtil.getCurrentMemberId(), requestDto.getReceiverId(), FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
-        if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
-            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST_STATUS);
-        }
-
-        friendRequest.cancel(); // 상태 변경
-        friendRequestRepository.save(friendRequest);
+        friendRequestRepository.delete(request);
     }
+
 }

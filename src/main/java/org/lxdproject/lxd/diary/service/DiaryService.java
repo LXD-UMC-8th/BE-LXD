@@ -193,8 +193,7 @@ public class DiaryService {
 
         Long diaryCount = diaryRepository.countByMemberId(targetMemberId);
 
-        List<Member> friends = friendRepository.findFriendsByMemberId(targetMemberId);
-        Integer friendCount = friends.size();
+        Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
 
         RelationType relation;
         if (targetMemberId.equals(currentMemberId)) {

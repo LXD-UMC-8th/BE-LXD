@@ -11,7 +11,6 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
-import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
@@ -23,6 +22,8 @@ import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import java.net.URLEncoder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -131,9 +132,11 @@ public class AuthService {
                 redisService.deleteValues(token); // 재사용 방지
 
                 String newToken = createSecureToken();
-                redisService.setValues(newToken, email, Duration.ofMinutes(1L));
-                
-                response.sendRedirect(urlProperties.getFrontend() + "/signup?token=" +newToken );
+                redisService.setValues(newToken, email, Duration.ofMinutes(3L));
+
+                // +,/ 등이 포함될 수 있어 잘못 해석될 여지 방지
+                String encoded = URLEncoder.encode(newToken, UTF_8);
+                response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
             }
         }catch (IOException e) {
             log.error("redirect에 실패했습니다");
