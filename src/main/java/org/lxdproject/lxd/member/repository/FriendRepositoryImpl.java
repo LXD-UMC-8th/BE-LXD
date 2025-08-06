@@ -25,7 +25,7 @@ public class FriendRepositoryImpl implements FriendRepository {
     private static final QMember requester = new QMember("requester");
     private static final QMember receiver = new QMember("receiver");
 
-    // [1] FriendShip → create, delete, update 양방향, read 단방향
+    // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
     public List<Member> findFriendsByMemberId(Long memberId) { // 친구 목록 반환

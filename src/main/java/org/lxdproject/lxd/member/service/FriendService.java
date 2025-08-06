@@ -59,7 +59,7 @@ public class FriendService {
 
         boolean alreadyRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 requester, receiver, FriendRequestStatus.PENDING);
-        // 양방향 친구 요청 확인 추가
+
         boolean reverseRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 receiver, requester, FriendRequestStatus.PENDING);
         if (alreadyRequested || reverseRequested) {
@@ -80,43 +80,17 @@ public class FriendService {
         friendRequestRepository.save(friendRequest);
     }
 
-//    public void acceptFriendRequest(Long receiverId, FriendRequestAcceptRequestDTO requestDto) {
-//        Long requesterId = requestDto.getRequesterId();
-//
-//        if (receiverId.equals(requesterId)) {
-//            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
-//        }
-//
-//        FriendRequest request = friendRequestRepository.findByRequesterIdAndReceiverId(requesterId, receiverId)
-//                .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_NOT_FOUND));
-//
-//        if (!request.getStatus().equals(FriendRequestStatus.PENDING)) {
-//            throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_PENDING);
-//        }
-//
-//        // 요청 상태 변경
-//        request.accept();
-//
-//        // 친구 관계 저장 (양방향)
-//        Member requester = request.getRequester();
-//        Member receiver = request.getReceiver();
-//        friendRepository.saveFriendship(requester, receiver);
-//        friendRepository.saveFriendship(receiver, requester); // 양방향 저장
-//    }
-
     public void deleteFriend(Long currentMemberId, Long friendId) {
         Member current = memberRepository.findById(currentMemberId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Member target = memberRepository.findById(friendId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 존재 여부 확인
         boolean exists = friendRepository.existsFriendshipByRequesterAndReceiver(current, target);
         if (!exists) {
             throw new FriendHandler(ErrorStatus.NOT_FRIEND);
         }
 
-        // soft delete
         friendRepository.softDeleteFriendship(current, target);
     }
 
@@ -177,42 +151,6 @@ public class FriendService {
         );
     }
 
-//    @Transactional
-//    public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
-//        Long receiverId = SecurityUtil.getCurrentMemberId();
-//        Member receiver = memberRepository.findById(receiverId)
-//                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
-//
-//        FriendRequest friendRequest = friendRequestRepository
-//                .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), receiverId, FriendRequestStatus.PENDING)
-//                .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
-//
-//        if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
-//            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST_STATUS);
-//        }
-//
-//        friendRequest.reject(); // 상태 변경
-//        friendRequestRepository.save(friendRequest);
-//    }
-//
-//    @Transactional
-//    public void cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
-//        Long requesterId = SecurityUtil.getCurrentMemberId();
-//        Member requester = memberRepository.findById(requesterId)
-//                .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
-//
-//        FriendRequest friendRequest = friendRequestRepository
-//                .findByRequesterIdAndReceiverIdAndStatus(requesterId, requestDto.getReceiverId(), FriendRequestStatus.PENDING)
-//                .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
-//
-//        if (!friendRequest.getStatus().equals(FriendRequestStatus.PENDING)) {
-//            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST_STATUS);
-//        }
-//
-//        friendRequest.cancel(); // 상태 변경
-//        friendRequestRepository.save(friendRequest);
-//    }
-
     @Transactional
     public void acceptFriendRequest(Long receiverId, FriendRequestAcceptRequestDTO requestDto) {
         Long requesterId = requestDto.getRequesterId();
@@ -224,13 +162,12 @@ public class FriendService {
             throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // 친구 관계 저장
+        // 친구 관계 양방향 저장
         Member requester = request.getRequester();
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
         friendRepository.saveFriendship(receiver, requester);
 
-        // 요청 데이터 삭제 (ACCEPTED 상태로 굳이 남길 필요 없음)
         friendRequestRepository.delete(request);
     }
 
@@ -240,7 +177,6 @@ public class FriendService {
                 .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), SecurityUtil.getCurrentMemberId(), FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
-        // 거절 후 삭제
         friendRequestRepository.delete(request);
     }
 
@@ -250,7 +186,6 @@ public class FriendService {
                 .findByRequesterIdAndReceiverIdAndStatus(SecurityUtil.getCurrentMemberId(), requestDto.getReceiverId(), FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
-        // 취소 후 삭제
         friendRequestRepository.delete(request);
     }
 
