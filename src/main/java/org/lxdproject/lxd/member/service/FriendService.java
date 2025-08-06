@@ -156,8 +156,8 @@ public class FriendService {
     public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
         Member currentMember = findMemberById(memberId);
 
-        Page<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING, receivedPage);
-        Page<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING, sentPage);
+        Page<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING, sentPage);
+        Page<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING, receivedPage);
 
         Long totalFriends = friendRepository.countFriendsByMemberId(memberId);
 
