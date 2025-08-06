@@ -110,7 +110,6 @@ public class FriendService {
         Member requester = request.getRequester();
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
-        friendRepository.saveFriendship(receiver, requester);
 
         friendRequestRepository.delete(request);
 
