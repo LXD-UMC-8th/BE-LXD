@@ -32,7 +32,9 @@ public class FriendRepositoryImpl implements FriendRepository {
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
     public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
-        List<Member> result = queryFactory
+        List<Member> result = new ArrayList<>();
+
+        result.addAll(queryFactory
                 .select(friendship.receiver)
                 .from(friendship)
                 .where(
@@ -41,7 +43,7 @@ public class FriendRepositoryImpl implements FriendRepository {
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetch();
+                .fetch());
 
         long total = queryFactory
                 .select(friendship.count())
