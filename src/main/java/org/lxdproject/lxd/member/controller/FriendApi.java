@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,7 +22,10 @@ public interface FriendApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     @GetMapping()
-    ApiResponse<FriendListResponseDTO> getFriendList();
+    ApiResponse<FriendListResponseDTO> getFriendList(
+            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
+    );
 
     @Operation(summary = "친구 요청 보내기 API", description = "receiverId를 전달받아 친구 요청을 보냅니다. 상태는 PENDING으로 저장됩니다.")
     @ApiResponses({
@@ -63,7 +67,11 @@ public interface FriendApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/requests")
-    ApiResponse<FriendRequestListResponseDTO> getFriendRequestList();
+    ApiResponse<FriendRequestListResponseDTO> getFriendRequestList(
+            @Parameter(description = "내가 받은 요청 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int receivedPage,
+            @Parameter(description = "내가 보낸 요청 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int sentPage,
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
+    );
 
     @Operation(summary = "친구 요청 거절 API", description = "자신에게 온 친구 요청을 거절합니다.")
     @ApiResponses({
