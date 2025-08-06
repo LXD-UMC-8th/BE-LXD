@@ -56,7 +56,6 @@ public class FriendService {
                 friendDtos,
                 friendsPage.getNumber() + 1,     // 0-based → 1-based
                 friendsPage.getSize(),
-                friendsPage.getTotalPages(),
                 friendsPage.hasNext()
         );
 
@@ -174,7 +173,6 @@ public class FriendService {
                 sentDtos,
                 sent.getNumber() + 1,
                 sent.getSize(),
-                sent.getTotalPages(),
                 sent.hasNext()
         );
 
@@ -183,7 +181,6 @@ public class FriendService {
                 receivedDtos,
                 received.getNumber() + 1,
                 received.getSize(),
-                received.getTotalPages(),
                 received.hasNext()
         );
 
