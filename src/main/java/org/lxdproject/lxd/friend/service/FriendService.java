@@ -155,39 +155,30 @@ public class FriendService {
     public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
         Member currentMember = findMemberById(memberId);
 
-        Page<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING, sentPage);
-        Page<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING, receivedPage);
+        Page<FriendResponseDTO> sent = friendRequestRepository
+                .findSentRequestDTOs(currentMember, FriendRequestStatus.PENDING, sentPage);
+
+        Page<FriendResponseDTO> received = friendRequestRepository
+                .findReceivedRequestDTOs(currentMember, FriendRequestStatus.PENDING, receivedPage);
 
         Long totalFriends = friendRepository.countFriendsByMemberId(memberId);
 
-        List<FriendResponseDTO> sentDtos = sent.getContent().stream()
-                .map(req -> mapToDto(req.getReceiver()))
-                .toList();
-
-        List<FriendResponseDTO> receivedDtos = received.getContent().stream()
-                .map(req -> mapToDto(req.getRequester()))
-                .toList();
-
-        PageResponse<FriendResponseDTO> sentResponse = new PageResponse<>(
-                sent.getTotalElements(),
-                sentDtos,
-                sent.getNumber() + 1,
-                sent.getSize(),
-                sent.hasNext()
-        );
-
-        PageResponse<FriendResponseDTO> receivedResponse = new PageResponse<>(
-                received.getTotalElements(),
-                receivedDtos,
-                received.getNumber() + 1,
-                received.getSize(),
-                received.hasNext()
-        );
-
         return new FriendRequestListResponseDTO(
                 totalFriends,
-                sentResponse,
-                receivedResponse
+                new PageResponse<>(
+                        sent.getTotalElements(),
+                        sent.getContent(),
+                        sent.getNumber() + 1,
+                        sent.getSize(),
+                        sent.hasNext()
+                ),
+                new PageResponse<>(
+                        received.getTotalElements(),
+                        received.getContent(),
+                        received.getNumber() + 1,
+                        received.getSize(),
+                        received.hasNext()
+                )
         );
     }
 
