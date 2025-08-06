@@ -70,7 +70,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .isLiked(likedSet.contains(d.getId()))
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -129,7 +129,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .isLiked(likedSet.contains(d.getId()))
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -214,7 +214,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
-                        .isLiked(likedSet.contains(d.getId()))
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -341,7 +341,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .isLiked(likedSet.contains(d.getId()))
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 

@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diary.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class MyDiarySummaryResponseDTO {
     private int correctionCount;
     private String contentPreview;
     private Language language;
-    private boolean isLiked;
+    @JsonProperty("isLiked")
+    private boolean liked;
 }
 
