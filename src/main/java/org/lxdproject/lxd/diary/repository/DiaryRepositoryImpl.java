@@ -36,6 +36,9 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public MyDiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
+
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
+
         List<Diary> diaries = queryFactory
                 .selectFrom(diary)
                 .leftJoin(diary.likes, diaryLike)
@@ -67,6 +70,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
+                        .isLiked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -79,6 +83,9 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     public MyDiarySliceResponseDTO getDiariesByMemberId(Long userId, Long memberId, Pageable pageable) {
+
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
+
         Set<Long> friendIds = getFriendIds(userId);
 
         BooleanExpression visibilityCondition;
@@ -122,6 +129,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
+                        .isLiked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -166,6 +174,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
+
         QDiary diary = QDiary.diary;
         QMember member = QMember.member;
 
@@ -204,6 +214,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .isLiked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -289,6 +300,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public DiarySliceResponseDTO findExploreDiaries(Long userId, Language language, Pageable pageable) {
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
         Set<Long> friendIds = getFriendIds(userId);
 
         BooleanBuilder condition = new BooleanBuilder();
@@ -329,6 +341,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
+                        .isLiked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -358,6 +371,15 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         friendIds.addAll(receivedFriendIds);
 
         return friendIds;
+    }
+
+    private Set<Long> getLikedDiaryIdSet(Long userId) {
+        List<Long> likedDiaryIds = queryFactory
+                .select(diaryLike.diary.id)
+                .from(diaryLike)
+                .where(diaryLike.member.id.eq(userId))
+                .fetch();
+        return new HashSet<>(likedDiaryIds);
     }
 }
 
