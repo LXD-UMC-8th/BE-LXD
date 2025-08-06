@@ -1,10 +1,8 @@
-package org.lxdproject.lxd.member.dto;
+package org.lxdproject.lxd.friend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.lxdproject.lxd.common.dto.PageResponse;
-
-import java.util.List;
 
 @Getter
 @AllArgsConstructor

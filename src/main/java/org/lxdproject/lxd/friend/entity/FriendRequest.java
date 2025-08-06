@@ -1,9 +1,10 @@
-package org.lxdproject.lxd.member.entity;
+package org.lxdproject.lxd.friend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
-import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"requester_id", "receiver_id"})})

@@ -23,5 +23,6 @@ public class DiarySummaryResponseDTO {
     private int correctionCount;
     private String contentPreview;
     private Language language;
+    private boolean isLiked;
 }
 

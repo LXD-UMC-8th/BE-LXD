@@ -1,13 +1,13 @@
-package org.lxdproject.lxd.member.repository;
+package org.lxdproject.lxd.friend.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.member.entity.Friendship;
+import org.lxdproject.lxd.friend.entity.Friendship;
+import org.lxdproject.lxd.friend.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.QMember;
-import org.lxdproject.lxd.member.entity.QFriendship;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

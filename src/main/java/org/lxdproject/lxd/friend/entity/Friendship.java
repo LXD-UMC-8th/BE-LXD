@@ -1,8 +1,9 @@
-package org.lxdproject.lxd.member.entity;
+package org.lxdproject.lxd.friend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
+import org.lxdproject.lxd.member.entity.Member;
 
 @Entity
 @Getter

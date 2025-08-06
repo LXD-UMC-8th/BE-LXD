@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
-import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 
 @Getter
 @Builder

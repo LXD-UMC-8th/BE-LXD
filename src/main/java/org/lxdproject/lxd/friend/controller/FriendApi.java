@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.controller;
+package org.lxdproject.lxd.friend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.member.dto.*;
+import org.lxdproject.lxd.friend.dto.*;
 import org.springframework.web.bind.annotation.*;
 
 

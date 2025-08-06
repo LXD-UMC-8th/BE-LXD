@@ -1,10 +1,10 @@
-package org.lxdproject.lxd.member.controller;
+package org.lxdproject.lxd.friend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.member.dto.*;
-import org.lxdproject.lxd.member.service.FriendService;
+import org.lxdproject.lxd.friend.dto.*;
+import org.lxdproject.lxd.friend.service.FriendService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
