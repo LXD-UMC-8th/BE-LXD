@@ -73,7 +73,6 @@ public class CorrectionService {
                 correctionDetailList,
                 page + 1, // 클라이언트는 1부터
                 size,
-                correctionPage.getTotalPages(),
                 correctionPage.hasNext()
         );
 
@@ -192,7 +191,6 @@ public class CorrectionService {
                 items,
                 correctionPage.getNumber() + 1,
                 correctionPage.getSize(),
-                correctionPage.getTotalPages(),
                 correctionPage.hasNext()
         );
 

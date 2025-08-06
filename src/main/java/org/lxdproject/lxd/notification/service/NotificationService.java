@@ -128,7 +128,6 @@ public class NotificationService {
                 notificationS,
                 page + 1,
                 size,
-                notificationPage.getTotalPages(),
                 notificationPage.hasNext()
         );
     }
@@ -205,7 +204,6 @@ public class NotificationService {
                 responses,
                 page + 1,
                 size,
-                notificationPage.getTotalPages(),
                 notificationPage.hasNext()
         );
     }
