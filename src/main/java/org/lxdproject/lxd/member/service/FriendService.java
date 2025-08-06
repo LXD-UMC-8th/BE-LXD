@@ -1,6 +1,6 @@
 package org.lxdproject.lxd.member.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
@@ -21,6 +21,7 @@ import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class FriendService {
 
     private final NotificationService notificationService;
 
+    @Transactional(readOnly = true)
     public FriendListResponseDTO getFriendList(Long memberId, Pageable pageable) {
         Member member = findMemberById(memberId);
 
@@ -107,6 +109,7 @@ public class FriendService {
         notificationService.saveAndPublishNotification(dto);
     }
 
+    @Transactional
     public void acceptFriendRequest(Long receiverId, FriendRequestAcceptRequestDTO requestDto) {
         Long requesterId = requestDto.getRequesterId();
         FriendRequest request = friendRequestRepository
@@ -149,6 +152,7 @@ public class FriendService {
         friendRepository.softDeleteFriendship(current, target);
     }
 
+    @Transactional(readOnly = true)
     public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
         Member currentMember = findMemberById(memberId);
 
