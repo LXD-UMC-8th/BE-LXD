@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.dto;
+package org.lxdproject.lxd.friend.dto;
 
 import lombok.Getter;
 

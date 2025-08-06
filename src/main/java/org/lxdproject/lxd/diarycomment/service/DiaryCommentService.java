@@ -27,7 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.lxdproject.lxd.member.repository.FriendRepository;
+import org.lxdproject.lxd.friend.repository.FriendRepository;
 
 import java.util.HashSet;
 import java.util.List;

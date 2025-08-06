@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.service;
+package org.lxdproject.lxd.friend.service;
 
 
 import lombok.RequiredArgsConstructor;
@@ -7,12 +7,12 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
 import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.member.dto.*;
-import org.lxdproject.lxd.member.entity.FriendRequest;
+import org.lxdproject.lxd.friend.dto.*;
+import org.lxdproject.lxd.friend.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
-import org.lxdproject.lxd.member.repository.FriendRepository;
-import org.lxdproject.lxd.member.repository.FriendRequestRepository;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.friend.repository.FriendRepository;
+import org.lxdproject.lxd.friend.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
@@ -155,39 +155,30 @@ public class FriendService {
     public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
         Member currentMember = findMemberById(memberId);
 
-        Page<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING, sentPage);
-        Page<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING, receivedPage);
+        Page<FriendResponseDTO> sent = friendRequestRepository
+                .findSentRequestDTOs(currentMember, FriendRequestStatus.PENDING, sentPage);
+
+        Page<FriendResponseDTO> received = friendRequestRepository
+                .findReceivedRequestDTOs(currentMember, FriendRequestStatus.PENDING, receivedPage);
 
         Long totalFriends = friendRepository.countFriendsByMemberId(memberId);
 
-        List<FriendResponseDTO> sentDtos = sent.getContent().stream()
-                .map(req -> mapToDto(req.getReceiver()))
-                .toList();
-
-        List<FriendResponseDTO> receivedDtos = received.getContent().stream()
-                .map(req -> mapToDto(req.getRequester()))
-                .toList();
-
-        PageResponse<FriendResponseDTO> sentResponse = new PageResponse<>(
-                sent.getTotalElements(),
-                sentDtos,
-                sent.getNumber() + 1,
-                sent.getSize(),
-                sent.hasNext()
-        );
-
-        PageResponse<FriendResponseDTO> receivedResponse = new PageResponse<>(
-                received.getTotalElements(),
-                receivedDtos,
-                received.getNumber() + 1,
-                received.getSize(),
-                received.hasNext()
-        );
-
         return new FriendRequestListResponseDTO(
                 totalFriends,
-                sentResponse,
-                receivedResponse
+                new PageResponse<>(
+                        sent.getTotalElements(),
+                        sent.getContent(),
+                        sent.getNumber() + 1,
+                        sent.getSize(),
+                        sent.hasNext()
+                ),
+                new PageResponse<>(
+                        received.getTotalElements(),
+                        received.getContent(),
+                        received.getNumber() + 1,
+                        received.getSize(),
+                        received.hasNext()
+                )
         );
     }
 
