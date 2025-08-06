@@ -8,6 +8,9 @@ import org.lxdproject.lxd.member.entity.Friendship;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.lxdproject.lxd.member.entity.QFriendship;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -28,17 +31,30 @@ public class FriendRepositoryImpl implements FriendRepository {
     // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
-    public List<Member> findFriendsByMemberId(Long memberId) { // 친구 목록 반환
-        List<Member> friends = new ArrayList<>();
-        friends.addAll(queryFactory
+    public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
+        List<Member> result = new ArrayList<>();
+
+        result.addAll(queryFactory
                 .select(friendship.receiver)
                 .from(friendship)
                 .where(
                         friendship.requester.id.eq(memberId),
                         friendship.deletedAt.isNull()
                 )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch());
-        return friends;
+
+        long total = queryFactory
+                .select(friendship.count())
+                .from(friendship)
+                .where(
+                        friendship.requester.id.eq(memberId),
+                        friendship.deletedAt.isNull()
+                )
+                .fetchOne();
+
+        return new PageImpl<>(result, pageable, total);
     }
 
     // 2. 친구 여부 반환 <read>  → 단방향 조회
@@ -137,4 +153,17 @@ public class FriendRepositoryImpl implements FriendRepository {
                 )
                 .fetchFirst() != null;
     }
+
+    @Override
+    public long countFriendsByMemberId(Long memberId) {
+        return queryFactory
+                .select(friendship.count())
+                .from(friendship)
+                .where(
+                        friendship.requester.id.eq(memberId),
+                        friendship.deletedAt.isNull()
+                )
+                .fetchOne();
+    }
+
 }

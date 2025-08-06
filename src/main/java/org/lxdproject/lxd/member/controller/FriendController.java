@@ -5,6 +5,8 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.service.FriendService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,9 +19,10 @@ public class FriendController implements FriendApi {
     private final FriendService friendService;
 
     @Override
-    public ApiResponse<FriendListResponseDTO> getFriendList() {
+    public ApiResponse<FriendListResponseDTO> getFriendList(int page, int size) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        FriendListResponseDTO response = friendService.getFriendList(currentMemberId);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        FriendListResponseDTO response = friendService.getFriendList(currentMemberId, pageable);
         return ApiResponse.onSuccess(response);
     }
 
@@ -45,9 +48,11 @@ public class FriendController implements FriendApi {
     }
 
     @Override
-    public ApiResponse<FriendRequestListResponseDTO> getFriendRequestList() {
+    public ApiResponse<FriendRequestListResponseDTO> getFriendRequestList(int receivedPage, int sentPage, int size) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId);
+        Pageable sentPageable = PageRequest.of(sentPage - 1, size);
+        Pageable receivedPageable = PageRequest.of(receivedPage - 1, size);
+        FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId, receivedPageable, sentPageable);
         return ApiResponse.onSuccess(response);
     }
 

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.FriendRequest;
@@ -17,6 +18,8 @@ import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,15 +34,14 @@ public class FriendService {
 
     private final NotificationService notificationService;
 
-    public FriendListResponseDTO getFriendList(Long memberId) {
+    public FriendListResponseDTO getFriendList(Long memberId, Pageable pageable) {
         Member member = findMemberById(memberId);
 
-        List<Member> friends = getFriends(memberId);
-        int totalFriends = friends.size();
+        Page<Member> friendsPage = getFriends(memberId, pageable);
 
         int totalRequests = getSentRequestCount(member) + getReceivedRequestCount(member);
 
-        List<FriendResponseDTO> friendDtos = friends.stream()
+        List<FriendResponseDTO> friendDtos = friendsPage.stream()
                 .map(friend -> new FriendResponseDTO(
                         friend.getId(),
                         friend.getUsername(),
@@ -47,7 +49,16 @@ public class FriendService {
                         friend.getProfileImg()))
                 .toList();
 
-        return new FriendListResponseDTO(totalFriends, totalRequests, friendDtos);
+        PageResponse<FriendResponseDTO> pageResponse = new PageResponse<>(
+                friendsPage.getTotalElements(), // 또는 -1
+                friendDtos,
+                friendsPage.getNumber() + 1,     // 0-based → 1-based
+                friendsPage.getSize(),
+                friendsPage.getTotalPages(),
+                friendsPage.hasNext()
+        );
+
+        return new FriendListResponseDTO(totalRequests, pageResponse);
     }
 
     public void sendFriendRequest(Long requesterId, FriendRequestCreateRequestDTO requestDto) {
@@ -138,30 +149,44 @@ public class FriendService {
         friendRepository.softDeleteFriendship(current, target);
     }
 
-    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId) {
+    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
         Member currentMember = findMemberById(memberId);
 
-        List<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING);
-        List<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING);
+        Page<FriendRequest> sent = friendRequestRepository.findByRequesterAndStatus(currentMember, FriendRequestStatus.PENDING, receivedPage);
+        Page<FriendRequest> received = friendRequestRepository.findByReceiverAndStatus(currentMember, FriendRequestStatus.PENDING, sentPage);
 
-        int sentCount = sent.size();
-        int receivedCount = received.size();
-        int totalFriends = getFriends(memberId).size();
+        Long totalFriends = friendRepository.countFriendsByMemberId(memberId);
 
-        List<FriendResponseDTO> sentDtos = sent.stream()
+        List<FriendResponseDTO> sentDtos = sent.getContent().stream()
                 .map(req -> mapToDto(req.getReceiver()))
                 .toList();
 
-        List<FriendResponseDTO> receivedDtos = received.stream()
+        List<FriendResponseDTO> receivedDtos = received.getContent().stream()
                 .map(req -> mapToDto(req.getRequester()))
                 .toList();
 
-        return new FriendRequestListResponseDTO(
-                sentCount,
-                receivedCount,
-                totalFriends,
+        PageResponse<FriendResponseDTO> sentResponse = new PageResponse<>(
+                sent.getTotalElements(),
                 sentDtos,
-                receivedDtos
+                sent.getNumber() + 1,
+                sent.getSize(),
+                sent.getTotalPages(),
+                sent.hasNext()
+        );
+
+        PageResponse<FriendResponseDTO> receivedResponse = new PageResponse<>(
+                received.getTotalElements(),
+                receivedDtos,
+                received.getNumber() + 1,
+                received.getSize(),
+                received.getTotalPages(),
+                received.hasNext()
+        );
+
+        return new FriendRequestListResponseDTO(
+                totalFriends,
+                sentResponse,
+                receivedResponse
         );
     }
 
@@ -170,20 +195,16 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
     }
 
-    private List<Member> getFriends(Long memberId) {
-        return friendRepository.findFriendsByMemberId(memberId);
+    private Page<Member> getFriends(Long memberId, Pageable pageable) {
+        return friendRepository.findFriendsByMemberId(memberId, pageable);
     }
 
     private int getSentRequestCount(Member member) {
-        return friendRequestRepository
-                .findByRequesterAndStatus(member, FriendRequestStatus.PENDING)
-                .size();
+        return friendRequestRepository.countByRequesterAndStatus(member, FriendRequestStatus.PENDING);
     }
 
     private int getReceivedRequestCount(Member member) {
-        return friendRequestRepository
-                .findByReceiverAndStatus(member, FriendRequestStatus.PENDING)
-                .size();
+        return friendRequestRepository.countByReceiverAndStatus(member, FriendRequestStatus.PENDING);
     }
 
     private FriendResponseDTO mapToDto(Member member) {
