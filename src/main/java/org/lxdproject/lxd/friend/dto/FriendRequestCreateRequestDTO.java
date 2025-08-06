@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.dto;
+package org.lxdproject.lxd.friend.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

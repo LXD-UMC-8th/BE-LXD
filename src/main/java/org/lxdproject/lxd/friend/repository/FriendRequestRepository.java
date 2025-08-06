@@ -1,13 +1,12 @@
-package org.lxdproject.lxd.member.repository;
+package org.lxdproject.lxd.friend.repository;
 
-import org.lxdproject.lxd.member.entity.FriendRequest;
+import org.lxdproject.lxd.friend.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {

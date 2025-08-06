@@ -12,7 +12,7 @@ import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
-import org.lxdproject.lxd.member.entity.QFriendship;
+import org.lxdproject.lxd.friend.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Pageable;
 

@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.service;
+package org.lxdproject.lxd.friend.service;
 
 
 import lombok.RequiredArgsConstructor;
@@ -7,12 +7,12 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
 import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.member.dto.*;
-import org.lxdproject.lxd.member.entity.FriendRequest;
+import org.lxdproject.lxd.friend.dto.*;
+import org.lxdproject.lxd.friend.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
-import org.lxdproject.lxd.member.repository.FriendRepository;
-import org.lxdproject.lxd.member.repository.FriendRequestRepository;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.friend.repository.FriendRepository;
+import org.lxdproject.lxd.friend.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
