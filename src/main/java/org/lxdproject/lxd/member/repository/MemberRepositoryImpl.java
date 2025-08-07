@@ -39,12 +39,10 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
         BooleanExpression searchCondition = usernameLike.or(nicknameLike);
 
         // 친구 여부에 따라 정렬 조건 추가
-        NumberExpression<Integer> friendPriority = Expressions.numberTemplate(
-                Integer.class,
-                "case when {0} in ({1}) then 1 else 0 end",
-                member.id,
-                friendIdSet.isEmpty() ? List.of(-1L) : friendIdSet // 빈 Set 처리
-        );
+        NumberExpression<Integer> friendPriority = new CaseBuilder()
+                .when(member.id.in(friendIdSet.isEmpty() ? List.of(-1L) : friendIdSet))
+                .then(1)
+                .otherwise(0);
 
         List<FriendSearchResponseDTO.MemberInfo> content = queryFactory
                 .select(Projections.constructor(

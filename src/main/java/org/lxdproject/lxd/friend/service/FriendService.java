@@ -249,7 +249,7 @@ public class FriendService {
 
         // 검색 결과 조회
         Page<FriendSearchResponseDTO.MemberInfo> resultPage = memberRepository.searchByQuery(query, memberId, friendIds, pageable);
-        
+
         // 검색 기록 redis에 저장
         saveRecentSearchKeyword(memberId, query);
 
