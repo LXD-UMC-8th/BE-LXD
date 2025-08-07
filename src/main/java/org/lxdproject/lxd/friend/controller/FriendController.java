@@ -67,4 +67,11 @@ public class FriendController implements FriendApi {
         friendService.cancelFriendRequest(requestDto);
         return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구 요청을 취소하였습니다."));
     }
+
+    @Override
+    public ApiResponse<FriendSearchResponseDTO> searchFriends(String query, int page, int size) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return ApiResponse.onSuccess(friendService.searchFriends(memberId, query, pageable));
+    }
 }

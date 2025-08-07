@@ -92,4 +92,18 @@ public interface FriendApi {
     })
     @PatchMapping("/cancel")
     ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(@RequestBody FriendRequestCancelRequestDTO requestDto);
+
+    @Operation(summary = "친구 검색 API", description = "username 또는 nickname으로 친구를 검색합니다. 친구인 사용자가 먼저 정렬됩니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 검색 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구 검색 결과를 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @PatchMapping("/search")
+    ApiResponse<FriendSearchResponseDTO> searchFriends(
+            @RequestParam("query") String query,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size);
+
 }

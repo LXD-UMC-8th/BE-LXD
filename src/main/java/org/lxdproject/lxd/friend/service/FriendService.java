@@ -9,6 +9,7 @@ import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.entity.FriendRequest;
+import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
@@ -23,7 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
 
     private final NotificationService notificationService;
+    private final RedisService redisService;
 
     @Transactional(readOnly = true)
     public FriendListResponseDTO getFriendList(Long memberId, Pageable pageable) {
@@ -224,6 +228,55 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         friendRequestRepository.delete(request);
+    }
+
+    public FriendSearchResponseDTO searchFriends(Long memberId, String query, Pageable pageable) {
+        if (query.isBlank()) {
+            return FriendSearchResponseDTO.builder()
+                    .query(query)
+                    .members(PageResponse.<FriendSearchResponseDTO.MemberInfo>builder()
+                            .contents(Collections.emptyList())
+                            .page(pageable.getPageNumber())
+                            .size(pageable.getPageSize())
+                            .hasNext(false)
+                            .build())
+                    .build();
+        }
+
+        // 검색 기록 redis에 저장
+        saveRecentSearchKeyword(memberId, query);
+
+        // 친구 ID 목록
+        Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
+
+        // 검색 결과 조회
+        Page<FriendSearchResponseDTO.MemberInfo> resultPage = memberRepository.searchByQuery(query, memberId, friendIds, pageable);
+
+        return FriendSearchResponseDTO.builder()
+                .query(query)
+                .members(PageResponse.<FriendSearchResponseDTO.MemberInfo>builder()
+                        .contents(resultPage.getContent())
+                        .page(resultPage.getNumber())
+                        .size(resultPage.getSize())
+                        .hasNext(resultPage.hasNext())
+                        .build())
+                .build();
+    }
+
+    private static final int MAX_RECENT_SEARCHES = 10;
+
+    private String getRedisKey(Long memberId) {
+        return "search:recent:" + memberId;
+    }
+
+    private void saveRecentSearchKeyword(Long memberId, String query) {
+        String key = getRedisKey(memberId);
+
+        // 중복 제거
+        redisService.removeListValue(key, query);
+        // 최신 검색기록 왼쪽에 추가
+        redisService.pushToList(key, query);
+        redisService.trimList(key, 0, MAX_RECENT_SEARCHES - 1);
     }
 
 }
