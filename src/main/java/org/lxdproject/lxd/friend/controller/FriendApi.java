@@ -100,7 +100,7 @@ public interface FriendApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구 검색 결과를 찾을 수 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    @PatchMapping("/search")
+    @GetMapping("/search")
     ApiResponse<FriendSearchResponseDTO> searchFriends(@RequestParam("query") String query, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size);
 
 }
