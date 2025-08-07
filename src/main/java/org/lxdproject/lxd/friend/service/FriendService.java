@@ -2,6 +2,7 @@ package org.lxdproject.lxd.friend.service;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
@@ -31,6 +32,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FriendService {
 
     private final FriendRepository friendRepository;
@@ -265,8 +267,12 @@ public class FriendService {
     }
 
     private void saveRecentSearchKeyword(Long memberId, String query) {
-        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-        redisService.pushRecentSearchKeyword(key, query, 10);
+        try {
+            String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+            redisService.pushRecentSearchKeyword(key, query, 10);
+        } catch (Exception e) {
+            log.warn("[FailedToSaveSearchKeyword] 멤버의 검색 기록 저장에 실패했습니다. {}: {}", memberId, e.getMessage());
+        }
     }
 
     public List<String> getRecentSearchKeywords(Long memberId, int limit) {
