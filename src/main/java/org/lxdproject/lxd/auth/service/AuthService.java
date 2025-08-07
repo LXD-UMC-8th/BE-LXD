@@ -98,9 +98,22 @@ public class AuthService {
 
         boolean htmlSent = false;
 
+        // verificationType에 따라 템플릿 경로/링크 메시지 분기
+        String templatePath;
+        String fallbackText;
+        if (verificationType == VerificationType.EMAIL) {
+            templatePath = "templates/email.html";
+            fallbackText = "아래 링크를 눌러 이메일 인증을 완료해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
+        } else if (verificationType == VerificationType.PASSWORD) {
+            templatePath = "templates/password.html";
+            fallbackText = "아래 링크를 눌러 비밀번호 재설정을 진행해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
+        } else {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
+
         // HTML 형식으로 이메일 전송
         try {
-            Resource resource = new ClassPathResource("templates/email.html");
+            Resource resource = new ClassPathResource(templatePath);
             String htmlTemplate = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
             String htmlContent = htmlTemplate.replace("{{verificationLink}}", verificationLink);
@@ -112,10 +125,7 @@ public class AuthService {
 
         // HTML 전송 실패 시 텍스트 메일로 fallback
         if (!htmlSent) {
-            String text = "아래 링크를 눌러 이메일 인증을 완료해주세요.\n" +
-                    "5분간 유효합니다.\n\n" +
-                    verificationLink;
-            mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, text);
+            mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, fallbackText);
         }
 
         // Redis에 기존 값 삭제 후 재등록
@@ -125,8 +135,10 @@ public class AuthService {
         List<String> values;
         if(verificationType == VerificationType.EMAIL) {
             values = List.of("email", sendVerificationRequestDTO.getEmail());
-        }else{
+        }else if(verificationType == VerificationType.PASSWORD) {
             values = List.of("password", sendVerificationRequestDTO.getEmail());
+        }else{
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
         }
 
         stringRedisTemplate.opsForList().rightPushAll(key, values); // 리스트로 저장
@@ -140,32 +152,14 @@ public class AuthService {
     }
 
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
-        /*String email = redisService.getValues(token);
-        try {
-            if (email == null) {
-                // 만료 또는 잘못된 토큰일 경우 → 실패 페이지로
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
-            } else {
-                redisService.deleteValues(token); // 재사용 방지
-
-                String newToken = createSecureToken();
-                redisService.setValues(newToken, email, Duration.ofMinutes(3L));
-
-                // +,/ 등이 포함될 수 있어 잘못 해석될 여지 방지
-                String encoded = URLEncoder.encode(newToken, UTF_8);
-                response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
-            }
-        }catch (IOException e) {
-            log.error("redirect에 실패했습니다");
-            throw new RuntimeException("리다이렉트 실패", e);
-        }*/
         try {
             // 1. 리스트로 조회
             List<String> values = stringRedisTemplate.opsForList().range(token, 0, -1);
 
             // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
             if (values == null || values.size() < 2) {
-               throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+                return;
             }
 
             String type = values.get(0);   // "email" 또는 "password"
@@ -184,7 +178,7 @@ public class AuthService {
             if ("email".equals(type)) {
                 response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
             } else if ("password".equals(type)) {
-                response.sendRedirect(urlProperties.getFrontend() + "home/change-pw?token=" + encoded);
+                response.sendRedirect(urlProperties.getFrontend() + "/home/change-pw?token=" + encoded);
             } else {
                 // 정의되지 않은 타입 → 실패 페이지
                 response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
