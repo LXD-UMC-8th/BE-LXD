@@ -2,7 +2,6 @@ package org.lxdproject.lxd.friend.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.friend.entity.Friendship;
 import org.lxdproject.lxd.friend.entity.QFriendship;
@@ -12,13 +11,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
 public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
@@ -31,6 +30,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
         List<Member> result = new ArrayList<>();
 
@@ -59,6 +59,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     // 2. 친구 여부 반환 <read>  → 단방향 조회
     @Override
+    @Transactional(readOnly = true)
     public boolean existsFriendshipByRequesterAndReceiver(Member m1, Member m2) {
         return queryFactory
                 .selectOne()
@@ -72,6 +73,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     // 3. 친구 관계 삭제 <delete> → 양방향 삭제
     @Override
+    @Transactional
     public void softDeleteFriendship(Member m1, Member m2) {
         Long m1Id = m1.getId();
         Long m2Id = m2.getId();
@@ -89,6 +91,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
    // 4. 친구 관계 저장 <create> → 양방향 저장
     @Override
+    @Transactional
     public void saveFriendship(Member requester, Member receiver) {
         Friendship existing = findFriendshipIncludingDeleted(requester, receiver);
         if (existing != null) {
@@ -155,6 +158,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     }
 
     @Override
+    @Transactional
     public long countFriendsByMemberId(Long memberId) {
         return queryFactory
                 .select(friendship.count())
