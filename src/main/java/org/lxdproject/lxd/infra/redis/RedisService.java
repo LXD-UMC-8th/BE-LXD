@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -72,5 +73,25 @@ public class RedisService {
 
     public boolean checkExistsValue(String value) {
         return value != null;
+    }
+
+    // List 왼쪽에 값 추가 (LPUSH)
+    public void pushToList(String key, String value) {
+        redisTemplate.opsForList().leftPush(key, value);
+    }
+
+    // List 값 범위 조회 (LRANGE)
+    public List<Object> getListRange(String key, long start, long end) {
+        return redisTemplate.opsForList().range(key, start, end);
+    }
+
+    // List 중복 제거 (LREM)
+    public void removeListValue(String key, String value) {
+        redisTemplate.opsForList().remove(key, 0, value); // 0: 모두 제거
+    }
+
+    // List 길이 자르기 (LTRIM)
+    public void trimList(String key, long start, long end) {
+        redisTemplate.opsForList().trim(key, start, end);
     }
 }
