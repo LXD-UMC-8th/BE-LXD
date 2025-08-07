@@ -156,4 +156,19 @@ public class MemberService {
                 .systemLanguage(member.getSystemLanguage())
                 .build();
     }
+
+    @Transactional
+    public void setPasswordSetting(MemberRequestDTO.SetPasswordSettingRequestDTO setPasswordSettingRequestDTO) {
+
+        // 새 비밀번호와 새 비밀번호 확인이 일치하지 않을 경우
+        if(!setPasswordSettingRequestDTO.getNewPassword().equals(setPasswordSettingRequestDTO.getConfirmNewPassword())){
+            throw new MemberHandler(ErrorStatus.NEW_PASSWORDS_DO_NOT_MATCH);
+        }
+
+        Member member = memberRepository.findByEmail(setPasswordSettingRequestDTO.getEmail())
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.updatePassword(passwordEncoder.encode(setPasswordSettingRequestDTO.getNewPassword()));
+
+    }
 }

@@ -61,6 +61,6 @@ public interface MemberApi {
     ApiResponse<LanguageChangeResponseDTO> setLanguageSetting(@Valid @RequestBody LanguageSettingRequestDTO languageSetting);
 
     @Operation(summary = "비밀번호 변경 API", description = "이메일 인증이 완료된 계정의 비밀번호를 수정합니다.")
-    @PatchMapping("/system-language")
+    @PatchMapping("/password")
     ApiResponse<String> setPasswordSetting(@Valid @RequestBody MemberRequestDTO.SetPasswordSettingRequestDTO setPasswordSettingRequestDTO);
 }
