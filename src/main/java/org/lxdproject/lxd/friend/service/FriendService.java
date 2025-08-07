@@ -2,6 +2,7 @@ package org.lxdproject.lxd.friend.service;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
@@ -9,6 +10,8 @@ import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.entity.FriendRequest;
+import org.lxdproject.lxd.infra.redis.RedisKeyPrefix;
+import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
@@ -23,10 +26,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FriendService {
 
     private final FriendRepository friendRepository;
@@ -34,6 +40,7 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
 
     private final NotificationService notificationService;
+    private final RedisService redisService;
 
     @Transactional(readOnly = true)
     public FriendListResponseDTO getFriendList(Long memberId, Pageable pageable) {
@@ -224,6 +231,63 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         friendRequestRepository.delete(request);
+    }
+
+    public FriendSearchResponseDTO searchFriends(Long memberId, String query, Pageable pageable) {
+        if (query.isBlank()) {
+            return FriendSearchResponseDTO.builder()
+                    .query(query)
+                    .members(PageResponse.<FriendSearchResponseDTO.MemberInfo>builder()
+                            .contents(Collections.emptyList())
+                            .page(pageable.getPageNumber())
+                            .size(pageable.getPageSize())
+                            .hasNext(false)
+                            .build())
+                    .build();
+        }
+
+        // 친구 ID 목록
+        Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
+
+        // 검색 결과 조회
+        Page<FriendSearchResponseDTO.MemberInfo> resultPage = memberRepository.searchByQuery(query, memberId, friendIds, pageable);
+
+        // 검색 기록 redis에 저장
+        saveRecentSearchKeyword(memberId, query);
+
+        return FriendSearchResponseDTO.builder()
+                .query(query)
+                .members(PageResponse.<FriendSearchResponseDTO.MemberInfo>builder()
+                        .contents(resultPage.getContent())
+                        .page(resultPage.getNumber())
+                        .size(resultPage.getSize())
+                        .hasNext(resultPage.hasNext())
+                        .build())
+                .build();
+    }
+
+    private void saveRecentSearchKeyword(Long memberId, String query) {
+        try {
+            String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+            redisService.pushRecentSearchKeyword(key, query, 10);
+        } catch (Exception e) {
+            log.warn("[FailedToSaveSearchKeyword] 멤버의 검색 기록 저장에 실패했습니다. {}: {}", memberId, e.getMessage());
+        }
+    }
+
+    public List<String> getRecentSearchKeywords(Long memberId, int limit) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+        return redisService.getRecentSearchKeywords(key, limit);
+    }
+
+    public void deleteKeyword(Long memberId, String query) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+        redisService.removeListValue(key, query);
+    }
+
+    public void clearKeywords(Long memberId) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+        redisService.deleteValues(key);
     }
 
 }
