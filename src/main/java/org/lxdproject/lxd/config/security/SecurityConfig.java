@@ -39,7 +39,7 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/auth/login",
             "/auth/google/login",
-            "/auth/verification-requests",
+            "/auth/emails/verification-requests",
             "/auth/emails/verifications",
             "/auth/email",
             "/auth/email/**", // 쿼리 파라미터가 있는 경우 /** uri 추가로 붙여주기
