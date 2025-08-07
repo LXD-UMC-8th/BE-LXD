@@ -140,7 +140,7 @@ public class AuthService {
     }
 
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
-        String email = redisService.getValues(token);
+        /*String email = redisService.getValues(token);
         try {
             if (email == null) {
                 // 만료 또는 잘못된 토큰일 경우 → 실패 페이지로
@@ -156,6 +156,41 @@ public class AuthService {
                 response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
             }
         }catch (IOException e) {
+            log.error("redirect에 실패했습니다");
+            throw new RuntimeException("리다이렉트 실패", e);
+        }*/
+        try {
+            // 1. 리스트로 조회
+            List<String> values = stringRedisTemplate.opsForList().range(token, 0, -1);
+
+            // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
+            if (values == null || values.size() < 2) {
+               throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+            }
+
+            String type = values.get(0);   // "email" 또는 "password"
+            String email = values.get(1);
+
+            // 3. 토큰 재사용 방지
+            stringRedisTemplate.delete(token);
+
+            // 4. 새 토큰 생성 & 짧은 TTL로 저장
+            String newToken = createSecureToken();
+            stringRedisTemplate.opsForValue().set(newToken, email, Duration.ofMinutes(3));
+
+            String encoded = URLEncoder.encode(newToken, UTF_8);
+
+            // 5. 타입에 따라 리다이렉트 분기
+            if ("email".equals(type)) {
+                response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
+            } else if ("password".equals(type)) {
+                response.sendRedirect(urlProperties.getFrontend() + "home/change-pw?token=" + encoded);
+            } else {
+                // 정의되지 않은 타입 → 실패 페이지
+                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+            }
+
+        } catch (IOException e) {
             log.error("redirect에 실패했습니다");
             throw new RuntimeException("리다이렉트 실패", e);
         }
