@@ -2,6 +2,8 @@ package org.lxdproject.lxd.friend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.service.FriendService;
@@ -73,6 +75,13 @@ public class FriendController implements FriendApi {
 
     @Override
     public ApiResponse<FriendSearchResponseDTO> searchFriends(String query, int page, int size) {
+        if (query == null || query.trim().isEmpty()) {
+            throw new FriendHandler(ErrorStatus.SEARCH_QUERY_REQUIRED);
+        }
+        if (query.trim().length() < 1) {
+            throw new FriendHandler(ErrorStatus.SEARCH_QUERY_REQUIRED);
+        }
+
         Long memberId = SecurityUtil.getCurrentMemberId();
         Pageable pageable = PageRequest.of(page - 1, size);
         return ApiResponse.onSuccess(friendService.searchFriends(memberId, query, pageable));

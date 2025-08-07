@@ -37,6 +37,8 @@ public enum ErrorStatus implements BaseErrorCode {
     NOT_FRIEND(HttpStatus.NOT_FOUND, "FRIEND4406", "친구 관계가 존재하지 않습니다."),
     FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4407", "해당 친구 요청을 찾을 수 없습니다."),
     INVALID_FRIEND_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "FRIEND4408", "요청 상태가 유효하지 않습니다."),
+    SEARCH_QUERY_REQUIRED(HttpStatus.BAD_REQUEST, "FRIEND4001", "검색어를 입력해주세요."),
+    SEARCH_QUERY_TOO_SHORT(HttpStatus.BAD_REQUEST, "FRIEND4002", "검색어는 1자 이상 입력해주세요."),
 
     // 인증 관련 에러
     REQUIRED_LOGIN(HttpStatus.UNAUTHORIZED, "AUTH4300", "로그인이 필요한 서비스입니다,"),
