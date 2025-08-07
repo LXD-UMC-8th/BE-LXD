@@ -19,10 +19,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
 
     int countByRequesterAndStatus(Member requester, FriendRequestStatus status);
     int countByReceiverAndStatus(Member receiver, FriendRequestStatus status);
-
-    Page<FriendRequest> findByRequesterAndStatus(Member requester, FriendRequestStatus status, Pageable pageable);
-    Page<FriendRequest> findByReceiverAndStatus(Member receiver, FriendRequestStatus status, Pageable pageable);
-
+    
     @Query("""
 SELECT new org.lxdproject.lxd.friend.dto.FriendResponseDTO(
     m.id,
