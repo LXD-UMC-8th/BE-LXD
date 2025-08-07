@@ -244,14 +244,14 @@ public class FriendService {
                     .build();
         }
 
-        // 검색 기록 redis에 저장
-        saveRecentSearchKeyword(memberId, query);
-
         // 친구 ID 목록
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
 
         // 검색 결과 조회
         Page<FriendSearchResponseDTO.MemberInfo> resultPage = memberRepository.searchByQuery(query, memberId, friendIds, pageable);
+        
+        // 검색 기록 redis에 저장
+        saveRecentSearchKeyword(memberId, query);
 
         return FriendSearchResponseDTO.builder()
                 .query(query)
