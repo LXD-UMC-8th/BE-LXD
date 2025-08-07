@@ -4,6 +4,8 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.friend.dto.FriendSearchResponseDTO;
@@ -15,56 +17,65 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Set;
 
+
 @RequiredArgsConstructor
 public class MemberRepositoryImpl implements MemberRepositoryCustom{
     private final JPAQueryFactory queryFactory;
+    private static final QMember member = new QMember("member");
 
     @Override
     public Page<FriendSearchResponseDTO.MemberInfo> searchByQuery(
-            String query,
-            Long currentUserId,
-            Set<Long> friendIds,
-            Pageable pageable) {
+            String keyword,
+            Long currentMemberId,
+            Set<Long> friendIdSet,
+            Pageable pageable
+    ) {
+        BooleanExpression notCurrentUser = member.id.ne(currentMemberId);
+        BooleanExpression notDeleted = member.deletedAt.isNull();
 
-        QMember m = QMember.member;
+        // username 또는 nickname LIKE 검색
+        BooleanExpression usernameLike = member.username.lower().like("%" + keyword.toLowerCase() + "%");
+        BooleanExpression nicknameLike = member.nickname.lower().like("%" + keyword.toLowerCase() + "%");
+        BooleanExpression searchCondition = usernameLike.or(nicknameLike);
 
-        // 검색 조건
-        BooleanExpression keywordMatch = m.username.containsIgnoreCase(query)
-                .or(m.nickname.containsIgnoreCase(query));
-
-        BooleanExpression excludeCurrentUser = m.id.ne(currentUserId);
-
-        BooleanExpression notDeleted = m.deletedAt.isNull();
-
-        // 친구인 사람 먼저, 닉네임 가나다 순으로 정렬
-        OrderSpecifier<Integer> isFriendDesc = new CaseBuilder()
-                .when(m.id.in(friendIds)).then(1)
-                .otherwise(0)
-                .desc();
-
-        OrderSpecifier<String> nicknameAsc = m.nickname.asc();
+        // 친구 여부에 따라 정렬 조건 추가
+        NumberExpression<Integer> friendPriority = Expressions.numberTemplate(
+                Integer.class,
+                "case when {0} in ({1}) then 1 else 0 end",
+                member.id,
+                friendIdSet.isEmpty() ? List.of(-1L) : friendIdSet // 빈 Set 처리
+        );
 
         List<FriendSearchResponseDTO.MemberInfo> content = queryFactory
                 .select(Projections.constructor(
                         FriendSearchResponseDTO.MemberInfo.class,
-                        m.id,
-                        m.username,
-                        m.nickname,
-                        m.profileImg
+                        member.id,
+                        member.username,
+                        member.nickname,
+                        member.profileImg
                 ))
-                .from(m)
-                .where(keywordMatch, excludeCurrentUser, notDeleted)
-                .orderBy(isFriendDesc, nicknameAsc)
+                .from(member)
+                .where(
+                        notCurrentUser,
+                        notDeleted,
+                        searchCondition
+                )
+                .orderBy(friendPriority.desc(), member.nickname.asc()) // 친구 우선, 닉네임 알파벳순
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         long total = queryFactory
-                .select(m.count())
-                .from(m)
-                .where(keywordMatch, excludeCurrentUser, notDeleted)
+                .select(member.count())
+                .from(member)
+                .where(
+                        notCurrentUser,
+                        notDeleted,
+                        searchCondition
+                )
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
     }
+
 }
