@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
-public class MemberSearchRepositoryImpl implements MemberRepositoryCustom{
+public class MemberRepositoryImpl implements MemberRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override

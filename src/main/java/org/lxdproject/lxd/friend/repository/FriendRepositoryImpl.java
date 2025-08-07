@@ -19,7 +19,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 @Transactional
-public class FriendRepositoryImpl implements FriendRepository {
+public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;

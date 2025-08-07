@@ -11,13 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Set;
 
-public interface FriendRepository {
-    Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable);
-    long countFriendsByMemberId(Long memberId);
-    boolean existsFriendshipByRequesterAndReceiver(Member m1, Member m2);
-    void saveFriendship(Member requester, Member receiver);
-    void softDeleteFriendship(Member m1, Member m2);
-    boolean existsFriendRelation(Long memberId, Long friendId);
+public interface FriendRepository extends JpaRepository<Friendship, Long>, FriendRepositoryCustom {
 
     @Query("""
     SELECT CASE 
