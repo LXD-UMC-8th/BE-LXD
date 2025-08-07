@@ -44,10 +44,6 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.USERNAME_DUPLICATION);
         }
 
-        if (memberRepository.existsByNickname(joinRequestDTO.getNickname())) {
-            throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
-        }
-
         String profileImgURL = null;
         Member member = null;
 
@@ -104,9 +100,6 @@ public class MemberService {
             if (newNickname != null && !newNickname.equals(member.getNickname())) {
                 if (!StringUtils.hasText(newNickname)) {
                     throw new MemberHandler(ErrorStatus.INVALID_NICKNAME);
-                }
-                if (memberRepository.existsByNickname(newNickname)) {
-                    throw new MemberHandler(ErrorStatus.NICKNAME_DUPLICATION);
                 }
                 member.setNickname(newNickname);
             }

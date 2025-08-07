@@ -21,7 +21,6 @@ public enum ErrorStatus implements BaseErrorCode {
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
-    NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4312", "이미 존재하는 닉네임입니다."),
     PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4313", "개인정보 동의는 필수입니다."),
     USERNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4314", "이미 존재하는 아이디입니다."),
     INVALID_USERNAME(HttpStatus.BAD_REQUEST, "MEMBER4001", "올바르지 않는 아이디 형식입니다."),
