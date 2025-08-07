@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -74,4 +77,26 @@ public class FriendController implements FriendApi {
         Pageable pageable = PageRequest.of(page - 1, size);
         return ApiResponse.onSuccess(friendService.searchFriends(memberId, query, pageable));
     }
+
+    @Override
+    public ApiResponse<List<String>> getRecentFriendSearchKeywords(int limit) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        List<String> recentKeywords = friendService.getRecentSearchKeywords(memberId, limit);
+        return ApiResponse.onSuccess(recentKeywords);
+    }
+
+    @Override
+    public ApiResponse<String> deleteRecentFriendSearchKeyword(String query) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        friendService.deleteKeyword(memberId, query);
+        return ApiResponse.onSuccess(query + " 검색 기록을 삭제하였습니다.");
+    }
+
+    @Override
+    public ApiResponse<String> clearRecentFriendSearchKeywords() {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        friendService.clearKeywords(memberId);
+        return ApiResponse.onSuccess("검색 기록을 초기화 하였습니다.");
+    }
+
 }

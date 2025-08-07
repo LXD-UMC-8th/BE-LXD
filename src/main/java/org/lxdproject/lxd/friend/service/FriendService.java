@@ -9,6 +9,7 @@ import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.entity.FriendRequest;
+import org.lxdproject.lxd.infra.redis.RedisKeyPrefix;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
@@ -263,20 +264,24 @@ public class FriendService {
                 .build();
     }
 
-    private static final int MAX_RECENT_SEARCHES = 10;
-
-    private String getRedisKey(Long memberId) {
-        return "search:recent:" + memberId;
+    private void saveRecentSearchKeyword(Long memberId, String query) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+        redisService.pushRecentSearchKeyword(key, query, 10);
     }
 
-    private void saveRecentSearchKeyword(Long memberId, String query) {
-        String key = getRedisKey(memberId);
+    public List<String> getRecentSearchKeywords(Long memberId, int limit) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+        return redisService.getRecentSearchKeywords(key, limit);
+    }
 
-        // 중복 제거
+    public void deleteKeyword(Long memberId, String query) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
         redisService.removeListValue(key, query);
-        // 최신 검색기록 왼쪽에 추가
-        redisService.pushToList(key, query);
-        redisService.trimList(key, 0, MAX_RECENT_SEARCHES - 1);
+    }
+
+    public void clearKeywords(Long memberId) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+        redisService.deleteValues(key);
     }
 
 }
