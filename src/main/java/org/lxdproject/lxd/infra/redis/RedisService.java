@@ -3,9 +3,8 @@ package org.lxdproject.lxd.infra.redis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,9 +82,17 @@ public class RedisService {
     }
 
     public void pushRecentSearchKeyword(String key, String keyword, int limit) {
-        stringRedisTemplate.opsForList().remove(key, 0, keyword); // 중복 제거
-        stringRedisTemplate.opsForList().leftPush(key, keyword); // 왼쪽(맨 앞)에 값 추가
-        stringRedisTemplate.opsForList().trim(key, 0, limit - 1); // 10개 초과 시 맨 뒤 삭제
+        stringRedisTemplate.execute(new SessionCallback<List<Object>>() {
+            @Override
+            public List<Object> execute(RedisOperations operations) throws DataAccessException {
+                operations.multi();
+                operations.opsForList().remove(key, 0, keyword);
+                operations.opsForList().leftPush(key, keyword);
+                operations.opsForList().trim(key, 0, limit - 1);
+                operations.expire(key, Duration.ofDays(30)); // 30일 TTL 설정
+                return operations.exec();
+            }
+        });
     }
 
     public void removeListValue(String key, String value) {
