@@ -10,6 +10,10 @@ import org.lxdproject.lxd.member.entity.Member;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "friendship", indexes = {
+        @Index(name = "idx_friend_requester", columnList = "requester_id"),
+        @Index(name = "idx_friend_receiver", columnList = "receiver_id")
+})
 public class Friendship extends BaseEntity {
 
     @Id

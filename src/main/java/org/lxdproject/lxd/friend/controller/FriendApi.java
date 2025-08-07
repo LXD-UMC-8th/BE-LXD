@@ -10,6 +10,8 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.friend.dto.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @Tag(name = "Friend API", description = "친구 관련 API")
 @RequestMapping("/friends")
@@ -92,4 +94,48 @@ public interface FriendApi {
     })
     @PatchMapping("/cancel")
     ApiResponse<FriendMessageResponseDTO> cancelFriendRequest(@RequestBody FriendRequestCancelRequestDTO requestDto);
+
+    @Operation(summary = "친구 검색 API", description = "username 또는 nickname으로 친구를 검색합니다. 친구인 사용자가 먼저 정렬됩니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 검색 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "친구 검색 결과를 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @GetMapping("/search")
+    ApiResponse<FriendSearchResponseDTO> searchFriends(@RequestParam("query") String query, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size);
+
+    @Operation(summary = "친구 검색 기록 조회 API", description = "친구 검색 기록을 조회합니다. 최대 개수는 10개 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 검색 기록 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "검색 기록 결과를 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @GetMapping("/search/recent")
+    ApiResponse<List<String>> getRecentFriendSearchKeywords(
+            @RequestParam(defaultValue = "10") int limit
+    );
+
+    @Operation(summary = "친구 검색 기록 단건 삭제 API", description = "친구 검색 기록 단건을 삭제합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 검색 기록 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "검색 기록을 찾을 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @DeleteMapping("/search/recent")
+    ApiResponse<String> deleteRecentFriendSearchKeyword(
+            @RequestParam String query
+    );
+
+    @Operation(summary = "친구 검색 기록 전체 삭제 API", description = "친구 검색 기록 전체를 삭제합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "친구 검색 기록 전체 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 상태"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @DeleteMapping("/search/recent-all")
+    ApiResponse<String> clearRecentFriendSearchKeywords();
+
 }
