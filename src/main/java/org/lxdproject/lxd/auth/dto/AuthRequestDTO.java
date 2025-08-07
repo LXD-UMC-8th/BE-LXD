@@ -3,10 +3,12 @@ package org.lxdproject.lxd.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.lxdproject.lxd.auth.enums.VerificationType;
 
 public class AuthRequestDTO {
     @Getter
@@ -27,6 +29,11 @@ public class AuthRequestDTO {
     @Getter
     @Setter
     public static class sendVerificationRequestDTO{
+
+        @NotNull(message = "인증 타입은 필수입니다.")
+        @Schema(description = "인증 종류", example = "EMAIL")
+        private VerificationType verificationType;
+
         @NotBlank(message = "이메일은 필수입니다.")
         @Schema(description = "이메일", example = "apple123@gmail.com")
         private String email;

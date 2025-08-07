@@ -13,6 +13,7 @@ import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
+import org.lxdproject.lxd.auth.enums.VerificationType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
@@ -22,6 +23,7 @@ import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -33,8 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,7 @@ public class AuthService {
     private final MailService mailService;
     private final UrlProperties urlProperties;
     private final RedisService redisService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -81,15 +83,18 @@ public class AuthService {
 
     public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
-        // 이미 존재하는 이메일인지 유효성 검사
-        if (memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail()).equals(Boolean.TRUE)) {
+        VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
+
+        // 이미 존재하는 이메일인지 유효성 검사 (verificationType이 EMAIL인 경우)
+        if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail()).equals(Boolean.TRUE)) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 
         // 토큰 생성 및 인증 링크 구성
-        String token = createSecureToken();
+        String key = createSecureToken();
+
         String title = "LXD 이메일 인증 번호";
-        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + token;
+        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + key;
 
         boolean htmlSent = false;
 
@@ -115,8 +120,17 @@ public class AuthService {
 
         // Redis에 기존 값 삭제 후 재등록
         // TODO 현재 같은 이메일 요청을 여러번 할 시, 한 개의 이메일에 여러 개의 토큰이 존재함 -> Redis hash 방식으로 추후 refactoring 하기
-        redisService.deleteValues(token);
-        redisService.setValues(token, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5L));
+        stringRedisTemplate.delete(key);
+
+        List<String> values;
+        if(verificationType == VerificationType.EMAIL) {
+            values = List.of("email", sendVerificationRequestDTO.getEmail());
+        }else{
+            values = List.of("password", sendVerificationRequestDTO.getEmail());
+        }
+
+        stringRedisTemplate.opsForList().rightPushAll(key, values); // 리스트로 저장
+        stringRedisTemplate.expire(key, Duration.ofMinutes(5));
     }
 
     private String createSecureToken() {

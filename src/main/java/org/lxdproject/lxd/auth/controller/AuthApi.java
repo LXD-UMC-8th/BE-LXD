@@ -30,7 +30,7 @@ public interface AuthApi {
     })
     ApiResponse<AuthResponseDTO.LoginResponseDTO> login(@RequestBody @Valid AuthRequestDTO.LoginRequestDTO loginRequestDTO);
 
-    @PostMapping("/emails/verification-requests")
+    @PostMapping("/verification-requests")
     @Operation(summary = "이메일 인증 링크 발송 API", description = "해당 이메일로 이메일 인증 링크를 발송합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증 링크 전송 성공"),
