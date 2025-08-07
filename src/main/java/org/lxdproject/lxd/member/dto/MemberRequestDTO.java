@@ -74,13 +74,17 @@ public class MemberRequestDTO {
     @Schema(description = "비밀번호 변경을 위한 RequestDTO")
     public static class SetPasswordSettingRequestDTO {
 
-       @NotBlank(message = "새 비밀번호 입력은 필수입니다.")
-       @Schema(description = "새로운 비밀번호", example = "Ab123456")
-       private String newPassword;
+        @NotBlank(message = "이메일 입력은 필수입니다.")
+        @Schema(description = "비밀번호를 변경할 이메일", example = "elucidator123@naver.com")
+        private String email;
 
-       @NotBlank(message = "새 비밀번호 확인은 필수입니다.")
-       @Schema(description = "비밀번호 재입력", example = "Ab123456")
-       private String confirmNewPassword;
+        @NotBlank(message = "새 비밀번호 입력은 필수입니다.")
+        @Schema(description = "새로운 비밀번호", example = "Ab123456")
+        private String newPassword;
+
+        @NotBlank(message = "새 비밀번호 확인은 필수입니다.")
+        @Schema(description = "비밀번호 재입력", example = "Ab123456")
+        private String confirmNewPassword;
 
     }
 

@@ -72,8 +72,8 @@ public class MemberController implements MemberApi {
 
     @Override
     public ApiResponse<String> setPasswordSetting(MemberRequestDTO.SetPasswordSettingRequestDTO setPasswordSettingRequestDTO) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        memberService.setPasswordSetting(memberId);
+
+        memberService.setPasswordSetting(setPasswordSettingRequestDTO);
         return ApiResponse.onSuccess("비밀번호가 수정됐습니다.");
     }
 }
