@@ -19,55 +19,58 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisService {
 
-    @Qualifier("redisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
+    @Qualifier("objectRedisTemplate")
+    private final RedisTemplate<String, Object> objectRedisTemplate;
+
+    @Qualifier("customStringRedisTemplate")
+    private final RedisTemplate<String, String> stringRedisTemplate;
 
     // TTL(유효시간) 없이 key-value 저장
     public void setValues(String key, String data) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        ValueOperations<String, Object> values = objectRedisTemplate.opsForValue();
         values.set(key, data);
     }
 
     // 유효기간(Duration) 을 설정해서 key-value 저장
     public void setValues(String key, String data, Duration duration) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        ValueOperations<String, Object> values = objectRedisTemplate.opsForValue();
         values.set(key, data, duration);
     }
 
     // key에 해당하는 String 값을 조회
     public String getValues(String key) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        ValueOperations<String, Object> values = objectRedisTemplate.opsForValue();
         Object result = values.get(key);
         return result != null ? (String) result : null;
     }
 
     // 해당 key를 삭제
     public void deleteValues(String key) {
-        redisTemplate.delete(key);
+        objectRedisTemplate.delete(key);
     }
 
     // 이미 존재하는 key에 대해 TTL(만료시간) 을 밀리초 단위로 설정
     // ex) expireValues("abc", 1000) → 1초 후 삭제됨.
     public void expireValues(String key, Duration duration) {
-        redisTemplate.expire(key, duration);
+        objectRedisTemplate.expire(key, duration);
     }
 
     // Redis의 Hash 자료구조를 사용해서 여러 필드(key-value pair)를 한 번에 저장
     public void setHashOps(String key, Map<String, String> data) {
-        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
+        HashOperations<String, Object, Object> values = objectRedisTemplate.opsForHash();
         values.putAll(key, data);
     }
 
     // Redis의 Hash 구조에서 특정 필드(hashKey)의 값을 가져옴, 해당 hashKey 가 없으면 빈 문자열 반환
     @Transactional(readOnly = true)
     public String getHashOps(String key, String hashKey) {
-        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
-        return Boolean.TRUE.equals(values.hasKey(key, hashKey)) ? (String) redisTemplate.opsForHash().get(key, hashKey) : null;
+        HashOperations<String, Object, Object> values = objectRedisTemplate.opsForHash();
+        return Boolean.TRUE.equals(values.hasKey(key, hashKey)) ? (String) objectRedisTemplate.opsForHash().get(key, hashKey) : null;
     }
 
     // Redis Hash에서 특정 필드(hashKey)만 삭제
     public void deleteHashOps(String key, String hashKey) {
-        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
+        HashOperations<String, Object, Object> values = objectRedisTemplate.opsForHash();
         values.delete(key, hashKey);
     }
 
@@ -75,23 +78,18 @@ public class RedisService {
         return value != null;
     }
 
-    // List 왼쪽에 값 추가 (LPUSH)
-    public void pushToList(String key, String value) {
-        redisTemplate.opsForList().leftPush(key, value);
+    public List<String> getRecentSearchKeywords(String key, int limit) {
+        return stringRedisTemplate.opsForList().range(key, 0, limit - 1);
     }
 
-    // List 값 범위 조회 (LRANGE)
-    public List<Object> getListRange(String key, long start, long end) {
-        return redisTemplate.opsForList().range(key, start, end);
+    public void pushRecentSearchKeyword(String key, String keyword, int limit) {
+        stringRedisTemplate.opsForList().remove(key, 0, keyword); // 중복 제거
+        stringRedisTemplate.opsForList().leftPush(key, keyword); // 왼쪽(맨 앞)에 값 추가
+        stringRedisTemplate.opsForList().trim(key, 0, limit - 1); // 10개 초과 시 맨 뒤 삭제
     }
 
-    // List 중복 제거 (LREM)
     public void removeListValue(String key, String value) {
-        redisTemplate.opsForList().remove(key, 0, value); // 0: 모두 제거
+        stringRedisTemplate.opsForList().remove(key, 0, value);
     }
 
-    // List 길이 자르기 (LTRIM)
-    public void trimList(String key, long start, long end) {
-        redisTemplate.opsForList().trim(key, start, end);
-    }
 }
