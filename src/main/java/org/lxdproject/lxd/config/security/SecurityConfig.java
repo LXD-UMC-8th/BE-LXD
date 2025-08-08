@@ -72,13 +72,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Value("${urls.frontend}")
-    private String frontendUrl;
+    @Value("#{'${urls.frontend}'.split(',')}")
+    private List<String> frontendUrls;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontendUrl));
+        configuration.setAllowedOrigins(frontendUrls);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // Authorization 헤더 허용
