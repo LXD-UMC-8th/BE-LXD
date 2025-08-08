@@ -31,10 +31,6 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-//    QDiary diary = QDiary.diary;
-//    QDiaryLike diaryLike = QDiaryLike.diaryLike;
-//    QFriendship friendship = QFriendship.friendship;
-
     private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
     private static final QFriendship FRIENDSHIP = QFriendship.friendship;
@@ -178,11 +174,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
+
         Set<Long> likedSet = getLikedDiaryIdSet(userId);
-
-//        QDiary diary = QDiary.diary;
-//        QMember member = QMember.member;
-
         Set<Long> friendIds = getFriendIds(userId);
 
         List<Diary> diaries = queryFactory
@@ -232,12 +225,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable) {
-        Set<Long> likedSet = getLikedDiaryIdSet(userId);
-//        QDiaryLike diaryLike = QDiaryLike.diaryLike;
-//        QDiary diary = QDiary.diary;
-//        QMember member = QMember.member;
-//        QFriendship friendship = QFriendship.friendship;
 
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
         List<Long> likedDiaryIds = queryFactory
                 .select(DIARY_LIKE.diary.id)
                 .from(DIARY_LIKE)
