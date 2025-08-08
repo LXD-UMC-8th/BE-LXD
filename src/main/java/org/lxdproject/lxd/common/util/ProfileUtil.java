@@ -1,19 +1,17 @@
 package org.lxdproject.lxd.common.util;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+
+@Component
+@RequiredArgsConstructor
 public class ProfileUtil {
+    private final Environment env;
 
-    public static boolean isLocalEnv() {
-        return "local".equals(System.getProperty("spring.profiles.active"));
-    }
-
-    public static boolean isProdEnv() {
-        return "prod".equals(System.getProperty("spring.profiles.active"));
-    }
-
-    public static boolean isProfile(String profile) {
-        return profile != null && profile.equals(System.getProperty("spring.profiles.active"));
-    }
-
-    private ProfileUtil() {
-    }
+    public boolean isLocal() { return Arrays.asList(env.getActiveProfiles()).contains("local"); }
+    public boolean isProd()  { return Arrays.asList(env.getActiveProfiles()).contains("prod"); }
+    public boolean has(String profile) { return Arrays.asList(env.getActiveProfiles()).contains(profile); }
 }
