@@ -1,7 +1,6 @@
 package org.lxdproject.lxd.auth.service;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -31,9 +29,6 @@ import java.net.URLEncoder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 
@@ -89,10 +84,10 @@ public class AuthService {
         }
 
         // 토큰 생성 및 인증 링크 구성
-        String key = createSecureToken();
+        String token = createSecureToken();
 
         String title = "LXD 이메일 인증 번호";
-        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + key;
+        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + token;
 
         boolean htmlSent = false;
 
@@ -128,11 +123,11 @@ public class AuthService {
 
         // Redis에 기존 값 삭제 후 재등록
         // TODO 현재 같은 이메일 요청을 여러번 할 시, 한 개의 이메일에 여러 개의 토큰이 존재함 -> Redis hash 방식으로 추후 refactoring 하기
-        redisService.deleteKey(key);
+        redisService.deleteKey(token);
 
-        // Redis에 key -> [type, email] 형식으로 저장
+        // Redis에 token -> [type, email] 형식으로 저장
         String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
-        redisService.setVerificationList(key, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
+        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
 
     }
 
@@ -189,7 +184,7 @@ public class AuthService {
         String email = oAuthUserInfo.getEmail();
         Member member = memberRepository.findByEmail(email).orElse(null);
 
-        System.out.println(member);
+        log.debug("social login member: {}", member);
 
         // 새로운 유저 -> 회원가입 페이지로 이동시키기
         if(member == null) {
