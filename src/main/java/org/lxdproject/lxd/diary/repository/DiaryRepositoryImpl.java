@@ -228,6 +228,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable) {
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
         QDiaryLike diaryLike = QDiaryLike.diaryLike;
         QDiary diary = QDiary.diary;
         QMember member = QMember.member;
@@ -286,6 +287,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .liked(likedSet.contains(d.getId()))
                         .build()
                 )
                 .toList();
