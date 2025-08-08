@@ -13,6 +13,8 @@ import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.auth.enums.VerificationType;
+import org.lxdproject.lxd.common.util.ProfileUtil;
+import org.lxdproject.lxd.config.properties.SelectedUrls;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
@@ -41,9 +43,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    private final MailService mailService;
-    private final UrlProperties urlProperties;
     private final RedisService redisService;
+    private final MailService mailService;
+    private final SelectedUrls urls;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -87,7 +89,7 @@ public class AuthService {
         String token = createSecureToken();
 
         String title = "LXD 이메일 인증 번호";
-        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + token;
+        String verificationLink = urls.backend() + "/auth/emails/verifications?token=" + token;
 
         boolean htmlSent = false;
 
@@ -143,7 +145,7 @@ public class AuthService {
 
             // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
             if (values == null || values.size() < 2) {
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+                response.sendRedirect(urls.frontend() + "/email-verification/fail");
                 return;
             }
 
@@ -154,7 +156,7 @@ public class AuthService {
 
             // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
             if(!token.equals(latestToken)) {
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+                response.sendRedirect(urls.frontend() + "/email-verification/fail");
                 return;
             }
 
@@ -170,12 +172,12 @@ public class AuthService {
 
             // 5. 타입에 따라 리다이렉트 분기
             if ("email".equals(type)) {
-                response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
+                response.sendRedirect(urls.frontend() + "/home/signup?token=" + encoded);
             } else if ("password".equals(type)) {
-                response.sendRedirect(urlProperties.getFrontend() + "/home/change-pw?token=" + encoded);
+                response.sendRedirect(urls.frontend() + "/home/change-pw?token=" + encoded);
             } else {
                 // 정의되지 않은 타입 → 실패 페이지
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+                response.sendRedirect(urls.frontend() + "/email-verification/fail");
             }
 
         } catch (IOException e) {
