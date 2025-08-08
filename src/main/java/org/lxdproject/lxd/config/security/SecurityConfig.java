@@ -3,6 +3,7 @@ package org.lxdproject.lxd.config.security;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.SecurityExceptionHandler;
+import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtAuthenticationFilter;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +50,7 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final SecurityExceptionHandler securityExceptionHandler;
+    private final UrlProperties urlProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -72,13 +74,10 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Value("#{'${urls.frontend}'.split(',')}")
-    private List<String> frontendUrls;
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(frontendUrls);
+        configuration.setAllowedOrigins(urlProperties.getFrontend());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // Authorization 헤더 허용
