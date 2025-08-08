@@ -25,8 +25,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import java.net.URLEncoder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +44,12 @@ public class AuthService {
     private final RedisService redisService;
     private final MailService mailService;
     private final SelectedUrls urls;
+
+    @PostConstruct
+    void validateUrls() {
+        urls.frontend();
+        urls.backend();
+    }
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -88,7 +93,11 @@ public class AuthService {
         String token = createSecureToken();
 
         String title = "LXD 이메일 인증 번호";
-        String verificationLink = urls.backend() + "/auth/emails/verifications?token=" + token;
+        String verificationLink = UriComponentsBuilder
+                .fromHttpUrl(urls.backend())
+                .path("/auth/emails/verifications")
+                .queryParam("token", token)
+                .toUriString();
 
         boolean htmlSent = false;
 
@@ -142,20 +151,22 @@ public class AuthService {
             // 1. 리스트로 조회
             List<String> values = redisService.getVerificationList(token);
 
+            String fe = urls.frontend();
+
             // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
             if (values == null || values.size() < 2) {
-                response.sendRedirect(urls.frontend() + "/email-verification/fail");
+                response.sendRedirect(fe + "/email-verification/fail");
                 return;
             }
 
-            String type = values.get(0);   // "email" 또는 "password"
+            String type = values.get(0);   // email 또는 password
             String email = values.get(1);
 
             String latestToken = redisService.getString(email);
 
             // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
             if(!token.equals(latestToken)) {
-                response.sendRedirect(urls.frontend() + "/email-verification/fail");
+                response.sendRedirect(fe + "/email-verification/fail");
                 return;
             }
 
@@ -167,17 +178,14 @@ public class AuthService {
             String newToken = createSecureToken();
             redisService.setString(newToken, email, Duration.ofMinutes(3));
 
-            String encoded = URLEncoder.encode(newToken, UTF_8);
-
             // 5. 타입에 따라 리다이렉트 분기
-            if ("email".equals(type)) {
-                response.sendRedirect(urls.frontend() + "/home/signup?token=" + encoded);
-            } else if ("password".equals(type)) {
-                response.sendRedirect(urls.frontend() + "/home/change-pw?token=" + encoded);
-            } else {
-                // 정의되지 않은 타입 → 실패 페이지
-                response.sendRedirect(urls.frontend() + "/email-verification/fail");
-            }
+            String redirectUrl = UriComponentsBuilder
+                    .fromHttpUrl(fe)
+                    .path(type.equals("email") ? "/home/signup" : "/home/change-pw")
+                    .queryParam("token", newToken)
+                    .toUriString();
+
+            response.sendRedirect(redirectUrl);
 
         } catch (IOException e) {
             log.error("redirect에 실패했습니다");
@@ -255,7 +263,7 @@ public class AuthService {
         redisService.deleteValues(refreshToken);
         redisService.setValues(newRefreshToken, member.getEmail(), Duration.ofDays(7L));
 
-        return new AuthResponseDTO.ReissueResponseDTO().builder()
+        return AuthResponseDTO.ReissueResponseDTO.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
