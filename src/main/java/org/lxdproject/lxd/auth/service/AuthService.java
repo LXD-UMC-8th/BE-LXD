@@ -39,7 +39,6 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class AuthService {
 
@@ -50,7 +49,6 @@ public class AuthService {
     private final MailService mailService;
     private final UrlProperties urlProperties;
     private final RedisService redisService;
-    private final StringRedisTemplate stringRedisTemplate;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -130,19 +128,12 @@ public class AuthService {
 
         // Redis에 기존 값 삭제 후 재등록
         // TODO 현재 같은 이메일 요청을 여러번 할 시, 한 개의 이메일에 여러 개의 토큰이 존재함 -> Redis hash 방식으로 추후 refactoring 하기
-        stringRedisTemplate.delete(key);
+        redisService.deleteKey(key);
 
-        List<String> values;
-        if(verificationType == VerificationType.EMAIL) {
-            values = List.of("email", sendVerificationRequestDTO.getEmail());
-        }else if(verificationType == VerificationType.PASSWORD) {
-            values = List.of("password", sendVerificationRequestDTO.getEmail());
-        }else{
-            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
-        }
+        // Redis에 key -> [type, email] 형식으로 저장
+        String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
+        redisService.setVerificationList(key, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
 
-        stringRedisTemplate.opsForList().rightPushAll(key, values); // 리스트로 저장
-        stringRedisTemplate.expire(key, Duration.ofMinutes(5));
     }
 
     private String createSecureToken() {
@@ -154,7 +145,7 @@ public class AuthService {
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
         try {
             // 1. 리스트로 조회
-            List<String> values = stringRedisTemplate.opsForList().range(token, 0, -1);
+            List<String> values = redisService.getVerificationList(token);
 
             // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
             if (values == null || values.size() < 2) {
@@ -166,11 +157,11 @@ public class AuthService {
             String email = values.get(1);
 
             // 3. 토큰 재사용 방지
-            stringRedisTemplate.delete(token);
+            redisService.deleteKey(token);
 
             // 4. 새 토큰 생성 & 짧은 TTL로 저장
             String newToken = createSecureToken();
-            stringRedisTemplate.opsForValue().set(newToken, email, Duration.ofMinutes(3));
+            redisService.setString(newToken, email, Duration.ofMinutes(3));
 
             String encoded = URLEncoder.encode(newToken, UTF_8);
 
