@@ -121,13 +121,12 @@ public class AuthService {
             mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, fallbackText);
         }
 
-        // Redis에 기존 값 삭제 후 재등록
-        // TODO 현재 같은 이메일 요청을 여러번 할 시, 한 개의 이메일에 여러 개의 토큰이 존재함 -> Redis hash 방식으로 추후 refactoring 하기
-        redisService.deleteKey(token);
-
         // Redis에 token -> [type, email] 형식으로 저장
         String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
         redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
+
+        // 이메일 중복 처리를 위한 보조키 저장
+        redisService.setString(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
 
     }
 
@@ -151,16 +150,21 @@ public class AuthService {
             String type = values.get(0);   // "email" 또는 "password"
             String email = values.get(1);
 
-            // 3. 토큰 재사용 방지
-            redisService.deleteKey(token);
+            String lastestToken = redisService.getString(email);
 
-            // 4. 새 토큰 생성 & 짧은 TTL로 저장
+            // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
+            if(!token.equals(lastestToken)) {
+                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
+                return;
+            }
+
+            // 3. 이메일 토큰 생성 & 짧은 TTL로 저장
             String newToken = createSecureToken();
             redisService.setString(newToken, email, Duration.ofMinutes(3));
 
             String encoded = URLEncoder.encode(newToken, UTF_8);
 
-            // 5. 타입에 따라 리다이렉트 분기
+            // 4. 타입에 따라 리다이렉트 분기
             if ("email".equals(type)) {
                 response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
             } else if ("password".equals(type)) {
