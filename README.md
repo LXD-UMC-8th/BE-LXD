@@ -1,5 +1,9 @@
-# BE-LXD
-> 프로젝트 한줄 소개
+# 📖 Language Xchange Diary
+> 외국어 학습자를 위한 교류형 다이어리 플랫폼 
+
+## 프로젝트 소개
+![32](https://github.com/user-attachments/assets/709dcd3f-d93d-4b94-8ffd-0523a0b518e6)
+![39](https://github.com/user-attachments/assets/eeaf86df-8e0d-4467-bf0e-8940d83b8f00)
 
 ---
 
@@ -12,44 +16,37 @@
 
 <br>
 
-
-## 소개
-
-> 프로젝트 소개 내용
-
-<br>
-
 ## 🛠️ 개발 환경
 
 | |  |
 | --- | --- |
-| 통합 개발 환경 |  |
-| Spring 버전 | |
-| 데이터베이스 |  |
-| 배포 |  |
-| CI/CD 툴 |  |
-| ERD 다이어그램 툴 | |
-| Java version |  |
-| 패키지 구조 | |
-| API 테스트 |  |
-| 외부 연동 | |
+| 통합 개발 환경 | IntelliJ  |
+| Spring 버전 | 3.2.5 |
+| 데이터베이스 | AWS RDS(MySQL), Redis |
+| 배포 | AWS EC2 |
+| CI/CD 툴 | Github Actions, Docker |
+| ERD 다이어그램 툴 | ERDCloud |
+| Java version | Java17 |
+| 패키지 구조 | 도메인 패키지 구조 |
+| API 테스트 | Swagger |
 
 
 <br>
 
 ## ⚙️ 시스템 아키텍처
+<img width="1680" height="843" alt="Group 1000000904 (1)" src="https://github.com/user-attachments/assets/d207df42-954b-451f-a643-9f8af1c1c59f" />
+
+<br>
+
+## 💾 ERD
+<img width="1681" height="843" alt="image 4" src="https://github.com/user-attachments/assets/c75ee51d-95d7-4de0-9588-f02a4a4da6ec" />
 
 <br>
 
 ## 📝 API Docs
-> API 명세서 링크
+<a href="https://rigorous-tourmaline-47c.notion.site/API-22b91de6073780588b2ee92b881492e8?source=copy_link">🔗API 명세서 링크 </a>
 
-## 💾 ERD
-
-<br>
-
-
-## 주요 기능
+## ⭐️ 주요 기능
 <table>
   <tr>
     <td>
@@ -105,9 +102,3 @@ feat/#{이슈번호}-{기능내용}
 
 - 커밋 유형 이후 제목과 본문은 한글로 작성하여 내용이 잘 전달될 수 있도록 할 것
 - 본문에는 변경한 내용과 이유 설명 (어떻게보다는 무엇 & 왜를 설명)
-
-### 3. 제목 첫 글자는 대문자로, 끝에는 `.` 금지
-
-### 4. 제목은 영문 기준 50자 이내로 할 것
-
-### 5. 자신의 코드가 직관적으로 바로 파악할 수 있다고 생각하지 말자
