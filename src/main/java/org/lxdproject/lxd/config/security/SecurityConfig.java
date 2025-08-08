@@ -34,7 +34,7 @@ public class SecurityConfig {
             "/members/join",
             "/members/check-username",
             "/members/check-username/**", // 쿼리 파라미터가 있는 경우 /** uri 추가로 붙여주기
-            "/members/password-verify",
+            "/members/password",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/auth/login",

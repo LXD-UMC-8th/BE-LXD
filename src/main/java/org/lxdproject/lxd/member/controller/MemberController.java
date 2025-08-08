@@ -69,4 +69,11 @@ public class MemberController implements MemberApi {
         LanguageChangeResponseDTO response = memberService.setSystemLanguage(memberId, request);
         return ApiResponse.of(SuccessStatus._OK, response);
     }
+
+    @Override
+    public ApiResponse<String> setPasswordSetting(@Valid @RequestBody MemberRequestDTO.SetPasswordSettingRequestDTO setPasswordSettingRequestDTO) {
+
+        memberService.setPasswordSetting(setPasswordSettingRequestDTO);
+        return ApiResponse.onSuccess("비밀번호가 수정됐습니다.");
+    }
 }

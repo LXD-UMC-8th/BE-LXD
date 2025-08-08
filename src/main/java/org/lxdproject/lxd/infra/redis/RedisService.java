@@ -2,6 +2,7 @@ package org.lxdproject.lxd.infra.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.auth.enums.VerificationType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
@@ -97,6 +98,37 @@ public class RedisService {
 
     public void removeListValue(String key, String value) {
         stringRedisTemplate.opsForList().remove(key, 0, value);
+    }
+
+    public void setString(String key, String value, Duration ttl) {
+        stringRedisTemplate.opsForValue().set(key, value, ttl);
+    }
+
+    public String getString(String key) {
+        return stringRedisTemplate.opsForValue().get(key);
+    }
+
+    public boolean deleteKey(String key) {
+        Boolean res = stringRedisTemplate.delete(key);
+        return Boolean.TRUE.equals(res);
+    }
+
+
+    public List<String> getVerificationList(String token) {
+        return stringRedisTemplate.opsForList().range(token, 0, -1);
+    }
+
+    // 이메일, 비밀번호 인증 토큰 저장
+    public void setVerificationList(String token, String type, String email, Duration ttl) {
+        stringRedisTemplate.execute(new SessionCallback<List<Object>>() {
+            @Override
+            public List<Object> execute(RedisOperations operations) {
+                operations.multi();
+                operations.opsForList().rightPushAll(token, type, email);
+                operations.expire(token, ttl);
+                return operations.exec();
+            }
+        });
     }
 
 }

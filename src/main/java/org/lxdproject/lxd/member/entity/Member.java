@@ -64,7 +64,7 @@ public class Member extends BaseEntity {
 
     // 닉네임
     @Setter
-    @Column(nullable = false, length = 20, unique = true)
+    @Column(nullable = false, length = 20)
     private String nickname;
 
     // 로그인 타입
@@ -100,5 +100,5 @@ public class Member extends BaseEntity {
     public void updateSystemLanguage(Language systemLanguage) {
         this.systemLanguage = systemLanguage;
     }
-
+    public void updatePassword(String password) {this.password = password;}
 }
