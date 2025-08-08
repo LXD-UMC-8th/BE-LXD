@@ -26,6 +26,9 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_USERNAME(HttpStatus.BAD_REQUEST, "MEMBER4001", "올바르지 않는 아이디 형식입니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "MEMBER4315", "올바르지 않은 닉네임 형식입니다."),
     INVALID_PROFILE_DATA(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임을 {\"nickname\":\"수정할 닉네임\"} 형식으로 요청해주세요."),
+    NEW_PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER4316", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다"),
+
+
 
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),

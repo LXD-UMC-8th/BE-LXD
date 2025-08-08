@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -43,6 +40,7 @@ public class MemberRequestDTO {
 
         @NotBlank(message = "아이디는 필수입니다.")
         @Size(max = 20, message = "아이디는 최대 20자까지 가능합니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "아이디는 영문, 숫자, 언더바(_), 하이픈(-)만 가능합니다.")
         @Schema(description = "아이디", example = "snowman")
         String username;
 
@@ -69,5 +67,24 @@ public class MemberRequestDTO {
         private LoginType loginType;
 
     }
+
+    @Getter
+    @Schema(description = "비밀번호 변경을 위한 RequestDTO")
+    public static class SetPasswordSettingRequestDTO {
+
+        @NotBlank(message = "이메일 입력은 필수입니다.")
+        @Schema(description = "비밀번호를 변경할 이메일", example = "elucidator123@naver.com")
+        private String email;
+
+        @NotBlank(message = "새 비밀번호 입력은 필수입니다.")
+        @Schema(description = "새로운 비밀번호", example = "Ab123456")
+        private String newPassword;
+
+        @NotBlank(message = "새 비밀번호 확인은 필수입니다.")
+        @Schema(description = "비밀번호 재입력", example = "Ab123456")
+        private String confirmNewPassword;
+
+    }
+
 
 }

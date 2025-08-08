@@ -100,5 +100,5 @@ public class Member extends BaseEntity {
     public void updateSystemLanguage(Language systemLanguage) {
         this.systemLanguage = systemLanguage;
     }
-
+    public void updatePassword(String password) {this.password = password;}
 }
