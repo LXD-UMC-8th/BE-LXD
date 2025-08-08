@@ -150,21 +150,25 @@ public class AuthService {
             String type = values.get(0);   // "email" 또는 "password"
             String email = values.get(1);
 
-            String lastestToken = redisService.getString(email);
+            String latestToken = redisService.getString(email);
 
             // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
-            if(!token.equals(lastestToken)) {
+            if(!token.equals(latestToken)) {
                 response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
                 return;
             }
 
-            // 3. 이메일 토큰 생성 & 짧은 TTL로 저장
+            // 3. 원본 토큰 제거 -> 재사용 방지
+            redisService.deleteKey(email);
+            redisService.deleteKey(token);
+
+            // 4. 이메일 토큰 생성 & 짧은 TTL로 저장
             String newToken = createSecureToken();
             redisService.setString(newToken, email, Duration.ofMinutes(3));
 
             String encoded = URLEncoder.encode(newToken, UTF_8);
 
-            // 4. 타입에 따라 리다이렉트 분기
+            // 5. 타입에 따라 리다이렉트 분기
             if ("email".equals(type)) {
                 response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" + encoded);
             } else if ("password".equals(type)) {
@@ -276,7 +280,7 @@ public class AuthService {
 
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
-        String email = redisService.getValues(token);
+        String email = redisService.getString(token);
 
         if(email == null) {
             throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
