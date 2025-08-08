@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.auth.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +14,7 @@ import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.auth.enums.VerificationType;
-import org.lxdproject.lxd.common.util.ProfileUtil;
 import org.lxdproject.lxd.config.properties.SelectedUrls;
-import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
@@ -81,7 +80,7 @@ public class AuthService {
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
 
         // 이미 존재하는 이메일인지 유효성 검사 (verificationType이 EMAIL인 경우)
-        if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail()).equals(Boolean.TRUE)) {
+        if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail())) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 

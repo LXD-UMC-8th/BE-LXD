@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.ConfigHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.util.ProfileChecker;
 import org.lxdproject.lxd.common.util.ProfileUtil;
 import org.springframework.stereotype.Component;
 
@@ -14,25 +15,21 @@ import java.util.List;
 public class SelectedUrls {
 
     private final UrlProperties urlProperties;
+    private final ProfileChecker profile;
 
     public String frontend() {
-        return ProfileUtil.isLocalEnv()
-                ? pick(urlProperties.getFrontend(), 0, "urls.frontend")
-                : pick(urlProperties.getFrontend(), 1, "urls.frontend");
+        return pick(urlProperties.getFrontend());
     }
 
     public String backend() {
-        return ProfileUtil.isLocalEnv()
-                ? pick(urlProperties.getBackend(), 0, "urls.backend")
-                : pick(urlProperties.getBackend(), 1, "urls.backend");
+        return pick(urlProperties.getBackend());
     }
 
-    private String pick(List<String> list, int idx, String propName) {
-        if (list == null || list.isEmpty()) {
+    private String pick(List<String> urls) {
+        if (urls == null || urls.isEmpty()) {
             throw new ConfigHandler(ErrorStatus.URL_PROPERTY_MISSING);
         }
-        if (idx < list.size()) return list.get(idx);
-
-        return list.get(0);
+        return profile.isLocal() ? urls.get(0) : urls.size() > 1 ? urls.get(1) : urls.get(0);
     }
+
 }
