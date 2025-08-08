@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -43,6 +40,7 @@ public class MemberRequestDTO {
 
         @NotBlank(message = "아이디는 필수입니다.")
         @Size(max = 20, message = "아이디는 최대 20자까지 가능합니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "아이디는 영문, 숫자, 언더바(_), 하이픈(-)만 가능합니다.")
         @Schema(description = "아이디", example = "snowman")
         String username;
 
