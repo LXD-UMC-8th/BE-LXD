@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.config.security;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.SecurityExceptionHandler;
@@ -52,6 +53,11 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final SecurityExceptionHandler securityExceptionHandler;
     private final UrlProperties urlProperties;
+
+    @PostConstruct
+    void logCors() {
+        System.out.println("CORS origins: " + urlProperties.getFrontend());
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
