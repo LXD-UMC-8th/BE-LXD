@@ -54,11 +54,6 @@ public class SecurityConfig {
     private final SecurityExceptionHandler securityExceptionHandler;
     private final UrlProperties urlProperties;
 
-    @PostConstruct
-    void logCors() {
-        System.out.println("CORS origins: " + urlProperties.getFrontend());
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -70,7 +65,6 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITELIST).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
