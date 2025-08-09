@@ -15,9 +15,6 @@ import java.util.List;
 @Setter
 @Validated
 public class UrlProperties {
-    // 순서 계약: [local, deployed]
-    @jakarta.validation.constraints.NotEmpty
-    private List<@jakarta.validation.constraints.NotBlank String> frontend;
-    @jakarta.validation.constraints.NotEmpty
-    private List<@jakarta.validation.constraints.NotBlank String> backend;
+    private String frontend;
+    private String backend;
 }

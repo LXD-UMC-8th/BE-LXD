@@ -14,7 +14,7 @@ import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.auth.enums.VerificationType;
-import org.lxdproject.lxd.config.properties.SelectedUrls;
+import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
@@ -43,13 +43,8 @@ public class AuthService {
 
     private final RedisService redisService;
     private final MailService mailService;
-    private final SelectedUrls urls;
 
-    @PostConstruct
-    void validateUrls() {
-        urls.frontend();
-        urls.backend();
-    }
+    private final UrlProperties urlProperties;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -94,7 +89,7 @@ public class AuthService {
 
         String title = "LXD 이메일 인증 번호";
         String verificationLink = UriComponentsBuilder
-                .fromHttpUrl(urls.backend())
+                .fromHttpUrl(urlProperties.getBackend())
                 .path("/auth/emails/verifications")
                 .queryParam("token", token)
                 .toUriString();
@@ -151,7 +146,7 @@ public class AuthService {
             // 1. 리스트로 조회
             List<String> values = redisService.getVerificationList(token);
 
-            String fe = urls.frontend();
+            String fe = urlProperties.getFrontend();
 
             // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
             if (values == null || values.size() < 2) {
