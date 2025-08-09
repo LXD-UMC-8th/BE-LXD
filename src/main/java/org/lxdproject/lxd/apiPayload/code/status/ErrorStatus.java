@@ -18,6 +18,9 @@ public enum ErrorStatus implements BaseErrorCode {
     // 유효성 검사 에러(메시지는 @interface의 message로 처리)
     VALIDATOR_ERROR(HttpStatus.BAD_REQUEST,"VALID400",null),
 
+    // 환경변수 관련 에러
+    URL_PROPERTY_MISSING(HttpStatus.NOT_FOUND,"CONFIG400","url 환경변수 설정이 비어있습니다."),
+
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
@@ -27,8 +30,6 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "MEMBER4315", "올바르지 않은 닉네임 형식입니다."),
     INVALID_PROFILE_DATA(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임을 {\"nickname\":\"수정할 닉네임\"} 형식으로 요청해주세요."),
     NEW_PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER4316", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다"),
-
-
 
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),
@@ -81,7 +82,6 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // 테스트 용 응답
-    INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),
 
     ;

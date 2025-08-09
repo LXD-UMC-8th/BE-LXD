@@ -1,13 +1,16 @@
 package org.lxdproject.lxd.config.security;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.SecurityExceptionHandler;
+import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtAuthenticationFilter;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
