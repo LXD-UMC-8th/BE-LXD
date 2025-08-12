@@ -224,10 +224,17 @@ public class FriendService {
 
     @Transactional
     public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
+        Long receiverId = SecurityUtil.getCurrentMemberId();
+        Long requesterId = requestDto.getRequesterId();
+
         FriendRequest request = friendRequestRepository
-                .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), SecurityUtil.getCurrentMemberId(), FriendRequestStatus.PENDING)
+                .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
+        // 친구 요청 알림 삭제
+        notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
+
+        // 친구 요청 엔티티 삭제
         friendRequestRepository.delete(request);
     }
 
