@@ -18,9 +18,6 @@ public enum ErrorStatus implements BaseErrorCode {
     // 유효성 검사 에러(메시지는 @interface의 message로 처리)
     VALIDATOR_ERROR(HttpStatus.BAD_REQUEST,"VALID400",null),
 
-    // 환경변수 관련 에러
-    URL_PROPERTY_MISSING(HttpStatus.NOT_FOUND,"CONFIG400","url 환경변수 설정이 비어있습니다."),
-
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
