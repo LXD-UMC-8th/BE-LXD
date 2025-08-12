@@ -8,6 +8,15 @@ import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 
 @Entity
+@Table(
+        name = "notification",
+        indexes = {
+                @Index(
+                        name = "idx_notif_receiver_type_target",
+                        columnList = "receiver_id, notification_type, target_type, target_id"
+                )
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

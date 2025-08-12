@@ -28,8 +28,6 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_PROFILE_DATA(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임을 {\"nickname\":\"수정할 닉네임\"} 형식으로 요청해주세요."),
     NEW_PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER4316", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다"),
 
-
-
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),
     ALREADY_FRIENDS(HttpStatus.CONFLICT, "FRIEND4315", "이미 친구 상태입니다."),
@@ -81,7 +79,6 @@ public enum ErrorStatus implements BaseErrorCode {
 
 
     // 테스트 용 응답
-    INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),
 
     ;

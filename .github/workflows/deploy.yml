@@ -91,6 +91,8 @@ jobs:
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+            URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
+            URLS_BACKEND=${{ secrets.URLS_BACKEND }}
             EOF
             
             sudo docker compose -f ~/deploy/docker-compose.yml down
