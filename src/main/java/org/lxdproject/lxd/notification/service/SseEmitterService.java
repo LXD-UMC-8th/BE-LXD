@@ -105,17 +105,20 @@ public class SseEmitterService {
                                         NotificationType type,
                                         TargetType targetType,
                                         Long targetId) {
-        SseEmitter emitter = emitters.get(receiverId); // 네가 이미 갖고 있는 emitter 조회 방식 사용
-        if (emitter == null) return;
+        SseEmitter emitter = emitters.get(receiverId);
+        if (emitter == null) {
+            log.warn("[SSE] 알림 삭제 전송 실패: 연결 없음 - receiverId: {}", receiverId);
+            return;
+        }
 
         NotificationDeleteEvent payload = new NotificationDeleteEvent(type, targetType, targetId);
 
         try {
             emitter.send(SseEmitter.event()
-                    .name("notification_deleted")
+                    .name("notification-deleted")
                     .data(payload));
         } catch (Exception e) {
-            log.error("[SSE] 알림 삭제 실패 - memberId: {}", receiverId, e);
+            log.error("[SSE] 알림 삭제 실패 - receiverId: {}", receiverId, e);
         }
     }
 
