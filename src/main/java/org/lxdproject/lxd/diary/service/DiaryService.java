@@ -217,6 +217,8 @@ public class DiaryService {
                 .profileImg(member.getProfileImg())
                 .username(member.getUsername())
                 .nickname(member.getNickname())
+                .nativeLanguage(member.getNativeLanguage())
+                .language(member.getLanguage())
                 .diaryCount(diaryCount)
                 .friendCount(friendCount)
                 .relation(relation)
