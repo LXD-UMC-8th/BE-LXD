@@ -3,8 +3,11 @@ package org.lxdproject.lxd.notification.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.notification.dto.NotificationReadUpdateDTO;
+import org.lxdproject.lxd.notification.dto.NotificationDeleteEvent;
+import org.lxdproject.lxd.notification.dto.NotificationReadUpdateEvent;
 import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -64,7 +67,7 @@ public class SseEmitterService {
     public void sendNotificationReadUpdate(Notification notification) {
         Long receiverId = notification.getReceiver().getId();
 
-        NotificationReadUpdateDTO dto = new NotificationReadUpdateDTO(
+        NotificationReadUpdateEvent dto = new NotificationReadUpdateEvent(
                 notification.getId(), true
         );
 
@@ -98,6 +101,23 @@ public class SseEmitterService {
         }
     }
 
+    public void sendNotificationDeleted(Long receiverId,
+                                        NotificationType type,
+                                        TargetType targetType,
+                                        Long targetId) {
+        SseEmitter emitter = emitters.get(receiverId); // 네가 이미 갖고 있는 emitter 조회 방식 사용
+        if (emitter == null) return;
+
+        NotificationDeleteEvent payload = new NotificationDeleteEvent(type, targetType, targetId);
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("notification_deleted")
+                    .data(payload));
+        } catch (Exception e) {
+            log.error("[SSE] 알림 삭제 실패 - memberId: {}", receiverId, e);
+        }
+    }
 
 }
 

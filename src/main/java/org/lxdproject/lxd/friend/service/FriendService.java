@@ -22,6 +22,7 @@ import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.lxdproject.lxd.notification.service.SseEmitterService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
 
     private final NotificationService notificationService;
+    private final SseEmitterService sseEmitterService;
     private final NotificationRepository notificationRepository;
     private final RedisService redisService;
 
@@ -134,7 +136,15 @@ public class FriendService {
         friendRepository.saveFriendship(requester, receiver);
 
         // 친구 요청 알림 삭제
-        notificationRepository.deleteFriendRequestNotification(receiver.getId(), requester.getId());
+        long deleted = notificationRepository.deleteFriendRequestNotification(receiver.getId(), requester.getId());
+        if (deleted > 0) {
+            sseEmitterService.sendNotificationDeleted(
+                    receiver.getId(),
+                    NotificationType.FRIEND_REQUEST,
+                    TargetType.MEMBER,
+                    requester.getId()
+            );
+        }
 
         // 친구 요청 엔티티 삭제
         friendRequestRepository.delete(request);
@@ -232,7 +242,15 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         // 친구 요청 알림 삭제
-        notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
+        long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
+        if (deleted > 0) {
+            sseEmitterService.sendNotificationDeleted(
+                    receiverId,
+                    NotificationType.FRIEND_REQUEST,
+                    TargetType.MEMBER,
+                    requesterId
+            );
+        }
 
         // 친구 요청 엔티티 삭제
         friendRequestRepository.delete(request);
