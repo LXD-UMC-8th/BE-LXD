@@ -258,9 +258,22 @@ public class FriendService {
 
     @Transactional
     public void cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
+        Long receiverId = requestDto.getReceiverId();
+
         FriendRequest request = friendRequestRepository
-                .findByRequesterIdAndReceiverIdAndStatus(SecurityUtil.getCurrentMemberId(), requestDto.getReceiverId(), FriendRequestStatus.PENDING)
+                .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
+
+        long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
+        if (deleted > 0) {
+            sseEmitterService.sendNotificationDeleted(
+                    receiverId,
+                    NotificationType.FRIEND_REQUEST,
+                    TargetType.MEMBER,
+                    requesterId
+            );
+        }
 
         friendRequestRepository.delete(request);
     }
