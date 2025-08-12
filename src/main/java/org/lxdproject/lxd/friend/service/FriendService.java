@@ -20,6 +20,7 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,7 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
 
     private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
     private final RedisService redisService;
 
     @Transactional(readOnly = true)
@@ -131,8 +133,13 @@ public class FriendService {
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
 
+        // 친구 요청 알림 삭제
+        notificationRepository.deleteFriendRequestNotification(receiver.getId(), requester.getId());
+
+        // 친구 요청 엔티티 삭제
         friendRequestRepository.delete(request);
 
+        // 친구 요청자에게 친구 수락됨 알림 보내기
         NotificationRequestDTO dto = NotificationRequestDTO.builder()
                 .receiverId(requester.getId()) // 친구 요청 보낸 사람에게 알림 전송
                 .notificationType(NotificationType.FRIEND_ACCEPTED)
