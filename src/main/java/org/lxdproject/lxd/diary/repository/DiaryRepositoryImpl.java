@@ -335,6 +335,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
