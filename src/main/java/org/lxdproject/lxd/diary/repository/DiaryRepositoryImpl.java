@@ -225,7 +225,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable) {
+    public DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable) {
 
         Set<Long> likedSet = getLikedDiaryIdSet(userId);
         List<Long> likedDiaryIds = queryFactory
