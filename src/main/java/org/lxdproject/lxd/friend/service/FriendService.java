@@ -20,11 +20,15 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.lxdproject.lxd.notification.service.SseEmitterService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +44,8 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
 
     private final NotificationService notificationService;
+    private final SseEmitterService sseEmitterService;
+    private final NotificationRepository notificationRepository;
     private final RedisService redisService;
 
     @Transactional(readOnly = true)
@@ -131,8 +137,26 @@ public class FriendService {
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
 
+        // 친구 요청 알림 삭제
+        long deleted = notificationRepository.deleteFriendRequestNotification(receiver.getId(), requester.getId());
+        if (deleted > 0) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sseEmitterService.sendNotificationDeleted(
+                            receiverId,
+                            NotificationType.FRIEND_REQUEST,
+                            TargetType.MEMBER,
+                            requesterId
+                    );
+                }
+            });
+        }
+
+        // 친구 요청 엔티티 삭제
         friendRequestRepository.delete(request);
 
+        // 친구 요청자에게 친구 수락됨 알림 보내기
         NotificationRequestDTO dto = NotificationRequestDTO.builder()
                 .receiverId(requester.getId()) // 친구 요청 보낸 사람에게 알림 전송
                 .notificationType(NotificationType.FRIEND_ACCEPTED)
@@ -217,18 +241,56 @@ public class FriendService {
 
     @Transactional
     public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
+        Long receiverId = SecurityUtil.getCurrentMemberId();
+        Long requesterId = requestDto.getRequesterId();
+
         FriendRequest request = friendRequestRepository
-                .findByRequesterIdAndReceiverIdAndStatus(requestDto.getRequesterId(), SecurityUtil.getCurrentMemberId(), FriendRequestStatus.PENDING)
+                .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
+        // 친구 요청 알림 삭제
+        long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
+        if (deleted > 0) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sseEmitterService.sendNotificationDeleted(
+                            receiverId,
+                            NotificationType.FRIEND_REQUEST,
+                            TargetType.MEMBER,
+                            requesterId
+                    );
+                }
+            });
+        }
+
+        // 친구 요청 엔티티 삭제
         friendRequestRepository.delete(request);
     }
 
     @Transactional
     public void cancelFriendRequest(FriendRequestCancelRequestDTO requestDto) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
+        Long receiverId = requestDto.getReceiverId();
+
         FriendRequest request = friendRequestRepository
-                .findByRequesterIdAndReceiverIdAndStatus(SecurityUtil.getCurrentMemberId(), requestDto.getReceiverId(), FriendRequestStatus.PENDING)
+                .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
+
+        long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
+        if (deleted > 0) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sseEmitterService.sendNotificationDeleted(
+                            receiverId,
+                            NotificationType.FRIEND_REQUEST,
+                            TargetType.MEMBER,
+                            requesterId
+                    );
+                }
+            });
+        }
 
         friendRequestRepository.delete(request);
     }
