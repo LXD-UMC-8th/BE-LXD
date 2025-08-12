@@ -281,6 +281,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
                         .liked(likedSet.contains(d.getId()))
                         .build()
                 )
