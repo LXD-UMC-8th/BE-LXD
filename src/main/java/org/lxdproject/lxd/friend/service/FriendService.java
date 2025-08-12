@@ -27,6 +27,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -138,12 +140,17 @@ public class FriendService {
         // 친구 요청 알림 삭제
         long deleted = notificationRepository.deleteFriendRequestNotification(receiver.getId(), requester.getId());
         if (deleted > 0) {
-            sseEmitterService.sendNotificationDeleted(
-                    receiver.getId(),
-                    NotificationType.FRIEND_REQUEST,
-                    TargetType.MEMBER,
-                    requester.getId()
-            );
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sseEmitterService.sendNotificationDeleted(
+                            receiverId,
+                            NotificationType.FRIEND_REQUEST,
+                            TargetType.MEMBER,
+                            requesterId
+                    );
+                }
+            });
         }
 
         // 친구 요청 엔티티 삭제
@@ -244,12 +251,17 @@ public class FriendService {
         // 친구 요청 알림 삭제
         long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
         if (deleted > 0) {
-            sseEmitterService.sendNotificationDeleted(
-                    receiverId,
-                    NotificationType.FRIEND_REQUEST,
-                    TargetType.MEMBER,
-                    requesterId
-            );
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sseEmitterService.sendNotificationDeleted(
+                            receiverId,
+                            NotificationType.FRIEND_REQUEST,
+                            TargetType.MEMBER,
+                            requesterId
+                    );
+                }
+            });
         }
 
         // 친구 요청 엔티티 삭제
@@ -267,12 +279,17 @@ public class FriendService {
 
         long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
         if (deleted > 0) {
-            sseEmitterService.sendNotificationDeleted(
-                    receiverId,
-                    NotificationType.FRIEND_REQUEST,
-                    TargetType.MEMBER,
-                    requesterId
-            );
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sseEmitterService.sendNotificationDeleted(
+                            receiverId,
+                            NotificationType.FRIEND_REQUEST,
+                            TargetType.MEMBER,
+                            requesterId
+                    );
+                }
+            });
         }
 
         friendRequestRepository.delete(request);
