@@ -77,6 +77,10 @@ public enum ErrorStatus implements BaseErrorCode {
     COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
     COMMENT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "COMMENT4004", "댓글 작성 권한이 없습니다."),
 
+    // S3 관련 에러
+    FILE_STREAM_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"S34001","파일 스트림 읽기 실패"),
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"S34002","S3 업로드 실패"),
+    AWS_SDK_CLIENT_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "S34003", "AWS SDK 클라이언트 오류"),
 
     // 테스트 용 응답
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),

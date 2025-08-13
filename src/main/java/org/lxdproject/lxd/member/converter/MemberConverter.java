@@ -1,10 +1,8 @@
 package org.lxdproject.lxd.member.converter;
 
-import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.member.dto.MemberRequestDTO;
 import org.lxdproject.lxd.member.dto.MemberResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.entity.enums.Role;
 import org.lxdproject.lxd.member.entity.enums.Status;
 

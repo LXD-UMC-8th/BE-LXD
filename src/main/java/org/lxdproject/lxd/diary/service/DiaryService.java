@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.common.util.S3Uploader;
+import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
@@ -40,7 +40,7 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
-    private final S3Uploader s3Uploader;
+    private final S3FileService s3FileService;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
 
@@ -91,8 +91,8 @@ public class DiaryService {
         }
 
         List<String> urls = extractImageUrls(diary.getContent());
-        List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
-        s3Uploader.deleteFiles(keys);
+        List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
+        s3FileService.deleteImages(keys);
 
         diary.softDelete();
     }
@@ -126,7 +126,7 @@ public class DiaryService {
         }
 
         if (diary.getThumbImg() != null && !diary.getThumbImg().equals(request.getThumbImg())) {
-            s3Uploader.deleteFileByUrl(diary.getThumbImg());
+            s3FileService.deleteImage(diary.getThumbImg());
         }
 
         String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content

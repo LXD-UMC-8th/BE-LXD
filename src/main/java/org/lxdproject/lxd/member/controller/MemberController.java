@@ -76,4 +76,9 @@ public class MemberController implements MemberApi {
         memberService.setPasswordSetting(setPasswordSettingRequestDTO);
         return ApiResponse.onSuccess("비밀번호가 수정됐습니다.");
     }
+
+    @Override
+    public ApiResponse<String> deleteProfileImage() {
+        return ApiResponse.onSuccess(memberService.resetToDefaultProfileImage());
+    }
 }
