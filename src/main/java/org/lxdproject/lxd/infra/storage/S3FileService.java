@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.common.util;
+package org.lxdproject.lxd.infra.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class S3Uploader {
+public class S3FileService {
 
     private final S3Client s3Client;
 

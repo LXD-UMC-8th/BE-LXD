@@ -5,7 +5,7 @@ import org.lxdproject.lxd.common.dto.ImageResponseDTO;
 import org.lxdproject.lxd.common.entity.Image;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.repository.ImageRepository;
-import org.lxdproject.lxd.common.util.S3Uploader;
+import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,12 +15,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class ImageService {
 
-    private final S3Uploader s3Uploader;
+    private final S3FileService s3FileService;
     private final ImageRepository imageRepository;
 
     public ImageResponseDTO uploadImage(MultipartFile file, ImageDir dirName) {
         try {
-            String url = s3Uploader.upload(file, dirName.getDirName());
+            String url = s3FileService.upload(file, dirName.getDirName());
             Image saved = imageRepository.save(
                     Image.builder()
                             .imageUrl(url)

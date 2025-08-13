@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
-import org.lxdproject.lxd.common.util.S3Uploader;
+import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
@@ -27,7 +27,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
-    private final S3Uploader s3Uploader;
+    private final S3FileService s3FileService;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -111,7 +111,7 @@ public class MemberService {
             // 기존 이미지 삭제
             String oldImageUrl = member.getProfileImg();
             if (StringUtils.hasText(oldImageUrl)) {
-                s3Uploader.deleteFiles(List.of(oldImageUrl));
+                s3FileService.deleteFiles(List.of(oldImageUrl));
             }
             // 새 이미지 업로드
             member.setProfileImg(newImageUrl);
@@ -164,4 +164,6 @@ public class MemberService {
         member.updatePassword(passwordEncoder.encode(setPasswordSettingRequestDTO.getNewPassword()));
 
     }
+
+
 }
