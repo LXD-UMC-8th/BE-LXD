@@ -1,23 +1,26 @@
 package org.lxdproject.lxd.config.properties;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
 
 @ConfigurationProperties(prefix = "aws")
 @Component
-@Getter @Setter
-@Validated
+@Getter
 public class AwsProperties {
 
+    @NotBlank
     private String region;
+    @NestedConfigurationProperty
     private final Credentials credentials = new Credentials();
 
-    @Getter @Setter
+    @Getter
     public static class Credentials {
+        @NotBlank
         private String accessKey;
+        @NotBlank
         private String secretKey;
     }
 }
