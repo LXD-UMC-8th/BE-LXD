@@ -46,7 +46,7 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.USERNAME_DUPLICATION);
         }
 
-        String profileImgURL = null;
+        String profileImgURL = s3Properties.getDefaultProfileUrl();
         Member member = null;
 
         // 프로필 이미지가 있는 경우
@@ -178,7 +178,7 @@ public class MemberService {
             s3FileService.deleteFileByUrl(current);
             member.setProfileImg(s3Properties.getDefaultProfileUrl());
         }
-        
+
         return member.getProfileImg();
     }
 
