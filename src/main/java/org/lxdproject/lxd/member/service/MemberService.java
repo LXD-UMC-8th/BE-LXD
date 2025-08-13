@@ -107,14 +107,13 @@ public class MemberService {
             }
         }
 
-        if (profileImg != null && !profileImg.isEmpty()) {
+        if (profileImg != null && !profileImg.isEmpty()
+                && !profileImg.equals(s3Properties.getDefaultProfileUrl())){
             String newImageUrl = imageService.uploadImage(profileImg, ImageDir.PROFILE)
                     .getImageUrl();
             // 기존 이미지 삭제
             String oldImageUrl = member.getProfileImg();
-            if (StringUtils.hasText(oldImageUrl)) {
-                s3FileService.deleteFiles(List.of(oldImageUrl));
-            }
+            s3FileService.deleteFileByUrl(oldImageUrl);
             // 새 이미지 업로드
             member.setProfileImg(newImageUrl);
         }
