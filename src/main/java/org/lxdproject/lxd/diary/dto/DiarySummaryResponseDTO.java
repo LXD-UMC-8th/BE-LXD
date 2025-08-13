@@ -14,6 +14,7 @@ public class DiarySummaryResponseDTO {
     private String writerUsername;
     private String writerNickname;
     private String writerProfileImg;
+    private Long writerId;
     private Long diaryId;
     private String createdAt;
     private String title;
