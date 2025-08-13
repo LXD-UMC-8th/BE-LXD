@@ -110,7 +110,7 @@ public interface DiaryApi {
     })
     ApiResponse<DiaryDetailResponseDTO> updateDiary(
             @PathVariable Long diaryId,
-            @Valid @RequestBody DiaryRequestDTO request
+            @Valid @RequestBody DiaryUpdateDTO request
     );
 
 
