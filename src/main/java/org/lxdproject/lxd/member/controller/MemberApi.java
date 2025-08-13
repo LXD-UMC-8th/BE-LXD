@@ -63,4 +63,12 @@ public interface MemberApi {
     @Operation(summary = "비밀번호 변경 API", description = "이메일 인증이 완료된 계정의 비밀번호를 수정합니다.")
     @PatchMapping("/password")
     ApiResponse<String> setPasswordSetting(@Valid @RequestBody MemberRequestDTO.SetPasswordSettingRequestDTO setPasswordSettingRequestDTO);
+
+    @Operation(summary = "프로필 이미지 삭제 API", description = "등록한 프로필 사진을 s3에서 삭제하고 기본 이미지를 반환합니다.", responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "s3 이미지 삭제 및 기본 프로필 이미지 저장 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "잘못된 요청 형식 또는 유효성 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "토큰 인증 에러"),
+    })
+    @DeleteMapping(value = "/profie-image")
+    ApiResponse<String> deleteProfileImage();
 }
