@@ -211,6 +211,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
                         .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
@@ -224,7 +225,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable) {
+    public DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable) {
 
         Set<Long> likedSet = getLikedDiaryIdSet(userId);
         List<Long> likedDiaryIds = queryFactory
@@ -280,6 +281,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
                         .liked(likedSet.contains(d.getId()))
                         .build()
                 )
@@ -298,10 +300,17 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         Set<Long> likedSet = getLikedDiaryIdSet(userId);
         Set<Long> friendIds = getFriendIds(userId);
 
-        BooleanBuilder condition = new BooleanBuilder();
-        condition.or(DIARY.visibility.eq(Visibility.PUBLIC));
-        condition.or(DIARY.visibility.eq(Visibility.FRIENDS).and(DIARY.member.id.in(friendIds)));
-        condition.or(DIARY.visibility.eq(Visibility.PRIVATE).and(DIARY.member.id.eq(userId)));
+        // visibilityCondition : PUBLIC or FRIENDS and 친구관계
+        BooleanBuilder visibilityCondition = new BooleanBuilder()
+                .or(DIARY.visibility.eq(Visibility.PUBLIC))
+                .or(DIARY.visibility.eq(Visibility.FRIENDS)
+                        .and(DIARY.member.id.in(friendIds)));
+
+        // 내 일기 제외 + 삭제 안 됨 + visibilityCondition
+        BooleanBuilder condition = new BooleanBuilder()
+                .and(DIARY.member.id.ne(userId))
+                .and(DIARY.deletedAt.isNull())
+                .and(visibilityCondition);
 
         if (language != null) {
             condition.and(DIARY.language.eq(language));
@@ -326,6 +335,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())

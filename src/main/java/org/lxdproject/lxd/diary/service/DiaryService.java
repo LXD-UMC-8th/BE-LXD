@@ -179,7 +179,7 @@ public class DiaryService {
 
     public DiarySliceResponseDTO getLikedDiaries(Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.findLikedDiariesOfFriends(currentMemberId, pageable);
+        return diaryRepository.findLikedDiaries(currentMemberId, pageable);
     }
 
     public DiarySliceResponseDTO getExploreDiaries(Pageable pageable, Language language) {
@@ -217,6 +217,8 @@ public class DiaryService {
                 .profileImg(member.getProfileImg())
                 .username(member.getUsername())
                 .nickname(member.getNickname())
+                .nativeLanguage(member.getNativeLanguage())
+                .language(member.getLanguage())
                 .diaryCount(diaryCount)
                 .friendCount(friendCount)
                 .relation(relation)
