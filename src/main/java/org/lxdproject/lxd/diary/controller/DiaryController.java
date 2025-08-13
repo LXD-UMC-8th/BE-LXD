@@ -11,6 +11,7 @@ import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.service.DiaryService;
 import org.lxdproject.lxd.diary.service.QuestionService;
+import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ public class DiaryController implements DiaryApi{
     private final DiaryService diaryService;
     private final ImageService imageService;
     private final QuestionService questionService;
+    private final S3FileService s3FileService;
 
     @Override
     public ApiResponse<DiaryDetailResponseDTO> createDiary(@Valid @RequestBody DiaryRequestDTO request) {
@@ -49,6 +51,12 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
+    public ApiResponse<String> deleteDiaryImage(@RequestBody ImageDTO imageDTO) {
+        s3FileService.deleteImage(imageDTO.getImageUrl());
+        return ApiResponse.onSuccess("요청한 이미지가 삭제되었습니다.");
+    }
+
+    @Override
     public ApiResponse<QuestionResponseDTO> getRandomQuestion(Language language) {
         QuestionResponseDTO response = questionService.getRandomQuestion(language);
         return ApiResponse.onSuccess(response);
@@ -58,7 +66,6 @@ public class DiaryController implements DiaryApi{
     public ApiResponse<MyDiarySliceResponseDTO> getMyDiaries(int page, int size, Boolean likedOnly) {
         return ApiResponse.onSuccess(diaryService.getMyDiaries(page, size, likedOnly));
     }
-
 
     @Override
     public ApiResponse<DiaryDetailResponseDTO> updateDiary(

@@ -30,7 +30,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요 (JWT 누락 또는 만료)", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    public ApiResponse<DiaryDetailResponseDTO> createDiary( @Valid @RequestBody DiaryRequestDTO request);
+    ApiResponse<DiaryDetailResponseDTO> createDiary( @Valid @RequestBody DiaryRequestDTO request);
 
     @GetMapping("/{diaryId}")
     @Operation(summary = "일기 상세 조회 API", description = "id에 해당하는 일기를 상세 조회하는 API입니다.")
@@ -43,7 +43,7 @@ public interface DiaryApi {
     @Parameters({
             @Parameter(name = "diaryId", description = "일기의 아이디, path variable 입니다!"),
     })
-    public ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long diaryId);
+    ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long diaryId);
 
     @DeleteMapping("/{diaryId}")
     @Operation(summary = "나의 일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다. 해당하는 이미지 또한 S3 버킷에서 삭제합니다.")
@@ -51,7 +51,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "일기 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    public ApiResponse<Boolean> deleteDiary(@PathVariable Long diaryId);
+    ApiResponse<Boolean> deleteDiary(@PathVariable Long diaryId);
 
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "일기 이미지 업로드 API", description = "이미지를 업로드하면 S3의 diary 폴더에 저장되고 해당 URL을 반환합니다.")
@@ -60,7 +60,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미지 파일이 유효하지 않음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ApiResponse<ImageDTO> uploadDiaryImage(
+    ApiResponse<ImageDTO> uploadDiaryImage(
             @Parameter(
                     description = "업로드할 이미지 파일",
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -70,20 +70,13 @@ public interface DiaryApi {
     );
 
     @DeleteMapping(value = "/image")
-    @Operation(summary = "일기 이미지 삭제 API", description = "이미지를 업로드하면 S3의 diary 폴더에 저장되고 해당 URL을 반환합니다.")
+    @Operation(summary = "일기 이미지 삭제 API", description = "S3의 diary 폴더에 저장된 이미지를 삭제합니다.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이미지 업로드 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이미지 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미지 파일이 유효하지 않음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ApiResponse<ImageDTO> uploadDiaryImage(
-            @Parameter(
-                    description = "업로드할 이미지 파일",
-                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                            schema = @Schema(type = "string", format = "binary"))
-            )
-            @RequestPart("image") MultipartFile image
-    );
+    ApiResponse<String> deleteDiaryImage(@RequestBody ImageDTO imageDTO);
 
     @GetMapping("/random-question")
     @Operation(summary = "질문 랜덤 조회 API", description = "쿼리 파라미터로 전달된 언어(Language)에 따라 질문 중 하나를 랜덤하게 반환합니다.")
