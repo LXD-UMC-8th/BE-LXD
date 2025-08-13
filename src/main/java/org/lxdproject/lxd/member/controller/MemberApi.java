@@ -69,6 +69,6 @@ public interface MemberApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "잘못된 요청 형식 또는 유효성 실패"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "토큰 인증 에러"),
     })
-    @DeleteMapping(value = "/profie-image")
+    @DeleteMapping(value = "/profile-image")
     ApiResponse<String> deleteProfileImage();
 }
