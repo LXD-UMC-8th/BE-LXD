@@ -1,33 +1,28 @@
 package org.lxdproject.lxd.config;
 
+import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.config.properties.AwsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import org.springframework.beans.factory.annotation.Value;
 
 
 @Configuration
+@RequiredArgsConstructor
 public class AwsS3Config {
 
-    @Value("${aws.credentials.access-key}")
-    private String accessKey;
-
-    @Value("${aws.credentials.secret-key}")
-    private String secretKey;
-
-    @Value("${aws.region}")
-    private String region;
+    private final AwsProperties awsProperties;
 
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-                .region(Region.of(region))
+                .region(Region.of(awsProperties.getRegion()))
                 .credentialsProvider(
                         StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)
+                                AwsBasicCredentials.create(awsProperties.getCredentials().getAccessKey(), awsProperties.getCredentials().getSecretKey())
                         )
                 )
                 .build();
