@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -14,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -30,7 +32,7 @@ public class S3FileService {
     @Value("${aws.s3.bucket}")
     private String bucket;
 
-    public String upload(MultipartFile file, String dirName) throws IOException {
+    public String uploadImage(MultipartFile file, String dirName) {
         String fileName = dirName + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -40,7 +42,15 @@ public class S3FileService {
                 .contentType(file.getContentType())
                 .build();
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        try (InputStream is = file.getInputStream()) {
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(is, file.getSize()));
+        } catch (IOException e) {
+            log.warn("S3 읽기 실패: {}", e);
+        } catch (S3Exception e) {
+            log.warn("S3 업로드 실패: {}", e);
+        } catch (SdkException e) {
+            log.warn("AWS SDK 오류로 업로드 실패: {}", e);
+        }
 
         return getFileUrl(fileName);
     }
@@ -65,7 +75,7 @@ public class S3FileService {
         }
     }
 
-    public void deleteFiles(List<String> keys) {
+    public void deleteImages(List<String> keys) {
         if (keys.isEmpty()) return;
 
         List<ObjectIdentifier> objectsToDelete = keys.stream()
@@ -93,7 +103,7 @@ public class S3FileService {
         }
     }
 
-    public void deleteFileByUrl(String imageUrl) {
+    public void deleteImage(String imageUrl) {
         String key = extractKeyFromUrl(imageUrl);
         if (key == null || key.isBlank()) {
             log.warn("유효하지 않은 S3 이미지 URL입니다: {}", imageUrl);

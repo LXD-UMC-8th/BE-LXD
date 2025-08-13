@@ -92,7 +92,7 @@ public class DiaryService {
 
         List<String> urls = extractImageUrls(diary.getContent());
         List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
-        s3FileService.deleteFiles(keys);
+        s3FileService.deleteImages(keys);
 
         diary.softDelete();
     }
@@ -126,7 +126,7 @@ public class DiaryService {
         }
 
         if (diary.getThumbImg() != null && !diary.getThumbImg().equals(request.getThumbImg())) {
-            s3FileService.deleteFileByUrl(diary.getThumbImg());
+            s3FileService.deleteImage(diary.getThumbImg());
         }
 
         String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content

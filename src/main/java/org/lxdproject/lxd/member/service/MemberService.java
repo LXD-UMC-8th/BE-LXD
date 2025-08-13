@@ -113,7 +113,7 @@ public class MemberService {
                     .getImageUrl();
             // 기존 이미지 삭제
             String oldImageUrl = member.getProfileImg();
-            s3FileService.deleteFileByUrl(oldImageUrl);
+            s3FileService.deleteImage(oldImageUrl);
             // 새 이미지 업로드
             member.setProfileImg(newImageUrl);
         }
@@ -174,7 +174,7 @@ public class MemberService {
         String current = member.getProfileImg();
         if (current != null && !current.isBlank()
                 && !current.equals(s3Properties.getDefaultProfileUrl())) {
-            s3FileService.deleteFileByUrl(current);
+            s3FileService.deleteImage(current);
             member.setProfileImg(s3Properties.getDefaultProfileUrl());
         }
 

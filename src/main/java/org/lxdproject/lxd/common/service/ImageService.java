@@ -19,18 +19,14 @@ public class ImageService {
     private final ImageRepository imageRepository;
 
     public ImageResponseDTO uploadImage(MultipartFile file, ImageDir dirName) {
-        try {
-            String url = s3FileService.upload(file, dirName.getDirName());
-            Image saved = imageRepository.save(
-                    Image.builder()
-                            .imageUrl(url)
-                            .dir(dirName) // enum 자체 저장
-                            .build()
-            );
-            return new ImageResponseDTO(url);
-        } catch (IOException e) {
-            throw new RuntimeException("S3 업로드 실패", e);
-        }
+        String url = s3FileService.uploadImage(file, dirName.getDirName());
+        Image saved = imageRepository.save(
+                Image.builder()
+                        .imageUrl(url)
+                        .dir(dirName) // enum 자체 저장
+                        .build()
+        );
+        return new ImageResponseDTO(url);
     }
 }
 
