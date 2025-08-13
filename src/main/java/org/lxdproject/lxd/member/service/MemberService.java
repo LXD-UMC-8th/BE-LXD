@@ -108,7 +108,7 @@ public class MemberService {
         }
 
         if (profileImg != null && !profileImg.isEmpty()
-                && !profileImg.equals(s3Properties.getDefaultProfileUrl())){
+                && !member.getProfileImg().equals(s3Properties.getDefaultProfileUrl())){
             String newImageUrl = imageService.uploadImage(profileImg, ImageDir.PROFILE)
                     .getImageUrl();
             // 기존 이미지 삭제
