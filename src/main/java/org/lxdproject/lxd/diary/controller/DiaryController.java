@@ -63,7 +63,7 @@ public class DiaryController implements DiaryApi{
     @Override
     public ApiResponse<DiaryDetailResponseDTO> updateDiary(
             @PathVariable("diaryId") Long diaryId,
-            @Valid @RequestBody DiaryRequestDTO request
+            @Valid @RequestBody DiaryUpdateDTO request
     ) {
         DiaryDetailResponseDTO response = diaryService.updateDiary(diaryId, request);
         return ApiResponse.onSuccess(response);
