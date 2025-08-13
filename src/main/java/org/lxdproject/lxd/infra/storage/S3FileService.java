@@ -2,6 +2,8 @@ package org.lxdproject.lxd.infra.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.StorageHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,11 +47,11 @@ public class S3FileService {
         try (InputStream is = file.getInputStream()) {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(is, file.getSize()));
         } catch (IOException e) {
-            log.warn("S3 읽기 실패: {}", e);
+            throw new StorageHandler(ErrorStatus.FILE_STREAM_READ_FAILED);
         } catch (S3Exception e) {
-            log.warn("S3 업로드 실패: {}", e);
+            throw new StorageHandler(ErrorStatus.S3_UPLOAD_FAILED);
         } catch (SdkException e) {
-            log.warn("AWS SDK 오류로 업로드 실패: {}", e);
+            throw new StorageHandler(ErrorStatus.AWS_SDK_CLIENT_ERROR);
         }
 
         return getFileUrl(fileName);
