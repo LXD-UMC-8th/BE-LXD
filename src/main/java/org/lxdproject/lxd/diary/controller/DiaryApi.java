@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.ImageResponseDTO;
+import org.lxdproject.lxd.common.dto.ImageDTO;
 import org.lxdproject.lxd.diary.dto.*;
 import org.springframework.http.MediaType;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -60,7 +60,23 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미지 파일이 유효하지 않음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ApiResponse<ImageResponseDTO> uploadDiaryImage(
+    public ApiResponse<ImageDTO> uploadDiaryImage(
+            @Parameter(
+                    description = "업로드할 이미지 파일",
+                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart("image") MultipartFile image
+    );
+
+    @DeleteMapping(value = "/image")
+    @Operation(summary = "일기 이미지 삭제 API", description = "이미지를 업로드하면 S3의 diary 폴더에 저장되고 해당 URL을 반환합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이미지 업로드 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미지 파일이 유효하지 않음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ApiResponse<ImageDTO> uploadDiaryImage(
             @Parameter(
                     description = "업로드할 이미지 파일",
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,

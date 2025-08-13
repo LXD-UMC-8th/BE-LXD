@@ -1,7 +1,7 @@
 package org.lxdproject.lxd.common.service;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.common.dto.ImageResponseDTO;
+import org.lxdproject.lxd.common.dto.ImageDTO;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.springframework.stereotype.Service;
@@ -13,9 +13,9 @@ public class ImageService {
 
     private final S3FileService s3FileService;
 
-    public ImageResponseDTO uploadImage(MultipartFile file, ImageDir dirName) {
+    public ImageDTO uploadImage(MultipartFile file, ImageDir dirName) {
         String url = s3FileService.uploadImage(file, dirName.getDirName());
-        return new ImageResponseDTO(url);
+        return new ImageDTO(url);
     }
 }
 

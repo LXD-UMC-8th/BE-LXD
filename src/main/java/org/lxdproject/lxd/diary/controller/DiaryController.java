@@ -3,7 +3,7 @@ package org.lxdproject.lxd.diary.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.ImageResponseDTO;
+import org.lxdproject.lxd.common.dto.ImageDTO;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -43,8 +43,8 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<ImageResponseDTO> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
-        ImageResponseDTO response = imageService.uploadImage(image, ImageDir.DIARY);
+    public ApiResponse<ImageDTO> uploadDiaryImage(@RequestPart("image") MultipartFile image) {
+        ImageDTO response = imageService.uploadImage(image, ImageDir.DIARY);
         return ApiResponse.onSuccess(response);
     }
 
