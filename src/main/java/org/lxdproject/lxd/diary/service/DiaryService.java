@@ -114,7 +114,7 @@ public class DiaryService {
         return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
     }
 
-    public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
 
