@@ -128,45 +128,60 @@ public class DiaryCommentService {
     }
 
 
-    public PageResponse<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, Pageable pageable) {
+    public DiaryCommentResponseDTO.ExtendedPageResponse<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, Pageable pageable) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
-        Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
-        int totalElements = diary.getCommentCount();
-
+        // 부모 페이징(부모 기준)
         Page<DiaryComment> parentPage =
                 diaryCommentRepository.findByDiaryIdAndParentIsNull(diaryId, pageable);
         List<DiaryComment> parents = parentPage.getContent();
         List<Long> parentIds = parents.stream().map(DiaryComment::getId).toList();
 
+        // 대댓글 일괄 조회
         List<DiaryComment> replies = parentIds.isEmpty()
                 ? List.of()
                 : diaryCommentRepository.findByParentIdIn(parentIds);
 
+        // 좋아요 여부(isLiked)용 조회
         List<Long> allCommentIds = Stream.concat(parents.stream(), replies.stream())
                 .map(DiaryComment::getId)
                 .toList();
-
         Set<Long> likedCommentIds = allCommentIds.isEmpty()
                 ? Set.of()
                 : new HashSet<>(likeRepository.findLikedCommentIds(memberId, allCommentIds));
 
+        // 부모 → 대댓글 그룹핑
         Map<Long, List<DiaryComment>> repliesByParent = replies.stream()
                 .collect(Collectors.groupingBy(c -> c.getParent().getId()));
 
+        // DTO 변환
         List<DiaryCommentResponseDTO.Comment> dtoTree =
                 DiaryCommentConverter.toCommentDtoTree(parents, repliesByParent, likedCommentIds);
 
+        // 이 페이지에서 실제 내려간 아이템 수(부모+대댓글)
+        int pageItemCount = dtoTree.size()
+                + dtoTree.stream().mapToInt(c -> c.getReplies() == null ? 0 : c.getReplies().size()).sum();
 
-        return new org.lxdproject.lxd.common.dto.PageResponse<
-                org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO.Comment>(
-                (long) totalElements,
-                dtoTree,
-                parentPage.getNumber(),
-                parentPage.getSize(),
-                parentPage.getTotalPages(),
-                parentPage.hasNext()
+        // 전체 개수(부모+대댓글 전체, 삭제 포함)
+        long totalAll = diaryCommentRepository.countAllCommentsIncludingDeleted(diaryId);
+
+        // 부모 총 개수/총 페이지(페이징 기준)
+        long parentTotal = parentPage.getTotalElements();
+        int totalPages = parentPage.getTotalPages();
+
+        // 페이지/사이즈(0-based 유지; 1-based 원하면 +1 해서 넘겨도 됨)
+        int page = parentPage.getNumber();
+        int size = parentPage.getSize();
+
+        return new DiaryCommentResponseDTO.ExtendedPageResponse<>(
+                totalAll,                     // totalElements (부모+대댓글 전체)
+                parentTotal,                  // parentTotalElements (부모 총 개수)
+                page,                         // page
+                size,                         // size
+                totalPages,                   // totalPages (부모 기준)
+                pageItemCount,                // pageItemCount (부모+대댓글)
+                parentPage.hasNext(),         // hasNext
+                dtoTree                       // contents
         );
     }
 

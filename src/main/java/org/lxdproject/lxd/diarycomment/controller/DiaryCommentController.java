@@ -29,10 +29,11 @@ public class DiaryCommentController implements DiaryCommentApi {
     }
 
     @Override
-    public ApiResponse<PageResponse<DiaryCommentResponseDTO.Comment>> getComments(Long diaryId, int page, int size) {
-        // ASC 정렬 유지(요구에 맞게 DESC로 바꿔도 됨; replies도 같은 방향)
+    public ApiResponse<DiaryCommentResponseDTO.ExtendedPageResponse<DiaryCommentResponseDTO.Comment>> getComments(
+            Long diaryId, int page, int size
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
-        PageResponse<DiaryCommentResponseDTO.Comment> response =
+        DiaryCommentResponseDTO.ExtendedPageResponse<DiaryCommentResponseDTO.Comment> response =
                 diaryCommentService.getComments(diaryId, pageable);
         return ApiResponse.of(SuccessStatus._OK, response);
     }

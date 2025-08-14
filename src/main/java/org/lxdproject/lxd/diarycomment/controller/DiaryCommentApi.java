@@ -20,7 +20,7 @@ public interface DiaryCommentApi {
 
     @Operation(summary = "일기 댓글 조회 API", description = "해당 일기의 댓글들을 생성일 기준으로 조회합니다.")
     @GetMapping
-    ApiResponse<PageResponse<DiaryCommentResponseDTO.Comment>> getComments(
+    ApiResponse<DiaryCommentResponseDTO.ExtendedPageResponse<DiaryCommentResponseDTO.Comment>> getComments(
             @PathVariable Long diaryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
