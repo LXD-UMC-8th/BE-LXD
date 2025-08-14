@@ -1,4 +1,7 @@
 spring:
+  jackson:
+    time-zone: Asia/Seoul
+
   data:
     redis:
       host: redis
@@ -36,6 +39,7 @@ spring:
 aws:
   s3:
     bucket: ${S3_BUCKET}
+    defaultProfileUrl: ${DEFAULT_PROFILE_URL}
   credentials:
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
@@ -52,8 +56,8 @@ server:
   port: 8080
 
 urls:
-  frontend: http://localhost:5173
-  backend: http://43.202.178.60:8080
+  frontend: ${URLS_FRONTEND}
+  backend: ${URLS_BACKEND}
 
 google:
   client-id: ${GOOGLE_CLIENT_ID}
