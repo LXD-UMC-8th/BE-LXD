@@ -138,11 +138,10 @@ public class DiaryCommentService {
         List<DiaryCommentResponseDTO.Comment> dtoTree =
                 DiaryCommentConverter.toCommentDtoTree(parents, repliesByParent, likedCommentIds);
 
-        long total = totalElements;
 
         // PageResponse로 통일 (contents에 트리 넣기)
         return new PageResponse<>(
-                total,     // 전체 댓글 수(부모+대댓글) - 기존 유지
+                (long) totalElements,     // 전체 댓글 수(부모+대댓글) - 기존 유지
                 dtoTree,                         // contents (부모 댓글 리스트; 각 항목에 replies 포함)
                 parentPage.getNumber(),          // page (0-based)
                 parentPage.getSize(),            // size
