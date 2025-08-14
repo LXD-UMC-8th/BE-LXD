@@ -41,14 +41,4 @@ public class DiaryCommentResponseDTO {
         private List<Comment> replies;  //대댓글
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class CommentList {
-        private List<Comment> content;
-        private long totalParentComments; // 부모 댓글 총 개수
-        private int totalElements;
-        private int pageItemCount; // 이 페이지에 포함된 실제 댓글수(부모+대댓글)
-    }
 }
