@@ -6,14 +6,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
-import org.lxdproject.lxd.diary.dto.*;
-import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.entity.QDiary;
-import org.lxdproject.lxd.diary.entity.enums.Language;
-import org.lxdproject.lxd.diary.entity.enums.Visibility;
-import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
-import org.lxdproject.lxd.member.entity.QFriendship;
-import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -22,30 +14,43 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.lxdproject.lxd.diary.dto.*;
+import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.entity.enums.Language;
+import org.lxdproject.lxd.diary.entity.enums.Visibility;
+
+import org.lxdproject.lxd.diary.entity.QDiary;
+import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
+import org.lxdproject.lxd.friend.entity.QFriendship;
+import org.lxdproject.lxd.member.entity.QMember;
+
 import static org.lxdproject.lxd.diary.util.DiaryUtil.generateContentPreview;
-import static org.lxdproject.lxd.member.entity.QMember.member;
 
 @RequiredArgsConstructor
 public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-    QDiary diary = QDiary.diary;
-    QDiaryLike diaryLike = QDiaryLike.diaryLike;
-    QFriendship friendship = QFriendship.friendship;
+    private static final QDiary DIARY = QDiary.diary;
+    private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
+    private static final QFriendship FRIENDSHIP = QFriendship.friendship;
+    private static final QMember MEMBER = QMember.member;
 
     @Override
     public MyDiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
+
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
+
         List<Diary> diaries = queryFactory
-                .selectFrom(diary)
-                .leftJoin(diary.likes, diaryLike)
+                .selectFrom(DIARY)
+                .leftJoin(DIARY.likes, DIARY_LIKE)
                 .where(
-                        diary.member.id.eq(userId),
-                        diary.deletedAt.isNull(),
-                        likedOnly != null && likedOnly ? diaryLike.member.id.eq(userId) : null
+                        DIARY.member.id.eq(userId),
+                        DIARY.deletedAt.isNull(),
+                        likedOnly != null && likedOnly ? DIARY_LIKE.member.id.eq(userId) : null
                 )
                 .distinct()
-                .orderBy(diary.createdAt.desc())
+                .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
@@ -67,6 +72,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -79,28 +85,29 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     public MyDiarySliceResponseDTO getDiariesByMemberId(Long userId, Long memberId, Pageable pageable) {
-        Set<Long> friendIds = getFriendIds(userId);
 
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
+        Set<Long> friendIds = getFriendIds(userId);
         BooleanExpression visibilityCondition;
 
         if (userId.equals(memberId)) { // 본인
-            visibilityCondition = diary.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS, Visibility.PRIVATE);
+            visibilityCondition = DIARY.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS, Visibility.PRIVATE);
         } else if (friendIds.contains(memberId)) { // 친구관계
-            visibilityCondition = diary.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS);
+            visibilityCondition = DIARY.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS);
         } else { // 타인
-            visibilityCondition = diary.visibility.eq(Visibility.PUBLIC);
+            visibilityCondition = DIARY.visibility.eq(Visibility.PUBLIC);
         }
 
         List<Diary> diaries = queryFactory
-                .selectFrom(diary)
-                .leftJoin(diary.likes, diaryLike).fetchJoin()
+                .selectFrom(DIARY)
+                .leftJoin(DIARY.likes, DIARY_LIKE).fetchJoin()
                 .where(
-                        diary.member.id.eq(memberId),
-                        diary.deletedAt.isNull(),
+                        DIARY.member.id.eq(memberId),
+                        DIARY.deletedAt.isNull(),
                         visibilityCondition
                 )
                 .distinct()
-                .orderBy(diary.createdAt.desc())
+                .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
@@ -122,6 +129,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -139,15 +147,15 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = YearMonth.of(year, month).atEndOfMonth();
 
-        var dateExpression = Expressions.stringTemplate("DATE({0})", diary.createdAt);
+        var dateExpression = Expressions.stringTemplate("DATE({0})", DIARY.createdAt);
 
         return queryFactory
-                .select(dateExpression, diary.count())
-                .from(diary)
+                .select(dateExpression, DIARY.count())
+                .from(DIARY)
                 .where(
-                        diary.member.id.eq(userId),
-                        diary.deletedAt.isNull(),
-                        diary.createdAt.between(start.atStartOfDay(), end.atTime(23, 59, 59))
+                        DIARY.member.id.eq(userId),
+                        DIARY.deletedAt.isNull(),
+                        DIARY.createdAt.between(start.atStartOfDay(), end.atTime(23, 59, 59))
                 )
                 .groupBy(dateExpression)
                 .orderBy(dateExpression.asc())
@@ -159,27 +167,26 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                             ? ((java.sql.Date) dateObj).toLocalDate().toString()
                             : dateObj.toString();
 
-                    return new DiaryStatsResponseDTO(date, tuple.get(diary.count()));
+                    return new DiaryStatsResponseDTO(date, tuple.get(DIARY.count()));
                 })
                 .toList();
     }
 
     @Override
     public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
-        QDiary diary = QDiary.diary;
-        QMember member = QMember.member;
 
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
         Set<Long> friendIds = getFriendIds(userId);
 
         List<Diary> diaries = queryFactory
-                .selectFrom(diary)
-                .leftJoin(diary.member, member).fetchJoin()
+                .selectFrom(DIARY)
+                .leftJoin(DIARY.member, MEMBER).fetchJoin()
                 .where(
-                        diary.member.id.in(friendIds),
-                        diary.visibility.ne(Visibility.PRIVATE),
-                        diary.deletedAt.isNull()
+                        DIARY.member.id.in(friendIds),
+                        DIARY.visibility.ne(Visibility.PRIVATE),
+                        DIARY.deletedAt.isNull()
                 )
-                .orderBy(diary.createdAt.desc())
+                .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
@@ -204,6 +211,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -216,16 +225,13 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable) {
-        QDiaryLike diaryLike = QDiaryLike.diaryLike;
-        QDiary diary = QDiary.diary;
-        QMember member = QMember.member;
-        QFriendship friendship = QFriendship.friendship;
+    public DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable) {
 
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
         List<Long> likedDiaryIds = queryFactory
-                .select(diaryLike.diary.id)
-                .from(diaryLike)
-                .where(diaryLike.member.id.eq(userId))
+                .select(DIARY_LIKE.diary.id)
+                .from(DIARY_LIKE)
+                .where(DIARY_LIKE.member.id.eq(userId))
                 .fetch();
 
         if (likedDiaryIds.isEmpty()) {
@@ -240,19 +246,19 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         Set<Long> friendIds = getFriendIds(userId);
 
         List<Diary> diaries = queryFactory
-                .selectFrom(diary)
-                .join(diary.member, member).fetchJoin()
+                .selectFrom(DIARY)
+                .join(DIARY.member, MEMBER).fetchJoin()
                 .where(
-                        diary.id.in(likedDiaryIds),
-                        diary.member.id.ne(userId),
-                        diary.deletedAt.isNull(),
-                        diary.visibility.eq(Visibility.PUBLIC)
+                        DIARY.id.in(likedDiaryIds),
+                        DIARY.member.id.ne(userId),
+                        DIARY.deletedAt.isNull(),
+                        DIARY.visibility.eq(Visibility.PUBLIC)
                                 .or(
-                                        diary.visibility.eq(Visibility.FRIENDS)
-                                                .and(diary.member.id.in(friendIds))
+                                        DIARY.visibility.eq(Visibility.FRIENDS)
+                                                .and(DIARY.member.id.in(friendIds))
                                 )
                 )
-                .orderBy(diary.createdAt.desc())
+                .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
@@ -275,6 +281,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
+                        .liked(likedSet.contains(d.getId()))
                         .build()
                 )
                 .toList();
@@ -289,22 +297,30 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public DiarySliceResponseDTO findExploreDiaries(Long userId, Language language, Pageable pageable) {
+        Set<Long> likedSet = getLikedDiaryIdSet(userId);
         Set<Long> friendIds = getFriendIds(userId);
 
-        BooleanBuilder condition = new BooleanBuilder();
-        condition.or(diary.visibility.eq(Visibility.PUBLIC));
-        condition.or(diary.visibility.eq(Visibility.FRIENDS).and(diary.member.id.in(friendIds)));
-        condition.or(diary.visibility.eq(Visibility.PRIVATE).and(diary.member.id.eq(userId)));
+        // visibilityCondition : PUBLIC or FRIENDS and 친구관계
+        BooleanBuilder visibilityCondition = new BooleanBuilder()
+                .or(DIARY.visibility.eq(Visibility.PUBLIC))
+                .or(DIARY.visibility.eq(Visibility.FRIENDS)
+                        .and(DIARY.member.id.in(friendIds)));
+
+        // 내 일기 제외 + 삭제 안 됨 + visibilityCondition
+        BooleanBuilder condition = new BooleanBuilder()
+                .and(DIARY.member.id.ne(userId))
+                .and(DIARY.deletedAt.isNull())
+                .and(visibilityCondition);
 
         if (language != null) {
-            condition.and(diary.language.eq(language));
+            condition.and(DIARY.language.eq(language));
         }
 
         List<Diary> diaries = queryFactory
-                .selectFrom(diary)
-                .join(diary.member, member).fetchJoin()
-                .where(condition, diary.deletedAt.isNull())
-                .orderBy(diary.createdAt.desc())
+                .selectFrom(DIARY)
+                .join(DIARY.member, MEMBER).fetchJoin()
+                .where(condition, DIARY.deletedAt.isNull())
+                .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
@@ -319,6 +335,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .writerUsername(d.getMember().getUsername())
                         .writerNickname(d.getMember().getNickname())
                         .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
@@ -329,6 +346,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
+                        .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
 
@@ -342,15 +360,15 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     private Set<Long> getFriendIds(Long userId) {
         List<Long> sentFriendIds = queryFactory
-                .select(friendship.receiver.id)
-                .from(friendship)
-                .where(friendship.requester.id.eq(userId), friendship.deletedAt.isNull())
+                .select(FRIENDSHIP.receiver.id)
+                .from(FRIENDSHIP)
+                .where(FRIENDSHIP.requester.id.eq(userId), FRIENDSHIP.deletedAt.isNull())
                 .fetch();
 
         List<Long> receivedFriendIds = queryFactory
-                .select(friendship.requester.id)
-                .from(friendship)
-                .where(friendship.receiver.id.eq(userId), friendship.deletedAt.isNull())
+                .select(FRIENDSHIP.requester.id)
+                .from(FRIENDSHIP)
+                .where(FRIENDSHIP.receiver.id.eq(userId), FRIENDSHIP.deletedAt.isNull())
                 .fetch();
 
         Set<Long> friendIds = new HashSet<>();
@@ -358,6 +376,15 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         friendIds.addAll(receivedFriendIds);
 
         return friendIds;
+    }
+
+    private Set<Long> getLikedDiaryIdSet(Long userId) {
+        List<Long> likedDiaryIds = queryFactory
+                .select(DIARY_LIKE.diary.id)
+                .from(DIARY_LIKE)
+                .where(DIARY_LIKE.member.id.eq(userId))
+                .fetch();
+        return new HashSet<>(likedDiaryIds);
     }
 }
 

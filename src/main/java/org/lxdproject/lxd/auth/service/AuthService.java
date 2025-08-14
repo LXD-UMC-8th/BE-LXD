@@ -1,7 +1,7 @@
 package org.lxdproject.lxd.auth.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +11,9 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
-import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
+import org.lxdproject.lxd.auth.enums.VerificationType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.infra.mail.MailService;
@@ -21,21 +21,19 @@ import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class AuthService {
 
@@ -43,9 +41,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    private final MailService mailService;
-    private final UrlProperties urlProperties;
     private final RedisService redisService;
+    private final MailService mailService;
+
+    private final UrlProperties urlProperties;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
@@ -78,22 +77,43 @@ public class AuthService {
 
     public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
-        // 이미 존재하는 이메일인지 유효성 검사
-        if (memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail()).equals(Boolean.TRUE)) {
+        VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
+
+        // 이미 존재하는 이메일인지 유효성 검사 (verificationType이 EMAIL인 경우)
+        if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail())) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 
         // 토큰 생성 및 인증 링크 구성
         String token = createSecureToken();
+
         String title = "LXD 이메일 인증 번호";
-        String verificationLink = urlProperties.getBackend() + "/auth/emails/verifications?token=" + token;
+        String verificationLink = UriComponentsBuilder
+                .fromHttpUrl(urlProperties.getBackend())
+                .path("/auth/emails/verifications")
+                .queryParam("token", token)
+                .toUriString();
 
         boolean htmlSent = false;
 
+        // verificationType에 따라 템플릿 경로/링크 메시지 분기
+        String templatePath;
+        String fallbackText;
+        if (verificationType == VerificationType.EMAIL) {
+            templatePath = "templates/email.html";
+            fallbackText = "아래 링크를 눌러 이메일 인증을 완료해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
+        } else if (verificationType == VerificationType.PASSWORD) {
+            templatePath = "templates/password.html";
+            fallbackText = "아래 링크를 눌러 비밀번호 재설정을 진행해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
+        } else {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
+
         // HTML 형식으로 이메일 전송
         try {
-            Path path = Paths.get("src/main/resources/templates/email.html");
-            String htmlTemplate = Files.readString(path, StandardCharsets.UTF_8);
+            Resource resource = new ClassPathResource(templatePath);
+            String htmlTemplate = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
             String htmlContent = htmlTemplate.replace("{{verificationLink}}", verificationLink);
             mailService.sendEmailFromMimeMessage(sendVerificationRequestDTO.getEmail(), title, htmlContent);
             htmlSent = true;
@@ -103,16 +123,16 @@ public class AuthService {
 
         // HTML 전송 실패 시 텍스트 메일로 fallback
         if (!htmlSent) {
-            String text = "아래 링크를 눌러 이메일 인증을 완료해주세요.\n" +
-                    "5분간 유효합니다.\n\n" +
-                    verificationLink;
-            mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, text);
+            mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, fallbackText);
         }
 
-        // Redis에 기존 값 삭제 후 재등록
-        // TODO 현재 같은 이메일 요청을 여러번 할 시, 한 개의 이메일에 여러 개의 토큰이 존재함 -> Redis hash 방식으로 추후 refactoring 하기
-        redisService.deleteValues(token);
-        redisService.setValues(token, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5L));
+        // Redis에 token -> [type, email] 형식으로 저장
+        String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
+        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
+
+        // 이메일 중복 처리를 위한 보조키 저장
+        redisService.setString(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
+
     }
 
     private String createSecureToken() {
@@ -122,20 +142,47 @@ public class AuthService {
     }
 
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
-        String email = redisService.getValues(token);
         try {
-            if (email == null) {
-                // 만료 또는 잘못된 토큰일 경우 → 실패 페이지로
-                response.sendRedirect(urlProperties.getFrontend() + "/email-verification/fail");
-            } else {
-                redisService.deleteValues(token); // 재사용 방지
+            // 1. 리스트로 조회
+            List<String> values = redisService.getVerificationList(token);
 
-                String newToken = createSecureToken();
-                redisService.setValues(newToken, email, Duration.ofMinutes(3L));
-                
-                response.sendRedirect(urlProperties.getFrontend() + "/home/signup?token=" +newToken );
+            String fe = urlProperties.getFrontend();
+
+            // 2. 값이 없거나 형식이 잘못된 경우 실패 페이지 리다이렉트
+            if (values == null || values.size() < 2) {
+                response.sendRedirect(fe + "/email-verification/fail");
+                return;
             }
-        }catch (IOException e) {
+
+            String type = values.get(0);   // email 또는 password
+            String email = values.get(1);
+
+            String latestToken = redisService.getString(email);
+
+            // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
+            if(!token.equals(latestToken)) {
+                response.sendRedirect(fe + "/email-verification/fail");
+                return;
+            }
+
+            // 3. 원본 토큰 제거 -> 재사용 방지
+            redisService.deleteKey(email);
+            redisService.deleteKey(token);
+
+            // 4. 이메일 토큰 생성 & 짧은 TTL로 저장
+            String newToken = createSecureToken();
+            redisService.setString(newToken, email, Duration.ofMinutes(3));
+
+            // 5. 타입에 따라 리다이렉트 분기
+            String redirectUrl = UriComponentsBuilder
+                    .fromHttpUrl(fe)
+                    .path(type.equals("email") ? "/home/signup" : "/home/change-pw")
+                    .queryParam("token", newToken)
+                    .toUriString();
+
+            response.sendRedirect(redirectUrl);
+
+        } catch (IOException e) {
             log.error("redirect에 실패했습니다");
             throw new RuntimeException("리다이렉트 실패", e);
         }
@@ -149,7 +196,7 @@ public class AuthService {
         String email = oAuthUserInfo.getEmail();
         Member member = memberRepository.findByEmail(email).orElse(null);
 
-        System.out.println(member);
+        log.debug("social login member: {}", member);
 
         // 새로운 유저 -> 회원가입 페이지로 이동시키기
         if(member == null) {
@@ -211,7 +258,7 @@ public class AuthService {
         redisService.deleteValues(refreshToken);
         redisService.setValues(newRefreshToken, member.getEmail(), Duration.ofDays(7L));
 
-        return new AuthResponseDTO.ReissueResponseDTO().builder()
+        return AuthResponseDTO.ReissueResponseDTO.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
@@ -237,7 +284,7 @@ public class AuthService {
 
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
-        String email = redisService.getValues(token);
+        String email = redisService.getString(token);
 
         if(email == null) {
             throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);

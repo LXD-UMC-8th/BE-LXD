@@ -1,14 +1,12 @@
-package org.lxdproject.lxd.member.dto;
+package org.lxdproject.lxd.friend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.List;
+import org.lxdproject.lxd.common.dto.PageResponse;
 
 @Getter
 @AllArgsConstructor
 public class FriendListResponseDTO {
-    private int totalFriends;
     private int totalRequests;
-    private List<FriendResponseDTO> friends;
+    private PageResponse<FriendResponseDTO> friends;
 }

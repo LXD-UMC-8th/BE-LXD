@@ -52,7 +52,6 @@ public class MemberSavedCorrectionService {
                         savedCorrectionDTOs,
                         savedPage.getNumber() + 1,
                         savedPage.getSize(),
-                        savedPage.getTotalPages(),
                         savedPage.hasNext()
                 );
 

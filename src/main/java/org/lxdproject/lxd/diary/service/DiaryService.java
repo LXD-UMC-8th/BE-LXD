@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.common.util.S3Uploader;
+import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
@@ -13,11 +13,11 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
-import org.lxdproject.lxd.member.entity.FriendRequest;
+import org.lxdproject.lxd.friend.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.FriendRequestStatus;
-import org.lxdproject.lxd.member.repository.FriendRepository;
-import org.lxdproject.lxd.member.repository.FriendRequestRepository;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.friend.repository.FriendRepository;
+import org.lxdproject.lxd.friend.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +40,7 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
-    private final S3Uploader s3Uploader;
+    private final S3FileService s3FileService;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
 
@@ -91,8 +91,8 @@ public class DiaryService {
         }
 
         List<String> urls = extractImageUrls(diary.getContent());
-        List<String> keys = s3Uploader.extractS3KeysFromUrls(urls);
-        s3Uploader.deleteFiles(keys);
+        List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
+        s3FileService.deleteImages(keys);
 
         diary.softDelete();
     }
@@ -114,7 +114,7 @@ public class DiaryService {
         return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
     }
 
-    public DiaryDetailResponseDTO updateDiary(Long id, DiaryRequestDTO request) {
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
 
@@ -126,7 +126,7 @@ public class DiaryService {
         }
 
         if (diary.getThumbImg() != null && !diary.getThumbImg().equals(request.getThumbImg())) {
-            s3Uploader.deleteFileByUrl(diary.getThumbImg());
+            s3FileService.deleteImage(diary.getThumbImg());
         }
 
         String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
@@ -179,7 +179,7 @@ public class DiaryService {
 
     public DiarySliceResponseDTO getLikedDiaries(Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.findLikedDiariesOfFriends(currentMemberId, pageable);
+        return diaryRepository.findLikedDiaries(currentMemberId, pageable);
     }
 
     public DiarySliceResponseDTO getExploreDiaries(Pageable pageable, Language language) {
@@ -191,10 +191,9 @@ public class DiaryService {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Long diaryCount = diaryRepository.countByMemberId(targetMemberId);
+        Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
 
-        List<Member> friends = friendRepository.findFriendsByMemberId(targetMemberId);
-        Integer friendCount = friends.size();
+        Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
 
         RelationType relation;
         if (targetMemberId.equals(currentMemberId)) {
@@ -218,6 +217,8 @@ public class DiaryService {
                 .profileImg(member.getProfileImg())
                 .username(member.getUsername())
                 .nickname(member.getNickname())
+                .nativeLanguage(member.getNativeLanguage())
+                .language(member.getLanguage())
                 .diaryCount(diaryCount)
                 .friendCount(friendCount)
                 .relation(relation)

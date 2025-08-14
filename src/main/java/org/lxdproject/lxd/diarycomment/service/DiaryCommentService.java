@@ -20,11 +20,15 @@ import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.lxdproject.lxd.member.repository.FriendRepository;
+import org.lxdproject.lxd.friend.repository.FriendRepository;
 
 import java.util.HashSet;
 import java.util.List;
@@ -43,9 +47,12 @@ public class DiaryCommentService {
     private final DiaryCommentLikeRepository likeRepository;
     private final FriendRepository friendRepository;
 
+    private final NotificationService notificationService;
+
     @Transactional
-    public DiaryCommentResponseDTO writeComment(Long memberId, Long diaryId, DiaryCommentRequestDTO request) {
-        Member member = memberRepository.findById(memberId)
+    public DiaryCommentResponseDTO writeComment(Long diaryId, DiaryCommentRequestDTO request) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Member commentOwner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
@@ -55,12 +62,12 @@ public class DiaryCommentService {
 
         //권한 확인
 
-        if (permission == CommentPermission.NONE && !member.equals(diaryOwner)) {
+        if (permission == CommentPermission.NONE && !commentOwner.equals(diaryOwner)) {
             throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
         }
 
-        if (permission == CommentPermission.FRIENDS && !member.equals(diaryOwner)) {
-            if (!friendRepository.existsFriendRelation(diaryOwner.getId(), member.getId())) {
+        if (permission == CommentPermission.FRIENDS && !commentOwner.equals(diaryOwner)) {
+            if (!friendRepository.existsFriendRelation(diaryOwner.getId(), commentOwner.getId())) {
                 throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
             }
         }
@@ -81,7 +88,7 @@ public class DiaryCommentService {
 
 
         DiaryComment comment = DiaryComment.builder()
-                .member(member)
+                .member(commentOwner)
                 .diary(diary)
                 .parent(parent)
                 .commentText(request.getCommentText())
@@ -91,13 +98,26 @@ public class DiaryCommentService {
         DiaryComment saved = diaryCommentRepository.save(comment);
         diary.increaseCommentCount();
 
+        // 알림 전송 (댓글 작성자 != 일기 작성자)
+        if (!commentOwner.equals(diaryOwner)) {
+            NotificationRequestDTO dto = NotificationRequestDTO.builder()
+                    .receiverId(diaryOwner.getId())
+                    .notificationType(NotificationType.COMMENT_ADDED)
+                    .targetType(TargetType.DIARY_COMMENT)
+                    .targetId(saved.getId())
+                    .redirectUrl("/diaries/" + diary.getId() + "/comments/" + saved.getId())
+                    .build();
+
+            notificationService.saveAndPublishNotification(dto);
+        }
+
         return DiaryCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberId(member.getId())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
+                .memberId(commentOwner.getId())
+                .username(commentOwner.getUsername())
+                .nickname(commentOwner.getNickname())
                 .diaryId(diary.getId())
-                .profileImage(member.getProfileImg())
+                .profileImage(commentOwner.getProfileImg())
                 .commentText(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
                 .replyCount(0)

@@ -32,13 +32,24 @@ public class JwtTokenProvider {
 
     public String generateToken(Long memberId, String email, String role, TokenType tokenType) {
 
+        Long expiration;
+
+        if(tokenType == TokenType.ACCESS){
+            expiration = jwtProperties.getAccessToken().getExpiration();
+        }else if(tokenType == TokenType.REFRESH){
+            expiration = jwtProperties.getRefreshToken().getExpiration();
+        }else{
+            throw new AuthHandler(ErrorStatus.INVALID_AUTHENTICATION_INFO);
+        }
+
+
         return Jwts.builder()
                 .setSubject(String.valueOf(memberId))
                 .claim("role", role)
                 .claim("email", email)
                 .claim("tokenType", tokenType.name())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessToken().getExpiration()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

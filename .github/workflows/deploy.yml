@@ -86,11 +86,14 @@ jobs:
             AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
             AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
             S3_BUCKET=${{ secrets.S3_BUCKET }}
+            DEFAULT_PROFILE_URL=${{ secrets.DEFAULT_PROFILE_URL }}
             MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+            URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
+            URLS_BACKEND=${{ secrets.URLS_BACKEND }}
             EOF
             
             sudo docker compose -f ~/deploy/docker-compose.yml down

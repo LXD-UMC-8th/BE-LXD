@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationReadUpdateDTO {
+public class NotificationReadUpdateEvent {
     @NotNull(message = "알림 ID는 필수입니다.")
     private Long notificationId;
     private boolean isRead;

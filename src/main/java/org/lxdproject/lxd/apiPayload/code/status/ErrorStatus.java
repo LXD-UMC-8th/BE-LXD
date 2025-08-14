@@ -21,12 +21,12 @@ public enum ErrorStatus implements BaseErrorCode {
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
-    NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4312", "이미 존재하는 닉네임입니다."),
     PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4313", "개인정보 동의는 필수입니다."),
     USERNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4314", "이미 존재하는 아이디입니다."),
     INVALID_USERNAME(HttpStatus.BAD_REQUEST, "MEMBER4001", "올바르지 않는 아이디 형식입니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "MEMBER4315", "올바르지 않은 닉네임 형식입니다."),
     INVALID_PROFILE_DATA(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임을 {\"nickname\":\"수정할 닉네임\"} 형식으로 요청해주세요."),
+    NEW_PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER4316", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다"),
 
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),
@@ -37,6 +37,8 @@ public enum ErrorStatus implements BaseErrorCode {
     NOT_FRIEND(HttpStatus.NOT_FOUND, "FRIEND4406", "친구 관계가 존재하지 않습니다."),
     FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4407", "해당 친구 요청을 찾을 수 없습니다."),
     INVALID_FRIEND_REQUEST_STATUS(HttpStatus.BAD_REQUEST, "FRIEND4408", "요청 상태가 유효하지 않습니다."),
+    SEARCH_QUERY_REQUIRED(HttpStatus.BAD_REQUEST, "FRIEND4001", "검색어를 입력해주세요."),
+    SEARCH_QUERY_TOO_SHORT(HttpStatus.BAD_REQUEST, "FRIEND4002", "검색어는 1자 이상 입력해주세요."),
 
     // 인증 관련 에러
     REQUIRED_LOGIN(HttpStatus.UNAUTHORIZED, "AUTH4300", "로그인이 필요한 서비스입니다,"),
@@ -75,9 +77,12 @@ public enum ErrorStatus implements BaseErrorCode {
     COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
     COMMENT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "COMMENT4004", "댓글 작성 권한이 없습니다."),
 
+    // S3 관련 에러
+    FILE_STREAM_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"S34001","파일 스트림 읽기 실패"),
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"S34002","S3 업로드 실패"),
+    AWS_SDK_CLIENT_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "S34003", "AWS SDK 클라이언트 오류"),
 
     // 테스트 용 응답
-    INVALID_PAGE(HttpStatus.BAD_REQUEST, "PAGE400", "유효하지 않은 페이지 번호입니다."),
     TEST_FAIL(HttpStatus.BAD_REQUEST, "TEST400", "사용자 정의 실패 응답입니다."),
 
     ;

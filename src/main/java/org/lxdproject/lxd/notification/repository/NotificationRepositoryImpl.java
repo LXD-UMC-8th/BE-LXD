@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.member.entity.QMember;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.QNotification;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -62,4 +64,17 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 .orderBy(notification.createdAt.desc())
                 .fetch();
     }
+
+    @Override
+    public long deleteFriendRequestNotification(Long receiverId, Long requesterId) {
+        return queryFactory.delete(notification)
+                .where(
+                        notification.receiver.id.eq(receiverId),
+                        notification.notificationType.eq(NotificationType.FRIEND_REQUEST),
+                        notification.targetType.eq(TargetType.MEMBER),
+                        notification.targetId.eq(requesterId)
+                )
+                .execute();
+    }
+
 }

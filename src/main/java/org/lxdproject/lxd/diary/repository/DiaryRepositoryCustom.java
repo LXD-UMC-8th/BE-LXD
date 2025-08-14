@@ -13,7 +13,7 @@ public interface DiaryRepositoryCustom {
     MyDiarySliceResponseDTO getDiariesByMemberId (Long userId, Long memberId, Pageable pageable);
     List<DiaryStatsResponseDTO> getDiaryStatsByMonth(Long userId, int year, int month);
     DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable);
-    DiarySliceResponseDTO findLikedDiariesOfFriends(Long userId, Pageable pageable);
+    DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable);
     DiarySliceResponseDTO findExploreDiaries(Long userId, Language language, Pageable pageable);
 }
 

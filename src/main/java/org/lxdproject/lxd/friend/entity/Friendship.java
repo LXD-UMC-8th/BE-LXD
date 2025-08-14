@@ -1,14 +1,19 @@
-package org.lxdproject.lxd.member.entity;
+package org.lxdproject.lxd.friend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
+import org.lxdproject.lxd.member.entity.Member;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "friendship", indexes = {
+        @Index(name = "idx_friend_requester", columnList = "requester_id"),
+        @Index(name = "idx_friend_receiver", columnList = "receiver_id")
+})
 public class Friendship extends BaseEntity {
 
     @Id

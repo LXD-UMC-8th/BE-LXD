@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.entity.enums;
+package org.lxdproject.lxd.friend.entity.enums;
 
 public enum FriendRequestStatus {
     PENDING,
