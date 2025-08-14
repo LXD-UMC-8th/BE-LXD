@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom {
     Optional<Diary> findByIdAndDeletedAtIsNull(Long id);
-    Long countByMemberId(Long memberId);
+    Long countByMemberIdAndDeletedAtIsNull(Long memberId);
 }
