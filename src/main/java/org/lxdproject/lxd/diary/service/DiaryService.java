@@ -191,7 +191,7 @@ public class DiaryService {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Long diaryCount = diaryRepository.countByMemberId(targetMemberId);
+        Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
 
         Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
 
