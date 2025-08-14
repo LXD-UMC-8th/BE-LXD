@@ -176,7 +176,7 @@ public class AuthService {
             // 5. 타입에 따라 리다이렉트 분기
             String redirectUrl = UriComponentsBuilder
                     .fromHttpUrl(fe)
-                    .path(type.equals("email") ? "/home/signup" : "/home/change-pw")
+                    .path(type.equals("email") ? "/home/signup" : "/home/signup/change-pw")
                     .queryParam("token", newToken)
                     .toUriString();
 
