@@ -9,6 +9,7 @@ import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentDeleteResponseDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentRequestDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentResponseDTO;
+import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
 import org.lxdproject.lxd.validation.annotation.ValidPageSize;
 import org.springframework.web.bind.annotation.*;
 

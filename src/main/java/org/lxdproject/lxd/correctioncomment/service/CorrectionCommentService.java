@@ -68,6 +68,7 @@ public class CorrectionCommentService {
 
         Page<CorrectionComment> commentPage = commentRepository.findByCorrection(correction, pageable);
 
+
         List<CorrectionCommentResponseDTO> content = commentPage.stream()
                 .map(comment -> CorrectionCommentResponseDTO.builder()
                         .commentId(comment.getId())
