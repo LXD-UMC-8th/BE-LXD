@@ -35,6 +35,7 @@ public class DiaryComment extends BaseEntity {
 
     private int likeCount;
 
+    @Builder.Default
     private int  replyCount=0;
 
     public void increaseReplyCount(){

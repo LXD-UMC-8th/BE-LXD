@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.common.dto.PageResponse;
-import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correctioncomment.dto.*;
 import org.lxdproject.lxd.correctioncomment.service.CorrectionCommentService;
 import org.springframework.data.domain.PageRequest;
