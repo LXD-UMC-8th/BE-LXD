@@ -21,7 +21,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                 .selectFrom(comment)
                 .where(comment.diary.id.eq(diaryId)
                         .and(comment.parent.isNull()))
-                .orderBy(comment.createdAt.desc())
+                .orderBy(comment.createdAt.asc())
                 .offset(offset)
                 .limit(size)
                 .fetch();

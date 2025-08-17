@@ -197,13 +197,13 @@ public class DiaryCommentService {
         // hasNext는 부모 댓글 수 기준
         boolean hasNext = diaryCommentRepository.countParentComments(diaryId) > offset + size;
 
-        return PageResponse.<DiaryCommentResponseDTO.Comment>builder()
-                .totalElements((long) totalElements)
-                .contents(commentDTOs)
-                .page(page + 1)
-                .size(size)
-                .hasNext(hasNext)
-                .build();
+        return new PageResponse<>(
+                (long) totalElements,
+                commentDTOs,
+                page + 1,
+                size,
+                hasNext
+        );
     }
 
     @Transactional
