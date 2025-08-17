@@ -61,7 +61,6 @@ public class DiaryCommentService {
         CommentPermission permission = diary.getCommentPermission();
 
         //권한 확인
-
         if (permission == CommentPermission.NONE && !commentOwner.equals(diaryOwner)) {
             throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
         }
@@ -77,9 +76,16 @@ public class DiaryCommentService {
             parent = diaryCommentRepository.findById(request.getParentId())
                     .orElseThrow(() -> new CommentHandler(ErrorStatus.PARENT_COMMENT_NOT_FOUND));
 
+            // depth를 1로만 제한
             if (parent.getParent() != null) {
                 throw new CommentHandler(ErrorStatus.COMMENT_DEPTH_EXCEEDED);
             }
+
+            // 삭제된 부모 댓글에는 대댓글 제한
+            if (parent.getDeletedAt() != null) {
+                throw new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND);
+            }
+
             parent.increaseReplyCount();
         }
 
