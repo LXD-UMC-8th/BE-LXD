@@ -114,7 +114,7 @@ public class RedisService {
     }
 
 
-    public List<String> getVerificationList(String token) {
+    public List<String> getList(String token) {
         return stringRedisTemplate.opsForList().range(token, 0, -1);
     }
 
