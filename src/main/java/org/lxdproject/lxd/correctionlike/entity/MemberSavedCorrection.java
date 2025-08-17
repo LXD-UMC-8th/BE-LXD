@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.correction.entity.mapping;
+package org.lxdproject.lxd.correctionlike.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.correction.dto;
+package org.lxdproject.lxd.correctionlike.dto;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,10 +1,10 @@
-package org.lxdproject.lxd.correction.controller;
+package org.lxdproject.lxd.correctionlike.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionRequestDTO;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
-import org.lxdproject.lxd.correction.service.MemberSavedCorrectionService;
+import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
+import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionResponseDTO;
+import org.lxdproject.lxd.correctionlike.service.MemberSavedCorrectionService;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController

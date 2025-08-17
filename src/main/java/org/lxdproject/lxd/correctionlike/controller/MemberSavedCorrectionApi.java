@@ -1,12 +1,12 @@
-package org.lxdproject.lxd.correction.controller;
+package org.lxdproject.lxd.correctionlike.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionRequestDTO;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
+import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
+import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionResponseDTO;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Saved Correction API", description = "로그인한 사용자의 저장한(좋아요) 교정 관련 API입니다.")
