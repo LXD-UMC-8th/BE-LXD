@@ -30,6 +30,7 @@ SELECT new org.lxdproject.lxd.friend.dto.FriendResponseDTO(
 FROM FriendRequest fr
 JOIN fr.requester m
 WHERE fr.receiver = :receiver AND fr.status = :status
+ORDER BY fr.createdAt DESC
 """)
     Page<FriendResponseDTO> findReceivedRequestDTOs(@Param("receiver") Member receiver, @Param("status") FriendRequestStatus status, Pageable pageable);
     @Query("""
@@ -42,6 +43,7 @@ SELECT new org.lxdproject.lxd.friend.dto.FriendResponseDTO(
 FROM FriendRequest fr
 JOIN fr.receiver m
 WHERE fr.requester = :requester AND fr.status = :status
+ORDER BY fr.createdAt DESC
 """)
     Page<FriendResponseDTO> findSentRequestDTOs(@Param("requester") Member requester, @Param("status") FriendRequestStatus status, Pageable pageable);
 
