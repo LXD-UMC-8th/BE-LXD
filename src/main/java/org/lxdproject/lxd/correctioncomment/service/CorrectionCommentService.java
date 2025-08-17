@@ -21,7 +21,9 @@ import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.lxdproject.lxd.notification.service.NotificationService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,9 +84,11 @@ public class CorrectionCommentService {
 
 
     @Transactional(readOnly = true)
-    public PageResponse<CorrectionCommentResponseDTO> getComments(Long correctionId, Pageable pageable) {
+    public PageResponse<CorrectionCommentResponseDTO> getComments(Long correctionId, int page, int size) {
         Correction correction = correctionRepository.findById(correctionId)
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createdAt"));
 
         Page<CorrectionComment> commentPage = commentRepository.findByCorrection(correction, pageable);
 

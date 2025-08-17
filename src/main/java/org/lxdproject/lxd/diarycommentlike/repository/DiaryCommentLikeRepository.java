@@ -11,8 +11,11 @@ import java.util.Optional;
 public interface DiaryCommentLikeRepository extends JpaRepository<DiaryCommentLike, Long> {
     Optional<DiaryCommentLike> findByMemberIdAndCommentId(Long memberId, Long commentId);
 
-
-    @Query("SELECT l.comment.id FROM DiaryCommentLike l WHERE l.member.id = :memberId AND l.comment.id IN :commentIds")
+    @Query("""
+    SELECT l.comment.id FROM DiaryCommentLike l 
+    WHERE l.member.id = :memberId 
+    AND l.comment.id IN :commentIds
+""")
     List<Long> findLikedCommentIds(@Param("memberId") Long memberId, @Param("commentIds") List<Long> commentIds);
 
 }
