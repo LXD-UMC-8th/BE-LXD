@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diarycomment.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.diarycomment.dto.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +20,9 @@ public interface DiaryCommentApi {
 
     @Operation(summary = "일기 댓글 조회 API", description = "해당 일기의 댓글들을 생성일 기준으로 조회합니다.")
     @GetMapping
-    ApiResponse<DiaryCommentResponseDTO.CommentList> getComments(
+    ApiResponse<PageResponse<DiaryCommentResponseDTO.Comment>> getComments(
             @PathVariable Long diaryId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     );
 

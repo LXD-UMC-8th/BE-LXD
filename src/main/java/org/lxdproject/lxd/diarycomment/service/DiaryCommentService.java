@@ -5,6 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
@@ -123,40 +124,85 @@ public class DiaryCommentService {
                 .build();
     }
 
-    public DiaryCommentResponseDTO.CommentList getComments(Long diaryId, Pageable pageable) {
+    @Transactional(readOnly = true)
+    public PageResponse<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+        int offset = page * size;
 
-        // 부모 댓글 조회
-        Page<DiaryComment> parentComments = diaryCommentRepository.findByDiaryIdAndParentIsNull(diaryId, pageable);
-        List<DiaryComment> parents = parentComments.getContent();
-        List<Long> parentIds = parents.stream().map(DiaryComment::getId).toList();
+        // 부모 댓글
+        List<DiaryComment> parents = diaryCommentRepository.findParentComments(diaryId, offset, size);
 
-        // 자식 댓글 일괄 조회
-        List<DiaryComment> allReplies = parentIds.isEmpty() ? List.of() :
-                diaryCommentRepository.findByParentIdIn(parentIds);
-
-        // 부모 + 자식 댓글 ID 리스트에 담기
-        List<Long> allCommentIds = Stream.concat(parents.stream(), allReplies.stream())
+        List<Long> parentIds = parents.stream()
                 .map(DiaryComment::getId)
                 .toList();
 
-        // 부모 + 자식 댓글 ID의 좋아요 여부 일괄 조회
+        // 자식 댓글
+        List<DiaryComment> replies = parentIds.isEmpty() ? List.of()
+                : diaryCommentRepository.findRepliesByParentIds(parentIds);
+
+        // 전체 댓글
+        List<Long> allCommentIds = Stream.concat(parents.stream(), replies.stream())
+                .map(DiaryComment::getId)
+                .toList();
+
+        // 좋아요 여부 조회
         Set<Long> likedCommentIds = allCommentIds.isEmpty() ? Set.of()
                 : new HashSet<>(likeRepository.findLikedCommentIds(memberId, allCommentIds));
 
-        // 부모 + 자식 그룹핑
-        Map<Long, List<DiaryComment>> repliesGroupedByParent = allReplies.stream()
+        Map<Long, List<DiaryComment>> repliesGroupedByParent = replies.stream()
                 .collect(Collectors.groupingBy(reply -> reply.getParent().getId()));
 
-        // DTO 변환
-        List<DiaryCommentResponseDTO.Comment> commentDTOs =
-                DiaryCommentConverter.toCommentDtoTree(parents, repliesGroupedByParent, likedCommentIds);
+                List<DiaryCommentResponseDTO.Comment> commentDTOs = parents.stream()
+                .map(parent -> {
+                    List<DiaryCommentResponseDTO.Comment> replyDTOs =
+                            repliesGroupedByParent.getOrDefault(parent.getId(), List.of()).stream()
+                                    .map(reply -> DiaryCommentResponseDTO.Comment.builder()
+                                            .commentId(reply.getId())
+                                            .parentId(parent.getId())
+                                            .memberId(reply.getMember().getId())
+                                            .username(reply.getMember().getUsername())
+                                            .nickname(reply.getMember().getNickname())
+                                            .profileImage(reply.getMember().getProfileImg())
+                                            .content(reply.getCommentText())
+                                            .likeCount(reply.getLikeCount())
+                                            .isLiked(likedCommentIds.contains(reply.getId()))
+                                            .createdAt(DateFormatUtil.formatDate(reply.getCreatedAt()))
+                                            .replyCount(0)
+                                            .replies(List.of())
+                                            .build()
+                                    ).toList();
 
-        int totalElements = parents.size() + allReplies.size();
+                    return DiaryCommentResponseDTO.Comment.builder()
+                            .commentId(parent.getId())
+                            .parentId(null)
+                            .memberId(parent.getMember().getId())
+                            .username(parent.getMember().getUsername())
+                            .nickname(parent.getMember().getNickname())
+                            .profileImage(parent.getMember().getProfileImg())
+                            .content(parent.getCommentText())
+                            .likeCount(parent.getLikeCount())
+                            .isLiked(likedCommentIds.contains(parent.getId()))
+                            .createdAt(DateFormatUtil.formatDate(parent.getCreatedAt()))
+                            .replyCount(parent.getReplyCount())
+                            .replies(replyDTOs)
+                            .build();
+                })
+                .toList();
 
-        return DiaryCommentResponseDTO.CommentList.builder()
-                .content(commentDTOs)
-                .totalElements(totalElements)
+        // 전체 댓글 개수(부모 + 자식)
+        int totalElements = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND))
+                .getCommentCount();
+
+        // hasNext는 부모 댓글 수 기준
+        boolean hasNext = diaryCommentRepository.countParentComments(diaryId) > offset + size;
+
+        return PageResponse.<DiaryCommentResponseDTO.Comment>builder()
+                .totalElements((long) totalElements)
+                .contents(commentDTOs)
+                .page(page + 1)
+                .size(size)
+                .hasNext(hasNext)
                 .build();
     }
 
