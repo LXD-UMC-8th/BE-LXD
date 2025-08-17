@@ -29,8 +29,7 @@ public class CorrectionCommentController implements CorrectionCommentApi {
 
     @Override
     public ApiResponse<PageResponse<CorrectionCommentResponseDTO>> getComments(Long correctionId, int page, int size) {
-        Pageable pageable = PageRequest.of(page-1, size, Sort.by(Sort.Direction.ASC, "createdAt"));
-        PageResponse<CorrectionCommentResponseDTO> response = correctionCommentService.getComments(correctionId, pageable);
+        PageResponse<CorrectionCommentResponseDTO> response = correctionCommentService.getComments(correctionId, page, size);
         return ApiResponse.onSuccess(SuccessStatus._OK, response);
     }
 

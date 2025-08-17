@@ -144,7 +144,7 @@ public class AuthService {
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
         try {
             // 1. 리스트로 조회
-            List<String> values = redisService.getVerificationList(token);
+            List<String> values = redisService.getList(token);
 
             String fe = urlProperties.getFrontend();
 
@@ -284,7 +284,7 @@ public class AuthService {
 
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
-        String email = redisService.getString(token);
+        String email = redisService.getList(token).get(1);
 
         if(email == null) {
             throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);

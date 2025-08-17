@@ -41,13 +41,4 @@ public class DiaryCommentResponseDTO {
         private List<Comment> replies;  //대댓글
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class CommentList {
-        private List<Comment> content;
-        private int totalElements;
-    }
-
 }

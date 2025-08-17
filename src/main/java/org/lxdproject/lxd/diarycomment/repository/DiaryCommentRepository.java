@@ -10,13 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface DiaryCommentRepository extends JpaRepository<DiaryComment, Long> {
-    Page<DiaryComment> findByDiaryIdAndParentIsNull(Long diaryId, Pageable pageable);
-    List<DiaryComment> findByParentIdIn(List<Long> parentIds);
-
-    @Query("SELECT COUNT(c) FROM DiaryComment c WHERE c.diary.id = :diaryId")
-    long countAllCommentsIncludingDeleted(@Param("diaryId") Long diaryId);
-
+public interface DiaryCommentRepository extends JpaRepository<DiaryComment, Long>, DiaryCommentRepositoryCustom {
     @Query("SELECT dc.diary.title FROM DiaryComment dc WHERE dc.id = :id AND dc.diary IS NOT NULL")
     Optional<String> findDiaryTitleByCommentId(@Param("id") Long id);
 
