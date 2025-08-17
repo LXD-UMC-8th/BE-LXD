@@ -170,7 +170,7 @@ public class NotificationService {
 
         sseEmitterService.sendAllReadUpdate(memberId);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, null, pageable);
 
         List<NotificationResponseDTO> responses = notificationPage.stream()

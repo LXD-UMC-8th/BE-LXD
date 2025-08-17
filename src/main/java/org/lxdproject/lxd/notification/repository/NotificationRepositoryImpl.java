@@ -37,7 +37,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 .where(where)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(notification.id.desc())
+                .orderBy(notification.createdAt.desc())
                 .fetch();
 
         // countQuery
