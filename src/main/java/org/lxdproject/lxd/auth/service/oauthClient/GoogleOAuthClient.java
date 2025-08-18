@@ -40,6 +40,9 @@ public class GoogleOAuthClient implements OAuthClient {
 
     @Override
     public String requestAccessToken(String code) {
+        // 디코드
+        String decoded = URLDecoder.decode(code, StandardCharsets.UTF_8);
+
 
         HttpHeaders headers = new HttpHeaders();
         // 요청 헤더: x-www-form-urlencoded 형식 지정 (필수)
@@ -47,7 +50,7 @@ public class GoogleOAuthClient implements OAuthClient {
 
         // 요청 바디: Map이 아닌 MultiValueMap 이여야 Http 전송 가능
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("code", code);
+        body.add("code", decoded);
         body.add("client_id", clientId);
         body.add("client_secret", clientSecret);
         body.add("redirect_uri", redirectUri);
