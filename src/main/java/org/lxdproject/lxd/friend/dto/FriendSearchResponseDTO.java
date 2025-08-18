@@ -3,14 +3,14 @@ package org.lxdproject.lxd.friend.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 
 @Getter
 @Builder
 public class FriendSearchResponseDTO {
 
     private String query;
-    private PageResponse<MemberInfo> members;
+    private PageDTO<MemberInfo> members;
 
     @Getter
     @Builder

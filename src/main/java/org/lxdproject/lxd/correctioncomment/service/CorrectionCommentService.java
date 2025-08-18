@@ -6,7 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.entity.Correction;
@@ -28,8 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -84,7 +82,7 @@ public class CorrectionCommentService {
 
 
     @Transactional(readOnly = true)
-    public PageResponse<CorrectionCommentResponseDTO> getComments(Long correctionId, int page, int size) {
+    public PageDTO<CorrectionCommentResponseDTO> getComments(Long correctionId, int page, int size) {
         Correction correction = correctionRepository.findById(correctionId)
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
 
@@ -104,7 +102,7 @@ public class CorrectionCommentService {
                         .build())
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 commentPage.getTotalElements(),
                 content,
                 commentPage.getNumber()+1,

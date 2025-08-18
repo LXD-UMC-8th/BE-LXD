@@ -18,6 +18,7 @@ public class DiaryDetailResponseDTO {
     private Visibility visibility;
     private String title;
     private Language language;
+    private Long writerId;
     private String profileImg;
     private String writerNickName;
     private String writerUserName;
@@ -40,6 +41,7 @@ public class DiaryDetailResponseDTO {
                 diary.getVisibility(),
                 diary.getTitle(),
                 diary.getLanguage(),
+                member.getId(),
                 member.getProfileImg(),
                 member.getNickname(),
                 member.getUsername(),
@@ -64,6 +66,7 @@ public class DiaryDetailResponseDTO {
                 diary.getVisibility(),
                 diary.getTitle(),
                 diary.getLanguage(),
+                member.getId(),
                 member.getProfileImg(),
                 member.getNickname(),
                 member.getUsername(),

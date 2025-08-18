@@ -1,16 +1,16 @@
-package org.lxdproject.lxd.correction.service;
+package org.lxdproject.lxd.correctionlike.service;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionRequestDTO;
-import org.lxdproject.lxd.correction.dto.MemberSavedCorrectionResponseDTO;
+import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
+import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
-import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
-import org.lxdproject.lxd.correction.repository.MemberSavedCorrectionRepository;
+import org.lxdproject.lxd.correctionlike.entity.MemberSavedCorrection;
+import org.lxdproject.lxd.correctionlike.repository.MemberSavedCorrectionRepository;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.lxdproject.lxd.apiPayload.code.status.ErrorStatus.*;
 
@@ -46,8 +45,8 @@ public class MemberSavedCorrectionService {
                         .map(this::toSavedCorrectionDTO)
                         .toList();
 
-        PageResponse<MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem> pageResponse =
-                new PageResponse<>(
+        PageDTO<MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem> pageDTO =
+                new PageDTO<>(
                         savedPage.getTotalElements(),
                         savedCorrectionDTOs,
                         savedPage.getNumber() + 1,
@@ -57,7 +56,7 @@ public class MemberSavedCorrectionService {
 
         return MemberSavedCorrectionResponseDTO.SavedListResponseDTO.builder()
                 .memberId(currentMemberId)
-                .savedCorrections(pageResponse)
+                .savedCorrections(pageDTO)
                 .build();
     }
 

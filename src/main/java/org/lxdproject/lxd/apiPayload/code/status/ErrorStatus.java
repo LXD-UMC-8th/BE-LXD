@@ -43,6 +43,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 인증 관련 에러
     REQUIRED_LOGIN(HttpStatus.UNAUTHORIZED, "AUTH4300", "로그인이 필요한 서비스입니다,"),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4301", "액세스 토큰이 올바르지 않습니다."),
+    INVALID_GOOGLE_AUTH_CODE(HttpStatus.UNAUTHORIZED, "AUTH4002", "구글 AccessToken 요청 실패"),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4302", "리프레쉬 토큰이 올바르지 않습니다"),
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4303", "액세스 토큰 기간이 만료되었습니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4304", "리프레쉬 토큰 기간이 만료되었습니다."),
@@ -55,6 +56,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 일기 관련 에러
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),
     FORBIDDEN_DIARY_UPDATE(HttpStatus.FORBIDDEN, "DIARY4003", "작성자 본인만 수정할 수 있습니다."),
+    DIARY_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "DIARY4004", "일기 조회 권한이 없습니다."),
 
     // 메일 관련 에러
     UNABLE_TO_SEND_EMAIL(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL 4301", "이메일을 보낼 수 없습니다."),

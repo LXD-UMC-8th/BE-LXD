@@ -21,23 +21,13 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
     private final RedisProperties redisProperties;
 
-    // RedisProperties로 yaml에 저장한 host, post를 연결
+    // RedisProperties로 yml에 저장한 host, post를 연결
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
     }
 
-    // serializer 설정으로 redis-cli를 통해 직접 데이터를 조회할 수 있도록 설정
-    @Bean(name = "objectRedisTemplate")
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
-        return template;
-    }
-
-    @Bean(name = "customStringRedisTemplate") // RedisAutoConfiguration에 이미 stringRedisTemplate이라는 Bean이 존재함
+    @Bean(name = "StrRedisTemplate")
     public RedisTemplate<String, String> stringRedisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);

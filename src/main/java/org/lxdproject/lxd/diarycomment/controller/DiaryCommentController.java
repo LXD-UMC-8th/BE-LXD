@@ -3,13 +3,9 @@ package org.lxdproject.lxd.diarycomment.controller;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
-import org.lxdproject.lxd.common.dto.PageResponse;
-import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.diarycomment.dto.*;
 import org.lxdproject.lxd.diarycomment.service.DiaryCommentService;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,10 +25,10 @@ public class DiaryCommentController implements DiaryCommentApi {
     }
 
     @Override
-    public ApiResponse<PageResponse<DiaryCommentResponseDTO.Comment>> getComments(
+    public ApiResponse<PageDTO<DiaryCommentResponseDTO.Comment>> getComments(
             Long diaryId, int page, int size
     ) {
-        PageResponse<DiaryCommentResponseDTO.Comment> dto = diaryCommentService.getComments(diaryId, page - 1, size);
+        PageDTO<DiaryCommentResponseDTO.Comment> dto = diaryCommentService.getComments(diaryId, page - 1, size);
         return ApiResponse.of(SuccessStatus._OK, dto);
     }
 

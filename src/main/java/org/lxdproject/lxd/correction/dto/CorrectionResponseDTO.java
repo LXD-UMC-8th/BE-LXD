@@ -2,7 +2,7 @@ package org.lxdproject.lxd.correction.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
@@ -15,7 +15,7 @@ public class CorrectionResponseDTO {
     @Builder
     public static class DiaryCorrectionsResponseDTO {
         private Long diaryId;
-        private PageResponse<CorrectionDetailDTO> corrections;
+        private PageDTO<CorrectionDetailDTO> corrections;
     }
 
     @Getter
@@ -109,7 +109,7 @@ public class CorrectionResponseDTO {
     @Builder
     public static class ProvidedCorrectionsResponseDTO {
         private MemberInfo member;
-        private PageResponse<ProvidedCorrectionItem> corrections;
+        private PageDTO<ProvidedCorrectionItem> corrections;
     }
 
     @Getter

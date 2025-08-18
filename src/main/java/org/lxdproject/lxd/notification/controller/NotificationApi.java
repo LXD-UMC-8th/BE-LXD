@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
@@ -33,7 +33,7 @@ public interface NotificationApi {
 
     @Operation(summary = "나의 알림 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
-    ApiResponse<PageResponse<NotificationResponseDTO>> getNotifications(
+    ApiResponse<PageDTO<NotificationResponseDTO>> getNotifications(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean isRead // 필터링 조건
@@ -45,7 +45,7 @@ public interface NotificationApi {
 
     @Operation(summary = "나의 알림 모두 읽음 API", description = "로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다.")
     @PatchMapping("/read-all")
-    ApiResponse<PageResponse<NotificationResponseDTO>> readAllNotifications(
+    ApiResponse<PageDTO<NotificationResponseDTO>> readAllNotifications(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     );

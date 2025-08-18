@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.springframework.web.bind.annotation.*;

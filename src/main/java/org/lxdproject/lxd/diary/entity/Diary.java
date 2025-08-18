@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.diary.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,13 +41,21 @@ public class Diary extends BaseEntity {
     private String content;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull
     private Style style;
 
     @Enumerated(EnumType.STRING)
-    private Visibility visibility;
+    @Column(nullable = false)
+    @NotNull
+    @Builder.Default
+    private Visibility visibility = Visibility.PUBLIC;
 
     @Enumerated(EnumType.STRING)
-    private CommentPermission commentPermission;
+    @Column(nullable = false)
+    @NotNull
+    @Builder.Default
+    private CommentPermission commentPermission = CommentPermission.ALL;
 
     @Enumerated(EnumType.STRING)
     private Language language;
