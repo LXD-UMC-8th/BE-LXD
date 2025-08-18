@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.authz.predicate.VisibilityPredicates;
@@ -37,33 +38,48 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public Page<Diary> findMyDiaries(Long memberId, Boolean likedOnly, Pageable pageable) {
-        BooleanExpression baseCondition = DIARY.member.id.eq(memberId)
+        BooleanExpression base = DIARY.member.id.eq(memberId)
                 .and(DIARY.deletedAt.isNull());
 
-        // likedOnly 활용해 일기 좋아요 여부 분리
-        BooleanExpression likedFilter = (likedOnly != null && likedOnly)
-                ? DIARY_LIKE.member.id.eq(memberId)
-                : null;
+        // liked 파라미터 값에 따라 분기(null이면 조건 없이 전체 조회)
+        BooleanExpression likedCondition = null;
+        if (Boolean.TRUE.equals(likedOnly)) {
+            likedCondition = JPAExpressions
+                    .selectOne()
+                    .from(DIARY_LIKE)
+                    .where(
+                            DIARY_LIKE.diary.id.eq(DIARY.id),
+                            DIARY_LIKE.member.id.eq(memberId)
+                    )
+                    .exists();
+        } else if (Boolean.FALSE.equals(likedOnly)) {
+            likedCondition = JPAExpressions
+                    .selectOne()
+                    .from(DIARY_LIKE)
+                    .where(
+                            DIARY_LIKE.diary.id.eq(DIARY.id),
+                            DIARY_LIKE.member.id.eq(memberId)
+                    )
+                    .notExists();
+        }
 
-        List<Diary> diaries = queryFactory
+        List<Diary> content = queryFactory
                 .selectFrom(DIARY)
-                .leftJoin(DIARY.likes, DIARY_LIKE)
-                .where(baseCondition, likedFilter)
-                .distinct()
+                .where(base, likedCondition)
                 .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         Long total = queryFactory
-                .select(Wildcard.count)
+                .select(DIARY.count())
                 .from(DIARY)
-                .leftJoin(DIARY.likes, DIARY_LIKE)
-                .where(baseCondition, likedFilter)
+                .where(base, likedCondition)
                 .fetchOne();
 
-        return new PageImpl<>(diaries, pageable, total == null ? 0L : total);
+        return new PageImpl<>(content, pageable, total == null ? 0L : total);
     }
+
 
     @Override
     public Page<Diary> findDiariesByMemberId(Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable){
