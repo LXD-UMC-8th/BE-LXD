@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageDTO;
+import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -99,9 +100,8 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<DiarySliceResponseDTO> getExploreDiaries(int page, int size, Language language) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        DiarySliceResponseDTO result = diaryService.getExploreDiaries(pageable, language);
+    public ApiResponse<PageResponse<DiarySummaryResponseDTO>> getExploreDiaries(int page, int size, Language language) {
+        PageResponse<DiarySummaryResponseDTO> result = diaryService.getExploreDiaries(page - 1, size, language);
         return ApiResponse.onSuccess(result);
     }
 

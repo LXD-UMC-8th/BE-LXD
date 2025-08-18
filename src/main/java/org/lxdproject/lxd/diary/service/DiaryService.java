@@ -6,13 +6,16 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.util.DateFormatUtil;
+import org.lxdproject.lxd.diary.util.DiaryUtil;
+import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
-import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.friend.entity.FriendRequest;
 import org.lxdproject.lxd.member.entity.Member;
@@ -20,6 +23,7 @@ import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
 import org.lxdproject.lxd.friend.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +45,7 @@ import name.fraser.neil.plaintext.diff_match_patch;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+    private final DiaryLikeRepository diaryLikeRepository;
     private final MemberRepository memberRepository;
     private final S3FileService s3FileService;
     private final FriendRepository friendRepository;
@@ -184,9 +190,42 @@ public class DiaryService {
         return diaryRepository.findLikedDiaries(currentMemberId, pageable);
     }
 
-    public DiarySliceResponseDTO getExploreDiaries(Pageable pageable, Language language) {
-        Long userId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.findExploreDiaries(userId, language, pageable);
+    public PageResponse<DiarySummaryResponseDTO> getExploreDiaries(int page, int size, Language language) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
+        Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diary> diaryPage = diaryRepository.findExploreDiaries(memberId, language, friendIds, pageable);
+
+        List<DiarySummaryResponseDTO> dto = diaryPage.getContent().stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .writerUsername(d.getMember().getUsername())
+                        .writerNickname(d.getMember().getNickname())
+                        .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
+                        .diaryId(d.getId())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .language(d.getLanguage())
+                        .liked(likedSet.contains(d.getId()))
+                        .build())
+                .toList();
+
+        return new PageResponse<>(
+                null,
+                dto,
+                page + 1,
+                size,
+                diaryPage.hasNext()
+        );
+
     }
 
     public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId, boolean includeStatus) {
