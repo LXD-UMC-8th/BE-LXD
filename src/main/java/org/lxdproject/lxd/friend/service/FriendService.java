@@ -349,7 +349,7 @@ public class FriendService {
 
     public void clearKeywords(Long memberId) {
         String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-        redisService.deleteValues(key);
+        redisService.delete(key);
     }
 
 }
