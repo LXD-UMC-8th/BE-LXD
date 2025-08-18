@@ -2,6 +2,8 @@ package org.lxdproject.lxd.auth.service.oauthClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleTokenResponse;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +40,6 @@ public class GoogleOAuthClient implements OAuthClient {
 
     @Override
     public String requestAccessToken(String code) {
-        // 디코드
-        String decoded = URLDecoder.decode(code, StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
         // 요청 헤더: x-www-form-urlencoded 형식 지정 (필수)
@@ -63,7 +63,7 @@ public class GoogleOAuthClient implements OAuthClient {
 
             return Optional.ofNullable(response.getBody())
                     .map(GoogleTokenResponse::getAccessToken)
-                    .orElseThrow(() -> new RuntimeException("구글 AccessToken 요청 실패"));
+                    .orElseThrow(() -> new AuthHandler(ErrorStatus.INVALID_GOOGLE_AUTH_CODE));
 
         } catch (HttpClientErrorException e) {
             // 응답 바디까지 로그로 확인
