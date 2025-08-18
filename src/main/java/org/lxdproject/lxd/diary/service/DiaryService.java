@@ -116,11 +116,40 @@ public class DiaryService {
         return imageUrls;
     }
 
-    public MyDiarySliceResponseDTO getMyDiaries(int page, int size, Boolean likedOnly) {
+    public PageResponse<MyDiarySummaryResponseDTO> getMyDiaries(Boolean likedOnly, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
+
+        // 좋아요 누른 일기 ID
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diary> diaryPage = diaryRepository.findMyDiaries(memberId, likedOnly, pageable);
+
+        List<MyDiarySummaryResponseDTO> dtoList = diaryPage.getContent().stream()
+                .map(d -> MyDiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .language(d.getLanguage())
+                        .liked(likedSet.contains(d.getId()))
+                        .build())
+                .toList();
+
+        return new PageResponse<>(
+                null,
+                dtoList,
+                page + 1,
+                size,
+                diaryPage.hasNext()
+        );
     }
+
 
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
 
@@ -178,7 +207,7 @@ public class DiaryService {
 
     public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.getDiaryStatsByMonth(memberId, year, month);
+        return diaryRepository.findDiaryStatsByMonth(memberId, year, month);
     }
 
     public DiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
@@ -276,7 +305,7 @@ public class DiaryService {
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(viewerId);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Diary> diaryPage = diaryRepository.getDiariesByMemberId(viewerId, memberId, friendIds, pageable);
+        Page<Diary> diaryPage = diaryRepository.findDiariesByMemberId(viewerId, memberId, friendIds, pageable);
 
         List<MyDiarySummaryResponseDTO> dto = diaryPage.getContent().stream()
                 .map(d -> MyDiarySummaryResponseDTO.builder()

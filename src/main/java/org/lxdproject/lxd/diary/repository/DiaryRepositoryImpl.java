@@ -42,54 +42,37 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     private static final QMember MEMBER = QMember.member;
 
     @Override
-    public MyDiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable) {
+    public Page<Diary> findMyDiaries(Long memberId, Boolean likedOnly, Pageable pageable) {
+        BooleanExpression baseCondition = DIARY.member.id.eq(memberId)
+                .and(DIARY.deletedAt.isNull());
 
-        Set<Long> likedSet = getLikedDiaryIdSet(userId);
+        // likedOnly 활용해 일기 좋아요 여부 분리
+        BooleanExpression likedFilter = (likedOnly != null && likedOnly)
+                ? DIARY_LIKE.member.id.eq(memberId)
+                : null;
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
                 .leftJoin(DIARY.likes, DIARY_LIKE)
-                .where(
-                        DIARY.member.id.eq(userId),
-                        DIARY.deletedAt.isNull(),
-                        likedOnly != null && likedOnly ? DIARY_LIKE.member.id.eq(userId) : null
-                )
+                .where(baseCondition, likedFilter)
                 .distinct()
                 .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        boolean hasNext = diaries.size() > pageable.getPageSize();
-        if (hasNext) {
-            diaries = diaries.subList(0, pageable.getPageSize());
-        }
+        Long total = queryFactory
+                .select(Wildcard.count)
+                .from(DIARY)
+                .leftJoin(DIARY.likes, DIARY_LIKE)
+                .where(baseCondition, likedFilter)
+                .fetchOne();
 
-        List<MyDiarySummaryResponseDTO> content = diaries.stream()
-                .map(d -> MyDiarySummaryResponseDTO.builder()
-                        .diaryId(d.getId())
-                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
-                        .title(d.getTitle())
-                        .visibility(d.getVisibility())
-                        .thumbnailUrl(d.getThumbImg())
-                        .likeCount(d.getLikeCount())
-                        .commentCount(d.getCommentCount())
-                        .correctionCount(d.getCorrectionCount())
-                        .contentPreview(generateContentPreview(d.getContent()))
-                        .language(d.getLanguage())
-                        .liked(likedSet.contains(d.getId()))
-                        .build())
-                .toList();
-
-        return MyDiarySliceResponseDTO.builder()
-                .diaries(content)
-                .page(pageable.getPageNumber() + 1)
-                .size(pageable.getPageSize())
-                .hasNext(hasNext)
-                .build();
+        return new PageImpl<>(diaries, pageable, total == null ? 0L : total);
     }
 
-    public Page<Diary> getDiariesByMemberId(Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable){
+    @Override
+    public Page<Diary> findDiariesByMemberId(Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable){
         BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(viewerId, DIARY, friendIds);
         BooleanExpression condition = DIARY.member.id.eq(ownerId)
                 .and(DIARY.deletedAt.isNull())
@@ -115,7 +98,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 
     @Override
-    public List<DiaryStatsResponseDTO> getDiaryStatsByMonth(Long userId, int year, int month) {
+    public List<DiaryStatsResponseDTO> findDiaryStatsByMonth(Long userId, int year, int month) {
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = YearMonth.of(year, month).atEndOfMonth();
 

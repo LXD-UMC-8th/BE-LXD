@@ -64,8 +64,8 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<MyDiarySliceResponseDTO> getMyDiaries(int page, int size, Boolean likedOnly) {
-        return ApiResponse.onSuccess(diaryService.getMyDiaries(page, size, likedOnly));
+    public ApiResponse<PageResponse<MyDiarySummaryResponseDTO>> getMyDiaries(int page, int size, Boolean likedOnly) {
+        return ApiResponse.onSuccess(diaryService.getMyDiaries(likedOnly, page - 1, size));
     }
 
     @Override
