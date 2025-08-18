@@ -22,7 +22,6 @@ public class DiaryDetailResponseDTO {
     private String profileImg;
     private String writerNickName;
     private String writerUserName;
-    private Long writerId;
     private String createdAt;
     private int commentCount;
     private int likeCount;
@@ -45,7 +44,6 @@ public class DiaryDetailResponseDTO {
                 member.getProfileImg(),
                 member.getNickname(),
                 member.getUsername(),
-                member.getId(),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
@@ -70,7 +68,6 @@ public class DiaryDetailResponseDTO {
                 member.getProfileImg(),
                 member.getNickname(),
                 member.getUsername(),
-                member.getId(),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
