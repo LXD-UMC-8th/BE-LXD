@@ -339,7 +339,7 @@ public class DiaryService {
         RelationType relation;
         if (targetMemberId.equals(currentMemberId)) {
             relation = RelationType.SELF;
-        } else if (friendRepository.existsFriendRelation(targetMemberId, currentMemberId)) {
+        } else if (friendRepository.areFriends(targetMemberId, currentMemberId)) {
             relation = RelationType.FRIEND;
         } else {
             relation = RelationType.NONE;

@@ -10,5 +10,5 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class FriendshipQueryAdapter implements FriendshipQueryPort {
     private final FriendRepository friendRepository;
-    public boolean areFriends(Long a, Long b){ return friendRepository.existsFriendRelation(a, b); }
+    public boolean areFriends(Long a, Long b){ return friendRepository.areFriends(a, b); }
 }
