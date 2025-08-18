@@ -89,61 +89,28 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
                 .build();
     }
 
-    public MyDiarySliceResponseDTO getDiariesByMemberId(Long userId, Long memberId, Pageable pageable) {
-
-        Set<Long> likedSet = getLikedDiaryIdSet(userId);
-        Set<Long> friendIds = getFriendIds(userId);
-        BooleanExpression visibilityCondition;
-
-        if (userId.equals(memberId)) { // 본인
-            visibilityCondition = DIARY.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS, Visibility.PRIVATE);
-        } else if (friendIds.contains(memberId)) { // 친구관계
-            visibilityCondition = DIARY.visibility.in(Visibility.PUBLIC, Visibility.FRIENDS);
-        } else { // 타인
-            visibilityCondition = DIARY.visibility.eq(Visibility.PUBLIC);
-        }
+    public Page<Diary> getDiariesByMemberId(Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable){
+        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(viewerId, DIARY, friendIds);
+        BooleanExpression condition = DIARY.member.id.eq(ownerId)
+                .and(DIARY.deletedAt.isNull())
+                .and(visibility);
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
-                .leftJoin(DIARY.likes, DIARY_LIKE).fetchJoin()
-                .where(
-                        DIARY.member.id.eq(memberId),
-                        DIARY.deletedAt.isNull(),
-                        visibilityCondition
-                )
-                .distinct()
+                .join(DIARY.member, MEMBER).fetchJoin()
+                .where(condition)
                 .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        boolean hasNext = diaries.size() > pageable.getPageSize();
-        if (hasNext) {
-            diaries = diaries.subList(0, pageable.getPageSize());
-        }
+        Long total = queryFactory
+                .select(Wildcard.count)
+                .from(DIARY)
+                .where(condition)
+                .fetchOne();
 
-        List<MyDiarySummaryResponseDTO> content = diaries.stream()
-                .map(d -> MyDiarySummaryResponseDTO.builder()
-                        .diaryId(d.getId())
-                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
-                        .title(d.getTitle())
-                        .visibility(d.getVisibility())
-                        .thumbnailUrl(d.getThumbImg())
-                        .likeCount(d.getLikeCount())
-                        .commentCount(d.getCommentCount())
-                        .correctionCount(d.getCorrectionCount())
-                        .contentPreview(generateContentPreview(d.getContent()))
-                        .language(d.getLanguage())
-                        .liked(likedSet.contains(d.getId()))
-                        .build())
-                .toList();
-
-        return MyDiarySliceResponseDTO.builder()
-                .diaries(content)
-                .page(pageable.getPageNumber() + 1)
-                .size(pageable.getPageSize())
-                .hasNext(hasNext)
-                .build();
+        return new PageImpl<>(diaries, pageable, total == null ? 0L : total);
     }
 
 

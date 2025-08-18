@@ -267,8 +267,39 @@ public class DiaryService {
                 .build();
     }
 
-    public MyDiarySliceResponseDTO getDiariesByMemberId(Long memberId, Pageable pageable) {
-        Long userId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.getDiariesByMemberId(userId, memberId, pageable);
+    public PageResponse<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Long viewerId = SecurityUtil.getCurrentMemberId();
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(viewerId);
+        Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(viewerId);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diary> diaryPage = diaryRepository.getDiariesByMemberId(viewerId, memberId, friendIds, pageable);
+
+        List<MyDiarySummaryResponseDTO> dto = diaryPage.getContent().stream()
+                .map(d -> MyDiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .language(d.getLanguage())
+                        .liked(likedSet.contains(d.getId()))
+                        .build())
+                .toList();
+
+        return new PageResponse<>(
+                null,
+                dto,
+                page + 1,
+                size,
+                diaryPage.hasNext()
+        );
     }
 }

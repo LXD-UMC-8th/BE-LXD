@@ -227,5 +227,9 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "접근 권한이 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    ApiResponse<MyDiarySliceResponseDTO> getDiariesByMemberId(@PathVariable("memberId") Long memberId, int page, int size);
+    ApiResponse<PageResponse<MyDiarySummaryResponseDTO>> getDiariesByMemberId(
+            @PathVariable("memberId") Long memberId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    );
 }

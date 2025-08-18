@@ -13,7 +13,7 @@ import java.util.Set;
 
 public interface DiaryRepositoryCustom {
     MyDiarySliceResponseDTO findMyDiaries(Long userId, Boolean likedOnly, Pageable pageable);
-    MyDiarySliceResponseDTO getDiariesByMemberId (Long userId, Long memberId, Pageable pageable);
+    Page<Diary> getDiariesByMemberId (Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable);
     List<DiaryStatsResponseDTO> getDiaryStatsByMonth(Long userId, int year, int month);
     DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable);
     DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable);
