@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Repository
 @RequiredArgsConstructor
 public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
@@ -29,7 +28,6 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
-    @Transactional(readOnly = true)
     public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
         List<Member> result = new ArrayList<>();
 
@@ -56,23 +54,8 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
         return new PageImpl<>(result, pageable, total);
     }
 
-    // 2. 친구 여부 반환 <read>  → 단방향 조회
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsFriendshipByRequesterAndReceiver(Member m1, Member m2) {
-        return queryFactory
-                .selectOne()
-                .from(friendship)
-                .where(
-                        (friendship.requester.eq(m1).and(friendship.receiver.eq(m2))),
-                        friendship.deletedAt.isNull()
-                )
-                .fetchFirst() != null;
-    }
-
     // 3. 친구 관계 삭제 <delete> → 양방향 삭제
     @Override
-    @Transactional
     public void softDeleteFriendship(Member m1, Member m2) {
         Long m1Id = m1.getId();
         Long m2Id = m2.getId();
@@ -90,7 +73,6 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
    // 4. 친구 관계 저장 <create> → 양방향 저장
     @Override
-    @Transactional
     public void saveFriendship(Member requester, Member receiver) {
         Friendship existing = findFriendshipIncludingDeleted(requester, receiver);
         if (existing != null) {
@@ -142,16 +124,15 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     // 7. 친구 관계 조회 <read> → 단방향 조회
     @Override
-    public boolean existsFriendRelation(Long memberId, Long friendId) {
+    public boolean areFriends(Long memberId1, Long memberId2) {
         return queryFactory
                 .selectOne()
                 .from(friendship)
                 .where(
                         (
-                                friendship.requester.id.eq(memberId)
-                                        .and(friendship.receiver.id.eq(friendId))
-                        ),
-                        friendship.deletedAt.isNull()
+                                friendship.requester.id.eq(memberId1).and(friendship.receiver.id.eq(memberId2))
+                                        .or(friendship.requester.id.eq(memberId2).and(friendship.receiver.id.eq(memberId1)))
+                        ).and(friendship.deletedAt.isNull())
                 )
                 .fetchFirst() != null;
     }

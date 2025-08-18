@@ -5,6 +5,9 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.model.Permit;
+import org.lxdproject.lxd.authz.policy.CommentPermissionPolicy;
 import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -46,8 +49,8 @@ public class DiaryCommentService {
     private final DiaryRepository diaryRepository;
     private final DiaryCommentLikeRepository likeRepository;
     private final FriendRepository friendRepository;
-
     private final NotificationService notificationService;
+    private final PermissionGuard permissionGuard;
 
     @Transactional
     public DiaryCommentResponseDTO writeComment(Long diaryId, DiaryCommentRequestDTO request) {
@@ -56,20 +59,13 @@ public class DiaryCommentService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
-
         Member diaryOwner = diary.getMember();
-        CommentPermission permission = diary.getCommentPermission();
 
-        //권한 확인
-        if (permission == CommentPermission.NONE && !commentOwner.equals(diaryOwner)) {
-            throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
-        }
+        // 친구 관계 여부 조회
+        boolean areFriends = friendRepository.areFriends(memberId, diaryOwner.getId());
 
-        if (permission == CommentPermission.FRIENDS && !commentOwner.equals(diaryOwner)) {
-            if (!friendRepository.existsFriendRelation(diaryOwner.getId(), commentOwner.getId())) {
-                throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
-            }
-        }
+        // 댓글 작성 권한 검증
+        permissionGuard.canCreateDiaryComment(memberId, diary, areFriends);
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {

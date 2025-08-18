@@ -78,9 +78,7 @@ public class DiaryService {
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        if (!permissionGuard.canViewDiary(currentMemberId, diary)) {
-            throw new DiaryHandler(ErrorStatus.DIARY_NOT_VISIBLE);
-        }
+        permissionGuard.canViewDiary(currentMemberId, diary);
 
         return DiaryDetailResponseDTO.from(diary);
     }
@@ -339,7 +337,7 @@ public class DiaryService {
         RelationType relation;
         if (targetMemberId.equals(currentMemberId)) {
             relation = RelationType.SELF;
-        } else if (friendRepository.existsFriendRelation(targetMemberId, currentMemberId)) {
+        } else if (friendRepository.areFriends(targetMemberId, currentMemberId)) {
             relation = RelationType.FRIEND;
         } else {
             relation = RelationType.NONE;
