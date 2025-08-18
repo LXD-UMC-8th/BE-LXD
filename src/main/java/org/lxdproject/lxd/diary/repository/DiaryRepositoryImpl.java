@@ -128,55 +128,29 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public DiarySliceResponseDTO findDiariesOfFriends(Long userId, Pageable pageable) {
+    public Page<Diary> findFriendDiaries(Long memberId, Set<Long> friendIds, Pageable pageable) {
+        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
 
-        Set<Long> likedSet = getLikedDiaryIdSet(userId);
-        Set<Long> friendIds = getFriendIds(userId);
+        BooleanExpression condition = DIARY.member.id.in(friendIds)
+                .and(DIARY.deletedAt.isNull())
+                .and(visibility);
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
-                .leftJoin(DIARY.member, MEMBER).fetchJoin()
-                .where(
-                        DIARY.member.id.in(friendIds),
-                        DIARY.visibility.ne(Visibility.PRIVATE),
-                        DIARY.deletedAt.isNull()
-                )
+                .join(DIARY.member, MEMBER).fetchJoin()
+                .where(condition)
                 .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        boolean hasNext = diaries.size() > pageable.getPageSize();
-        if (hasNext) {
-            diaries.remove(diaries.size() - 1);
-        }
+        Long total = queryFactory
+                .select(Wildcard.count)
+                .from(DIARY)
+                .where(condition)
+                .fetchOne();
 
-        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
-                .map(d -> DiarySummaryResponseDTO.builder()
-                        .diaryId(d.getId())
-                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
-                        .title(d.getTitle())
-                        .visibility(d.getVisibility())
-                        .thumbnailUrl(d.getThumbImg())
-                        .likeCount(d.getLikeCount())
-                        .commentCount(d.getCommentCount())
-                        .correctionCount(d.getCorrectionCount())
-                        .contentPreview(generateContentPreview(d.getContent()))
-                        .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
-                        .liked(likedSet.contains(d.getId()))
-                        .build())
-                .toList();
-
-        return DiarySliceResponseDTO.builder()
-                .diaries(dtoList)
-                .page(pageable.getPageNumber() + 1)
-                .size(pageable.getPageSize())
-                .hasNext(hasNext)
-                .build();
+        return new PageImpl<>(diaries, pageable, total == null ? 0L : total);
     }
 
     @Override

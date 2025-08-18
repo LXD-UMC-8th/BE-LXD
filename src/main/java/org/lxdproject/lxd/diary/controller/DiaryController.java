@@ -83,12 +83,9 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<DiarySliceResponseDTO> getFriendDiaries(@RequestParam("page") int page,
-                                                                 @RequestParam("size") int size) {
-        Long currentUserId = SecurityUtil.getCurrentMemberId();
-        Pageable pageable = PageRequest.of(page - 1, size);
-        DiarySliceResponseDTO response = diaryService.getDiariesOfFriends(currentUserId, pageable);
-        return ApiResponse.onSuccess(response);
+    public ApiResponse<PageResponse<DiarySummaryResponseDTO>> getFriendDiaries(int page, int size) {
+        PageResponse<DiarySummaryResponseDTO> result = diaryService.getFriendDiaries(page - 1, size);
+        return ApiResponse.onSuccess(result);
     }
 
     @Override

@@ -210,9 +210,44 @@ public class DiaryService {
         return diaryRepository.findDiaryStatsByMonth(memberId, year, month);
     }
 
-    public DiarySliceResponseDTO getDiariesOfFriends(Long userId, Pageable pageable) {
-        return diaryRepository.findDiariesOfFriends(userId, pageable);
+    public PageResponse<DiarySummaryResponseDTO> getFriendDiaries(int page, int size) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
+        Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diary> diaryPage = diaryRepository.findFriendDiaries(memberId, friendIds, pageable);
+
+        List<DiarySummaryResponseDTO> dtoList = diaryPage.getContent().stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .language(d.getLanguage())
+                        .writerUsername(d.getMember().getUsername())
+                        .writerNickname(d.getMember().getNickname())
+                        .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
+                        .liked(likedSet.contains(d.getId()))
+                        .build())
+                .toList();
+
+        return new PageResponse<>(
+                null,
+                dtoList,
+                page + 1,
+                size,
+                diaryPage.hasNext()
+        );
     }
+
 
     public DiarySliceResponseDTO getLikedDiaries(Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();

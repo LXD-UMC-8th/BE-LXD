@@ -147,21 +147,18 @@ public interface DiaryApi {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
-                    description = "친구 일기 조회 성공",
-                    content = @Content(schema = @Schema(implementation = DiarySliceResponseDTO.class))
+                    description = "친구 일기 조회 성공"
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "401",
-                    description = "로그인 필요",
-                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    description = "로그인 필요"
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "500",
-                    description = "서버 오류",
-                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    description = "서버 오류"
             )
     })
-    ApiResponse<DiarySliceResponseDTO> getFriendDiaries(
+    ApiResponse<PageResponse<DiarySummaryResponseDTO>> getFriendDiaries(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size
     );
