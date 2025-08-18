@@ -7,6 +7,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.authz.predicate.VisibilityPredicates;
+import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -195,8 +196,9 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     @Override
     public Page<Diary> findExploreDiaries(Long memberId, Language language, Set<Long> friendIds, Pageable pageable) {
 
-        BooleanExpression visibility = visibilityPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
-        BooleanExpression condition = DIARY.deletedAt.isNull().and(visibility);
+        BooleanExpression condition = DIARY.deletedAt.isNull()
+                .and(DIARY.visibility.eq(Visibility.PUBLIC));
+
         if (language != null) {
             condition = condition.and(DIARY.language.eq(language));
         }
