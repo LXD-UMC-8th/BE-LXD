@@ -5,6 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.authz.guard.PermissionGuard;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
@@ -43,6 +44,7 @@ public class DiaryService {
     private final S3FileService s3FileService;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final PermissionGuard permissionGuard;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -73,8 +75,8 @@ public class DiaryService {
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        if (diary.getVisibility() == Visibility.PRIVATE && !diary.getMember().getId().equals(currentMemberId)) {
-            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
+        if (!permissionGuard.canViewDiary(currentMemberId, diary)) {
+            throw new DiaryHandler(ErrorStatus.DIARY_NOT_VISIBLE);
         }
 
         return DiaryDetailResponseDTO.from(diary);
