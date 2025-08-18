@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.friend.entity.Friendship;
 import org.lxdproject.lxd.friend.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +13,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,8 +25,6 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     private final EntityManager em;
 
     private static final QFriendship friendship = QFriendship.friendship;
-    private static final QMember requester = new QMember("requester");
-    private static final QMember receiver = new QMember("receiver");
 
     // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
@@ -155,6 +154,29 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
                         friendship.deletedAt.isNull()
                 )
                 .fetchFirst() != null;
+    }
+
+    @Override
+    public Set<Long> findFriendIdsByMemberId(Long memberId) {
+        List<Long> sentFriendIds = queryFactory
+                .select(friendship.receiver.id)
+                .from(friendship)
+                .where(friendship.requester.id.eq(memberId),
+                        friendship.deletedAt.isNull())
+                .fetch();
+
+        List<Long> receivedFriendIds = queryFactory
+                .select(friendship.requester.id)
+                .from(friendship)
+                .where(friendship.receiver.id.eq(memberId),
+                        friendship.deletedAt.isNull())
+                .fetch();
+
+        Set<Long> friendIds = new HashSet<>();
+        friendIds.addAll(sentFriendIds);
+        friendIds.addAll(receivedFriendIds);
+
+        return friendIds;
     }
 
     @Override
