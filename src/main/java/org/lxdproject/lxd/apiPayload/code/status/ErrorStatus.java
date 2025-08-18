@@ -43,7 +43,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 인증 관련 에러
     REQUIRED_LOGIN(HttpStatus.UNAUTHORIZED, "AUTH4300", "로그인이 필요한 서비스입니다,"),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4301", "액세스 토큰이 올바르지 않습니다."),
-    INVALID_GOOGLE_AUTH_CODE(HttpStatus.UNAUTHORIZED, "AUTH4301", "구글 AccessToken 요청 실패"),
+    INVALID_GOOGLE_AUTH_CODE(HttpStatus.UNAUTHORIZED, "AUTH4002", "구글 AccessToken 요청 실패"),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4302", "리프레쉬 토큰이 올바르지 않습니다"),
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4303", "액세스 토큰 기간이 만료되었습니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4304", "리프레쉬 토큰 기간이 만료되었습니다."),
