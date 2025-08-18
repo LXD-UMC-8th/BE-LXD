@@ -6,29 +6,23 @@ import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.authz.predicate.VisibilityPredicates;
-import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
-import org.lxdproject.lxd.diary.entity.enums.Visibility;
 
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
 import org.lxdproject.lxd.friend.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.QMember;
-
-import static org.lxdproject.lxd.diary.util.DiaryUtil.generateContentPreview;
-
 
 @RequiredArgsConstructor
 public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
@@ -96,7 +90,6 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         return new PageImpl<>(diaries, pageable, total == null ? 0L : total);
     }
 
-
     @Override
     public List<DiaryStatsResponseDTO> findDiaryStatsByMonth(Long userId, int year, int month) {
         LocalDate start = LocalDate.of(year, month, 1);
@@ -154,74 +147,33 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     }
 
     @Override
-    public DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable) {
-
-        Set<Long> likedSet = getLikedDiaryIdSet(userId);
-        List<Long> likedDiaryIds = queryFactory
-                .select(DIARY_LIKE.diary.id)
-                .from(DIARY_LIKE)
-                .where(DIARY_LIKE.member.id.eq(userId))
-                .fetch();
-
+    public Page<Diary> findLikedDiaries(Long memberId, List<Long> likedDiaryIds, Set<Long> friendIds, Pageable pageable) {
         if (likedDiaryIds.isEmpty()) {
-            return DiarySliceResponseDTO.builder()
-                    .diaries(List.of())
-                    .page(pageable.getPageNumber() + 1)
-                    .size(pageable.getPageSize())
-                    .hasNext(false)
-                    .build();
+            return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        Set<Long> friendIds = getFriendIds(userId);
+        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+
+        BooleanExpression condition = DIARY.id.in(likedDiaryIds)
+                .and(DIARY.deletedAt.isNull())
+                .and(visibility);
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
                 .join(DIARY.member, MEMBER).fetchJoin()
-                .where(
-                        DIARY.id.in(likedDiaryIds),
-                        DIARY.member.id.ne(userId),
-                        DIARY.deletedAt.isNull(),
-                        DIARY.visibility.eq(Visibility.PUBLIC)
-                                .or(
-                                        DIARY.visibility.eq(Visibility.FRIENDS)
-                                                .and(DIARY.member.id.in(friendIds))
-                                )
-                )
+                .where(condition)
                 .orderBy(DIARY.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        boolean hasNext = diaries.size() > pageable.getPageSize();
-        if (hasNext) diaries.remove(diaries.size() - 1);
+        Long total = queryFactory
+                .select(Wildcard.count)
+                .from(DIARY)
+                .where(condition)
+                .fetchOne();
 
-        List<DiarySummaryResponseDTO> dtoList = diaries.stream()
-                .map(d -> DiarySummaryResponseDTO.builder()
-                        .diaryId(d.getId())
-                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
-                        .title(d.getTitle())
-                        .visibility(d.getVisibility())
-                        .thumbnailUrl(d.getThumbImg())
-                        .likeCount(d.getLikeCount())
-                        .commentCount(d.getCommentCount())
-                        .correctionCount(d.getCorrectionCount())
-                        .contentPreview(generateContentPreview(d.getContent()))
-                        .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
-                        .liked(likedSet.contains(d.getId()))
-                        .build()
-                )
-                .toList();
-
-        return DiarySliceResponseDTO.builder()
-                .diaries(dtoList)
-                .page(pageable.getPageNumber() + 1)
-                .size(pageable.getPageSize())
-                .hasNext(hasNext)
-                .build();
+        return new PageImpl<>(diaries, pageable, total == null ? 0L : total);
     }
 
     @Override
@@ -251,38 +203,4 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         return new PageImpl<>(content, pageable, total == null ? 0L : total);
     }
 
-    private Set<Long> getFriendIds(Long userId) {
-        List<Long> sentFriendIds = queryFactory
-                .select(FRIENDSHIP.receiver.id)
-                .from(FRIENDSHIP)
-                .where(FRIENDSHIP.requester.id.eq(userId), FRIENDSHIP.deletedAt.isNull())
-                .fetch();
-
-        List<Long> receivedFriendIds = queryFactory
-                .select(FRIENDSHIP.requester.id)
-                .from(FRIENDSHIP)
-                .where(FRIENDSHIP.receiver.id.eq(userId), FRIENDSHIP.deletedAt.isNull())
-                .fetch();
-
-        Set<Long> friendIds = new HashSet<>();
-        friendIds.addAll(sentFriendIds);
-        friendIds.addAll(receivedFriendIds);
-
-        return friendIds;
-    }
-
-    public Set<Long> getLikedDiaryIdSet(Long memberId) {
-        if (memberId == null) return Set.of();
-
-        List<Long> likedDiaryIds = queryFactory
-                .select(DIARY_LIKE.diary.id)
-                .from(DIARY_LIKE)
-                .where(DIARY_LIKE.member.id.eq(memberId))
-                .fetch();
-
-        return new HashSet<>(likedDiaryIds);
-    }
-
 }
-
-

@@ -173,7 +173,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<DiarySliceResponseDTO> getLikedDiaries(
+    ApiResponse<PageResponse<DiarySummaryResponseDTO>> getLikedDiaries(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size
     );

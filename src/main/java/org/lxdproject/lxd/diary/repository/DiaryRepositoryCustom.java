@@ -15,7 +15,7 @@ public interface DiaryRepositoryCustom {
     Page<Diary> findDiariesByMemberId (Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable);
     List<DiaryStatsResponseDTO> findDiaryStatsByMonth(Long userId, int year, int month);
     Page<Diary> findFriendDiaries(Long memberId, Set<Long> friendIds, Pageable pageable);
-    DiarySliceResponseDTO findLikedDiaries(Long userId, Pageable pageable);
+    Page<Diary> findLikedDiaries(Long memberId, List<Long> likedDiaryIds, Set<Long> friendIds, Pageable pageable);
     Page<Diary> findExploreDiaries(Long memberId, Language language, Set<Long> friendIds, Pageable pageable);
 }
 

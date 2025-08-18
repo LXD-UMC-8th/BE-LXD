@@ -31,10 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,7 +147,6 @@ public class DiaryService {
         );
     }
 
-
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -248,10 +244,50 @@ public class DiaryService {
         );
     }
 
+    public PageResponse<DiarySummaryResponseDTO> getLikedDiaries(int page, int size) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
 
-    public DiarySliceResponseDTO getLikedDiaries(Pageable pageable) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.findLikedDiaries(currentMemberId, pageable);
+        // 좋아요 누른 일기 ID
+        List<Long> likedDiaryIds = diaryLikeRepository.findLikedDiaryIdList(memberId);
+        if (likedDiaryIds.isEmpty()) {
+            return new PageResponse<>(null, List.of(), page + 1, size, false);
+        }
+
+        // 성능 개선
+        Set<Long> likedSet = new HashSet<>(likedDiaryIds);
+        Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diary> diaryPage = diaryRepository.findLikedDiaries(memberId, likedDiaryIds, friendIds, pageable);
+
+        List<DiarySummaryResponseDTO> dtoList = diaryPage.getContent().stream()
+                .map(d -> DiarySummaryResponseDTO.builder()
+                        .diaryId(d.getId())
+                        .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
+                        .title(d.getTitle())
+                        .visibility(d.getVisibility())
+                        .thumbnailUrl(d.getThumbImg())
+                        .likeCount(d.getLikeCount())
+                        .commentCount(d.getCommentCount())
+                        .correctionCount(d.getCorrectionCount())
+                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .language(d.getLanguage())
+                        .writerUsername(d.getMember().getUsername())
+                        .writerNickname(d.getMember().getNickname())
+                        .writerProfileImg(d.getMember().getProfileImg())
+                        .writerId(d.getMember().getId())
+                        .liked(likedSet.contains(d.getId()))
+                        .build()
+                )
+                .toList();
+
+        return new PageResponse<>(
+                null,
+                dtoList,
+                page + 1,
+                size,
+                diaryPage.hasNext()
+        );
     }
 
     public PageResponse<DiarySummaryResponseDTO> getExploreDiaries(int page, int size, Language language) {
@@ -366,4 +402,5 @@ public class DiaryService {
                 diaryPage.hasNext()
         );
     }
+
 }

@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,4 +25,14 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
                 .stream()
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public List<Long> findLikedDiaryIdList(Long memberId) {
+        return queryFactory
+                .select(DIARY_LIKE.diary.id)
+                .from(DIARY_LIKE)
+                .where(DIARY_LIKE.member.id.eq(memberId))
+                .fetch();
+    }
+
 }
