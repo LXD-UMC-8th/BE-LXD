@@ -19,12 +19,14 @@ public class PermissionGuard {
     private final DiaryVisibilityPolicy diaryVisibilityPolicy;
     private final CommentPermissionPolicy policy;
 
-    public boolean canViewDiary(Long viewerId, Diary diary) {
+    public void canViewDiary(Long viewerId, Diary diary) {
         Long ownerId = diary.getMember().getId();
         boolean areFriends = viewerId != null && friendshipQueryPort.areFriends(viewerId, ownerId);
 
         Permit permit = diaryVisibilityPolicy.canView(viewerId, diary, areFriends);
-        return permit == Permit.ALLOW;
+        if (permit == Permit.DENY) {
+            throw new DiaryHandler(ErrorStatus.DIARY_PERMISSION_DENIED);
+        }
     }
 
     public void canCreateDiaryComment(Long writerId, Diary diary, boolean areFriends) {
