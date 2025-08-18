@@ -221,8 +221,7 @@ public interface DiaryApi {
             @Parameter(name = "memberId", description = "조회할 작성자의 ID", required = true)
     })
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = MyDiarySliceResponseDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "접근 권한이 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
