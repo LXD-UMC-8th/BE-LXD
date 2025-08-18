@@ -3,7 +3,7 @@ package org.lxdproject.lxd.correction.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.lxdproject.lxd.common.entity.BaseEntity;
-import org.lxdproject.lxd.correction.entity.mapping.MemberSavedCorrection;
+import org.lxdproject.lxd.correctionlike.entity.MemberSavedCorrection;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
 

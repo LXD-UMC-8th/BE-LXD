@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.correction.dto;
+package org.lxdproject.lxd.correctionlike.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
