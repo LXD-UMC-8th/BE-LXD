@@ -2,11 +2,11 @@ package org.lxdproject.lxd.friend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 
 @Getter
 @AllArgsConstructor
 public class FriendListResponseDTO {
     private int totalRequests;
-    private PageResponse<FriendResponseDTO> friends;
+    private PageDTO<FriendResponseDTO> friends;
 }

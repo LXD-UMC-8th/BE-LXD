@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record PageResponse<T> (
+public record PageDTO<T> (
         Long totalElements,
         List<T> contents,
         int page,

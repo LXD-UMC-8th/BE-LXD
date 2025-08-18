@@ -2,7 +2,6 @@ package org.lxdproject.lxd.correction.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
-import org.lxdproject.lxd.common.dto.PageResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
 import org.lxdproject.lxd.correction.service.CorrectionService;

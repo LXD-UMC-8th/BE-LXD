@@ -2,7 +2,7 @@ package org.lxdproject.lxd.correctionlike.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 
 public class MemberSavedCorrectionResponseDTO {
 
@@ -10,7 +10,7 @@ public class MemberSavedCorrectionResponseDTO {
     @Builder
     public static class SavedListResponseDTO {
         private Long memberId;
-        private PageResponse<SavedCorrectionItem> savedCorrections;
+        private PageDTO<SavedCorrectionItem> savedCorrections;
 
         @Getter
         @Builder

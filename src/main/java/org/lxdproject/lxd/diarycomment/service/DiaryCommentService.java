@@ -6,15 +6,11 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
-import org.lxdproject.lxd.authz.model.Permit;
-import org.lxdproject.lxd.authz.policy.CommentPermissionPolicy;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
-import org.lxdproject.lxd.diarycomment.converter.DiaryCommentConverter;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentDeleteResponseDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
@@ -27,8 +23,6 @@ import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.lxdproject.lxd.notification.service.NotificationService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
@@ -127,7 +121,7 @@ public class DiaryCommentService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, int page, int size) {
+    public PageDTO<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         int offset = page * size;
 
@@ -199,7 +193,7 @@ public class DiaryCommentService {
         // hasNext는 부모 댓글 수 기준
         boolean hasNext = diaryCommentRepository.countParentComments(diaryId) > offset + size;
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 (long) totalElements,
                 commentDTOs,
                 page + 1,

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageDTO;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -13,8 +13,6 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.service.DiaryService;
 import org.lxdproject.lxd.diary.service.QuestionService;
 import org.lxdproject.lxd.infra.storage.S3FileService;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,7 +62,7 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<PageResponse<MyDiarySummaryResponseDTO>> getMyDiaries(int page, int size, Boolean likedOnly) {
+    public ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getMyDiaries(int page, int size, Boolean likedOnly) {
         return ApiResponse.onSuccess(diaryService.getMyDiaries(likedOnly, page - 1, size));
     }
 
@@ -83,20 +81,20 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<PageResponse<DiarySummaryResponseDTO>> getFriendDiaries(int page, int size) {
-        PageResponse<DiarySummaryResponseDTO> result = diaryService.getFriendDiaries(page - 1, size);
+    public ApiResponse<PageDTO<DiarySummaryResponseDTO>> getFriendDiaries(int page, int size) {
+        PageDTO<DiarySummaryResponseDTO> result = diaryService.getFriendDiaries(page - 1, size);
         return ApiResponse.onSuccess(result);
     }
 
     @Override
-    public ApiResponse<PageResponse<DiarySummaryResponseDTO>> getLikedDiaries(int page, int size) {
-        PageResponse<DiarySummaryResponseDTO> result = diaryService.getLikedDiaries(page - 1, size);
+    public ApiResponse<PageDTO<DiarySummaryResponseDTO>> getLikedDiaries(int page, int size) {
+        PageDTO<DiarySummaryResponseDTO> result = diaryService.getLikedDiaries(page - 1, size);
         return ApiResponse.onSuccess(result);
     }
 
     @Override
-    public ApiResponse<PageResponse<DiarySummaryResponseDTO>> getExploreDiaries(int page, int size, Language language) {
-        PageResponse<DiarySummaryResponseDTO> result = diaryService.getExploreDiaries(page - 1, size, language);
+    public ApiResponse<PageDTO<DiarySummaryResponseDTO>> getExploreDiaries(int page, int size, Language language) {
+        PageDTO<DiarySummaryResponseDTO> result = diaryService.getExploreDiaries(page - 1, size, language);
         return ApiResponse.onSuccess(result);
     }
 
@@ -115,9 +113,9 @@ public class DiaryController implements DiaryApi{
     }
 
     @Override
-    public ApiResponse<PageResponse<MyDiarySummaryResponseDTO>> getDiariesByMemberId(Long memberId, int page, int size) {
+    public ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getDiariesByMemberId(Long memberId, int page, int size) {
 
-        PageResponse<MyDiarySummaryResponseDTO> result = diaryService.getDiariesByMemberId(memberId, page - 1, size);
+        PageDTO<MyDiarySummaryResponseDTO> result = diaryService.getDiariesByMemberId(memberId, page - 1, size);
         return ApiResponse.onSuccess(result);
     }
 }

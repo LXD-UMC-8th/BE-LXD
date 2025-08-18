@@ -6,7 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -88,7 +88,7 @@ public class NotificationService {
         };
     }
 
-    public PageResponse<NotificationResponseDTO> getNotifications(Boolean isRead, int page, int size) {
+    public PageDTO<NotificationResponseDTO> getNotifications(Boolean isRead, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -123,7 +123,7 @@ public class NotificationService {
                 })
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 notificationPage.getTotalElements(),
                 notificationS,
                 page + 1,
@@ -156,7 +156,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public PageResponse<NotificationResponseDTO>  markAllAsRead(int page, int size) {
+    public PageDTO<NotificationResponseDTO> markAllAsRead(int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Member member = memberRepository.findById(memberId)
@@ -199,7 +199,7 @@ public class NotificationService {
                 })
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 notificationPage.getTotalElements(),
                 responses,
                 page + 1,

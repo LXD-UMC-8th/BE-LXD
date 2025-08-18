@@ -6,7 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.util.DiaryUtil;
 import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
@@ -111,7 +111,7 @@ public class DiaryService {
         return imageUrls;
     }
 
-    public PageResponse<MyDiarySummaryResponseDTO> getMyDiaries(Boolean likedOnly, int page, int size) {
+    public PageDTO<MyDiarySummaryResponseDTO> getMyDiaries(Boolean likedOnly, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         // 좋아요 누른 일기 ID
@@ -136,7 +136,7 @@ public class DiaryService {
                         .build())
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 null,
                 dtoList,
                 page + 1,
@@ -204,7 +204,7 @@ public class DiaryService {
         return diaryRepository.findDiaryStatsByMonth(memberId, year, month);
     }
 
-    public PageResponse<DiarySummaryResponseDTO> getFriendDiaries(int page, int size) {
+    public PageDTO<DiarySummaryResponseDTO> getFriendDiaries(int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
@@ -233,7 +233,7 @@ public class DiaryService {
                         .build())
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 null,
                 dtoList,
                 page + 1,
@@ -242,13 +242,13 @@ public class DiaryService {
         );
     }
 
-    public PageResponse<DiarySummaryResponseDTO> getLikedDiaries(int page, int size) {
+    public PageDTO<DiarySummaryResponseDTO> getLikedDiaries(int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         // 좋아요 누른 일기 ID
         List<Long> likedDiaryIds = diaryLikeRepository.findLikedDiaryIdList(memberId);
         if (likedDiaryIds.isEmpty()) {
-            return new PageResponse<>(null, List.of(), page + 1, size, false);
+            return new PageDTO<>(null, List.of(), page + 1, size, false);
         }
 
         // 성능 개선
@@ -279,7 +279,7 @@ public class DiaryService {
                 )
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 null,
                 dtoList,
                 page + 1,
@@ -288,7 +288,7 @@ public class DiaryService {
         );
     }
 
-    public PageResponse<DiarySummaryResponseDTO> getExploreDiaries(int page, int size, Language language) {
+    public PageDTO<DiarySummaryResponseDTO> getExploreDiaries(int page, int size, Language language) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
@@ -316,7 +316,7 @@ public class DiaryService {
                         .build())
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 null,
                 dto,
                 page + 1,
@@ -365,7 +365,7 @@ public class DiaryService {
                 .build();
     }
 
-    public PageResponse<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
+    public PageDTO<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
@@ -392,7 +392,7 @@ public class DiaryService {
                         .build())
                 .toList();
 
-        return new PageResponse<>(
+        return new PageDTO<>(
                 null,
                 dto,
                 page + 1,

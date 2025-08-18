@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionResponseDTO;
@@ -45,8 +45,8 @@ public class MemberSavedCorrectionService {
                         .map(this::toSavedCorrectionDTO)
                         .toList();
 
-        PageResponse<MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem> pageResponse =
-                new PageResponse<>(
+        PageDTO<MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem> pageDTO =
+                new PageDTO<>(
                         savedPage.getTotalElements(),
                         savedCorrectionDTOs,
                         savedPage.getNumber() + 1,
@@ -56,7 +56,7 @@ public class MemberSavedCorrectionService {
 
         return MemberSavedCorrectionResponseDTO.SavedListResponseDTO.builder()
                 .memberId(currentMemberId)
-                .savedCorrections(pageResponse)
+                .savedCorrections(pageDTO)
                 .build();
     }
 

@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.entity.FriendRequest;
@@ -64,7 +64,7 @@ public class FriendService {
                         friend.getProfileImg()))
                 .toList();
 
-        PageResponse<FriendResponseDTO> pageResponse = new PageResponse<>(
+        PageDTO<FriendResponseDTO> pageDTO = new PageDTO<>(
                 friendsPage.getTotalElements(), // 또는 -1
                 friendDtos,
                 friendsPage.getNumber() + 1,     // 0-based → 1-based
@@ -72,7 +72,7 @@ public class FriendService {
                 friendsPage.hasNext()
         );
 
-        return new FriendListResponseDTO(totalRequests, pageResponse);
+        return new FriendListResponseDTO(totalRequests, pageDTO);
     }
 
     public void sendFriendRequest(Long requesterId, FriendRequestCreateRequestDTO requestDto) {
@@ -196,14 +196,14 @@ public class FriendService {
 
         return new FriendRequestListResponseDTO(
                 totalFriends,
-                new PageResponse<>(
+                new PageDTO<>(
                         sent.getTotalElements(),
                         sent.getContent(),
                         sent.getNumber() + 1,
                         sent.getSize(),
                         sent.hasNext()
                 ),
-                new PageResponse<>(
+                new PageDTO<>(
                         received.getTotalElements(),
                         received.getContent(),
                         received.getNumber() + 1,
@@ -299,7 +299,7 @@ public class FriendService {
         if (query.isBlank()) {
             return FriendSearchResponseDTO.builder()
                     .query(query)
-                    .members(PageResponse.<FriendSearchResponseDTO.MemberInfo>builder()
+                    .members(PageDTO.<FriendSearchResponseDTO.MemberInfo>builder()
                             .contents(Collections.emptyList())
                             .page(pageable.getPageNumber() + 1)
                             .size(pageable.getPageSize())
@@ -319,7 +319,7 @@ public class FriendService {
 
         return FriendSearchResponseDTO.builder()
                 .query(query)
-                .members(PageResponse.<FriendSearchResponseDTO.MemberInfo>builder()
+                .members(PageDTO.<FriendSearchResponseDTO.MemberInfo>builder()
                         .contents(resultPage.getContent())
                         .page(resultPage.getNumber() + 1)
                         .size(resultPage.getSize())

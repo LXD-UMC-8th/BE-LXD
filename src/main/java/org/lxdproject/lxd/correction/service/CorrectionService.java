@@ -2,7 +2,7 @@ package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correctionlike.entity.MemberSavedCorrection;
 import org.lxdproject.lxd.correctionlike.repository.MemberSavedCorrectionRepository;
@@ -68,7 +68,7 @@ public class CorrectionService {
                         .build())
                 .toList();
 
-        PageResponse<CorrectionResponseDTO.CorrectionDetailDTO> pageResponse = new PageResponse<>(
+        PageDTO<CorrectionResponseDTO.CorrectionDetailDTO> pageDTO = new PageDTO<>(
                 correctionPage.getTotalElements(),
                 correctionDetailList,
                 page + 1, // 클라이언트는 1부터
@@ -78,7 +78,7 @@ public class CorrectionService {
 
         return CorrectionResponseDTO.DiaryCorrectionsResponseDTO.builder()
                 .diaryId(diaryId)
-                .corrections(pageResponse)
+                .corrections(pageDTO)
                 .build();
     }
 
@@ -186,7 +186,7 @@ public class CorrectionService {
                 .map(CorrectionResponseDTO.ProvidedCorrectionItem::from)
                 .toList();
 
-        PageResponse<CorrectionResponseDTO.ProvidedCorrectionItem> pageResponse = new PageResponse<>(
+        PageDTO<CorrectionResponseDTO.ProvidedCorrectionItem> pageDTO = new PageDTO<>(
                 correctionPage.getTotalElements(),
                 items,
                 correctionPage.getNumber() + 1,
@@ -196,7 +196,7 @@ public class CorrectionService {
 
         return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
                 .member(CorrectionResponseDTO.MemberInfo.from(member))
-                .corrections(pageResponse)
+                .corrections(pageDTO)
                 .build();
     }
 

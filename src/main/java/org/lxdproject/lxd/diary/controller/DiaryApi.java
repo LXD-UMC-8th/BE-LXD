@@ -11,7 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageDTO;
-import org.lxdproject.lxd.common.dto.PageResponse;
+import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.diary.dto.*;
 import org.springframework.http.MediaType;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -102,7 +102,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "일기 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<PageResponse<MyDiarySummaryResponseDTO>> getMyDiaries(
+    ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getMyDiaries(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean likedOnly
@@ -158,7 +158,7 @@ public interface DiaryApi {
                     description = "서버 오류"
             )
     })
-    ApiResponse<PageResponse<DiarySummaryResponseDTO>> getFriendDiaries(
+    ApiResponse<PageDTO<DiarySummaryResponseDTO>> getFriendDiaries(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size
     );
@@ -173,7 +173,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<PageResponse<DiarySummaryResponseDTO>> getLikedDiaries(
+    ApiResponse<PageDTO<DiarySummaryResponseDTO>> getLikedDiaries(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) int size
     );
@@ -189,7 +189,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐색 일기 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    ApiResponse<PageResponse<DiarySummaryResponseDTO>> getExploreDiaries(
+    ApiResponse<PageDTO<DiarySummaryResponseDTO>> getExploreDiaries(
             @RequestParam(defaultValue = "1") @Min(1)  int page,
             @RequestParam(defaultValue = "10") @Min(1) int size,
             @RequestParam(required = false) Language language
@@ -223,7 +223,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "접근 권한이 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    ApiResponse<PageResponse<MyDiarySummaryResponseDTO>> getDiariesByMemberId(
+    ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getDiariesByMemberId(
             @PathVariable("memberId") Long memberId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
