@@ -48,11 +48,13 @@ public class Diary extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @NotNull
+    @Builder.Default
     private Visibility visibility = Visibility.PUBLIC;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @NotNull
+    @Builder.Default
     private CommentPermission commentPermission = CommentPermission.ALL;
 
     @Enumerated(EnumType.STRING)
