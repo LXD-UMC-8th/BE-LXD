@@ -95,6 +95,13 @@ public class AuthService {
         // 토큰 생성 및 인증 링크 구성
         String token = createSecureToken();
 
+        // Redis에 token -> [type, email] 형식으로 저장
+        String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
+        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
+
+        // 이메일 중복 처리를 위한 보조키 저장
+        redisService.setValue(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
+
         String title = "LXD 이메일 인증 번호";
         String verificationLink = UriComponentsBuilder
                 .fromHttpUrl(urlProperties.getBackend())
@@ -133,13 +140,6 @@ public class AuthService {
         if (!htmlSent) {
             mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, fallbackText);
         }
-
-        // Redis에 token -> [type, email] 형식으로 저장
-        String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
-        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
-
-        // 이메일 중복 처리를 위한 보조키 저장
-        redisService.setValue(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
 
     }
 
