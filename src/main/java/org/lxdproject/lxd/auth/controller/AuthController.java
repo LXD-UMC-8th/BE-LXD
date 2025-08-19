@@ -32,6 +32,7 @@ public class AuthController implements AuthApi {
     @Override
     public ApiResponse<String> sendVerificationEmail(@RequestBody @Valid AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
+        authService.validateEmailOrThrow(sendVerificationRequestDTO);
         authService.sendVerificationEmail(sendVerificationRequestDTO);
         return ApiResponse.onSuccess("입력한 이메일로 인증 링크를 전송했습니다.");
     }

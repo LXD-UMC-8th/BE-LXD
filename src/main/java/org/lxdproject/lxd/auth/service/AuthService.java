@@ -23,6 +23,7 @@ import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -75,7 +76,7 @@ public class AuthService {
         );
     }
 
-    public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
+    public void validateEmailOrThrow(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
 
@@ -83,6 +84,13 @@ public class AuthService {
         if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail())) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
+
+    }
+
+    @Async("emailExecutor")
+    public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
+
+        VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
 
         // 토큰 생성 및 인증 링크 구성
         String token = createSecureToken();
