@@ -99,7 +99,7 @@ public class NotificationService {
 
         List<NotificationResponseDTO> notificationS = notificationPage.stream()
                 .map(notification -> {
-                    Locale locale = member.getNativeLanguage().toLocale();
+                    Locale locale = member.getSystemLanguage().toLocale();
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
