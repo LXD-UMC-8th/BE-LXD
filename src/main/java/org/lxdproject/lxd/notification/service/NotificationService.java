@@ -62,6 +62,7 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        notificationRepository.flush();
 
         String senderUsername = sender.getUsername();
         String diaryTitle = getDiaryTitleIfExists(notification);
