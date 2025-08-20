@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PageSizeValidator.class)
 @Documented
-public @interface ValidPageSize {
+public @interface PageSizeValid {
     String message() default "요청한 페이지 크기는 1~100 사이여야 합니다.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
