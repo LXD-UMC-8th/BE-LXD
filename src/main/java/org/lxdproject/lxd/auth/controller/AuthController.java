@@ -10,7 +10,6 @@ import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
 import org.lxdproject.lxd.auth.dto.oauth.GoogleUserInfo;
 import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.auth.service.oauthClient.GoogleOAuthClient;
-import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +31,7 @@ public class AuthController implements AuthApi {
     @Override
     public ApiResponse<String> sendVerificationEmail(@RequestBody @Valid AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
-        authService.validateEmailOrThrow(sendVerificationRequestDTO);
+        authService.validateSendVerificationRequestDTOOrThrow(sendVerificationRequestDTO);
         authService.sendVerificationEmail(sendVerificationRequestDTO);
         return ApiResponse.onSuccess("입력한 이메일로 인증 링크를 전송했습니다.");
     }

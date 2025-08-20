@@ -1,6 +1,5 @@
 package org.lxdproject.lxd.auth.service;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,9 +75,13 @@ public class AuthService {
         );
     }
 
-    public void validateEmailOrThrow(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
+    public void validateSendVerificationRequestDTOOrThrow(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
+
+        if(verificationType != VerificationType.EMAIL && verificationType != VerificationType.PASSWORD) {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
 
         // 이미 존재하는 이메일인지 유효성 검사 (verificationType이 EMAIL인 경우)
         if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail())) {
@@ -89,6 +92,8 @@ public class AuthService {
 
     @Async("emailExecutor")
     public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
+        if(sendVerificationRequestDTO != null)
+            throw new IllegalStateException("DEBUG: forced failure for " + sendVerificationRequestDTO.getEmail());
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
 
@@ -117,11 +122,9 @@ public class AuthService {
         if (verificationType == VerificationType.EMAIL) {
             templatePath = "templates/email.html";
             fallbackText = "아래 링크를 눌러 이메일 인증을 완료해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
-        } else if (verificationType == VerificationType.PASSWORD) {
+        }else{
             templatePath = "templates/password.html";
             fallbackText = "아래 링크를 눌러 비밀번호 재설정을 진행해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
-        } else {
-            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
         }
 
         // HTML 형식으로 이메일 전송
