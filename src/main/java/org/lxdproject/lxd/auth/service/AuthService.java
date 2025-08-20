@@ -1,6 +1,5 @@
 package org.lxdproject.lxd.auth.service;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +22,7 @@ import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -75,17 +75,37 @@ public class AuthService {
         );
     }
 
-    public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
+    public void validateSendVerificationRequestDTOOrThrow(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
+
+        if(verificationType != VerificationType.EMAIL && verificationType != VerificationType.PASSWORD) {
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
 
         // 이미 존재하는 이메일인지 유효성 검사 (verificationType이 EMAIL인 경우)
         if (verificationType == VerificationType.EMAIL && memberRepository.existsByEmail(sendVerificationRequestDTO.getEmail())) {
             throw new MemberHandler(ErrorStatus.EMAIL_DUPLICATION);
         }
 
+    }
+
+    @Async("emailExecutor")
+    public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
+        if(sendVerificationRequestDTO != null)
+            throw new IllegalStateException("DEBUG: forced failure for " + sendVerificationRequestDTO.getEmail());
+
+        VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
+
         // 토큰 생성 및 인증 링크 구성
         String token = createSecureToken();
+
+        // Redis에 token -> [type, email] 형식으로 저장
+        String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
+        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
+
+        // 이메일 중복 처리를 위한 보조키 저장
+        redisService.setValue(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
 
         String title = "LXD 이메일 인증 번호";
         String verificationLink = UriComponentsBuilder
@@ -102,11 +122,9 @@ public class AuthService {
         if (verificationType == VerificationType.EMAIL) {
             templatePath = "templates/email.html";
             fallbackText = "아래 링크를 눌러 이메일 인증을 완료해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
-        } else if (verificationType == VerificationType.PASSWORD) {
+        }else{
             templatePath = "templates/password.html";
             fallbackText = "아래 링크를 눌러 비밀번호 재설정을 진행해주세요.\n5분간 유효합니다.\n\n" + verificationLink;
-        } else {
-            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
         }
 
         // HTML 형식으로 이메일 전송
@@ -125,13 +143,6 @@ public class AuthService {
         if (!htmlSent) {
             mailService.sendEmail(sendVerificationRequestDTO.getEmail(), title, fallbackText);
         }
-
-        // Redis에 token -> [type, email] 형식으로 저장
-        String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
-        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
-
-        // 이메일 중복 처리를 위한 보조키 저장
-        redisService.setValue(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
 
     }
 
