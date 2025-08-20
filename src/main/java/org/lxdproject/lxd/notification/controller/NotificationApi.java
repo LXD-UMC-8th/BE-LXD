@@ -11,6 +11,8 @@ import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.dto.ReadRedirectResponseDTO;
+import org.lxdproject.lxd.validation.annotation.PageSizeValid;
+import org.lxdproject.lxd.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -34,8 +36,8 @@ public interface NotificationApi {
     @Operation(summary = "나의 알림 조회 API", description = "나의 알림 목록을 조회합니다.")
     @GetMapping
     ApiResponse<PageDTO<NotificationResponseDTO>> getNotifications(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "1") @PageValid int page,
+            @RequestParam(defaultValue = "10") @PageSizeValid int size,
             @RequestParam(required = false) Boolean isRead // 필터링 조건
     );
 
