@@ -62,6 +62,7 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        notificationRepository.flush();
 
         String senderUsername = sender.getUsername();
         String diaryTitle = getDiaryTitleIfExists(notification);
@@ -99,7 +100,7 @@ public class NotificationService {
 
         List<NotificationResponseDTO> notificationS = notificationPage.stream()
                 .map(notification -> {
-                    Locale locale = member.getNativeLanguage().toLocale();
+                    Locale locale = member.getSystemLanguage().toLocale();
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
