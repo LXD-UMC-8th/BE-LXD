@@ -6,11 +6,13 @@ import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.diarycomment.dto.*;
 import org.lxdproject.lxd.diarycomment.service.DiaryCommentService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class DiaryCommentController implements DiaryCommentApi {
 
     private final DiaryCommentService diaryCommentService;
