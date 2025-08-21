@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.diarycomment.dto.*;
+import org.lxdproject.lxd.validation.annotation.PageSizeValid;
+import org.lxdproject.lxd.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Diary Comment API", description = "일기 댓글 관련 API 입니다.")
@@ -22,8 +24,8 @@ public interface DiaryCommentApi {
     @GetMapping
     ApiResponse<PageDTO<DiaryCommentResponseDTO.Comment>> getComments(
             @PathVariable Long diaryId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "1") @PageValid int page,
+            @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
     @Operation(summary = "일기 댓글 삭제 API", description = "댓글 또는 대댓글을 소프트 삭제합니다.")
