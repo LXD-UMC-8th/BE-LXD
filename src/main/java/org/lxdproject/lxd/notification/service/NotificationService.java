@@ -146,6 +146,7 @@ public class NotificationService {
 
         if (!notification.isRead()) {
             notification.markAsRead();
+            notificationRepository.flush();
             sseEmitterService.sendNotificationReadUpdate(notification);
         }
 
@@ -168,7 +169,8 @@ public class NotificationService {
         for (Notification notification : unreadList) {
             notification.markAsRead();
         }
-
+        notificationRepository.flush();
+        
         sseEmitterService.sendAllReadUpdate(memberId);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));

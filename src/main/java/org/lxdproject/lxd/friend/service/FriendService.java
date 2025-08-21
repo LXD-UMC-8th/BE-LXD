@@ -142,6 +142,8 @@ public class FriendService {
         // 친구 요청 알림 삭제
         long deleted = notificationRepository.deleteFriendRequestNotification(receiver.getId(), requester.getId());
         if (deleted > 0) {
+            notificationRepository.flush();
+
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
@@ -255,6 +257,8 @@ public class FriendService {
         // 친구 요청 알림 삭제
         long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
         if (deleted > 0) {
+            notificationRepository.flush();
+
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
@@ -283,6 +287,8 @@ public class FriendService {
 
         long deleted = notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
         if (deleted > 0) {
+            notificationRepository.flush();
+
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
