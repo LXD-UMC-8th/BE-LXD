@@ -92,8 +92,6 @@ public class AuthService {
 
     @Async("emailExecutor")
     public void sendVerificationEmail(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
-        if(sendVerificationRequestDTO != null)
-            throw new IllegalStateException("DEBUG: forced failure for " + sendVerificationRequestDTO.getEmail());
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
 
