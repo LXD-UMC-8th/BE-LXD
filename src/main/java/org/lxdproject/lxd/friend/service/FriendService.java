@@ -24,6 +24,7 @@ import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.lxdproject.lxd.notification.service.NotificationService;
 import org.lxdproject.lxd.notification.service.SseEmitterService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +50,10 @@ public class FriendService {
     private final RedisService redisService;
 
     @Transactional(readOnly = true)
-    public FriendListResponseDTO getFriendList(Long memberId, Pageable pageable) {
+    public FriendListResponseDTO getFriendList(Long memberId, int page, int size) {
         Member member = findMemberById(memberId);
 
+        Pageable pageable = PageRequest.of(page - 1, size);
         Page<Member> friendsPage = getFriends(memberId, pageable);
 
         int totalRequests = getSentRequestCount(member) + getReceivedRequestCount(member);
@@ -183,14 +185,16 @@ public class FriendService {
     }
 
     @Transactional(readOnly = true)
-    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, Pageable receivedPage, Pageable sentPage) {
+    public FriendRequestListResponseDTO getPendingFriendRequests(Long memberId, int receivedPage, int sentPage, int size) {
         Member currentMember = findMemberById(memberId);
 
-        Page<FriendResponseDTO> sent = friendRequestRepository
-                .findSentRequestDTOs(currentMember, FriendRequestStatus.PENDING, sentPage);
+        Pageable sentPageable = PageRequest.of(sentPage - 1, size);
+        Pageable receivedPageable = PageRequest.of(receivedPage - 1, size);
 
+        Page<FriendResponseDTO> sent = friendRequestRepository
+                .findSentRequestDTOs(currentMember, FriendRequestStatus.PENDING, sentPageable);
         Page<FriendResponseDTO> received = friendRequestRepository
-                .findReceivedRequestDTOs(currentMember, FriendRequestStatus.PENDING, receivedPage);
+                .findReceivedRequestDTOs(currentMember, FriendRequestStatus.PENDING, receivedPageable);
 
         Long totalFriends = friendRepository.countFriendsByMemberId(memberId);
 
@@ -295,7 +299,9 @@ public class FriendService {
         friendRequestRepository.delete(request);
     }
 
-    public FriendSearchResponseDTO searchFriends(Long memberId, String query, Pageable pageable) {
+    public FriendSearchResponseDTO searchFriends(Long memberId, String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+
         if (query.isBlank()) {
             return FriendSearchResponseDTO.builder()
                     .query(query)

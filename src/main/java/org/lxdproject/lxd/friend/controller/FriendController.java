@@ -7,18 +7,17 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.service.FriendService;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class FriendController implements FriendApi {
 
     private final FriendService friendService;
@@ -26,8 +25,7 @@ public class FriendController implements FriendApi {
     @Override
     public ApiResponse<FriendListResponseDTO> getFriendList(int page, int size) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        Pageable pageable = PageRequest.of(page - 1, size);
-        FriendListResponseDTO response = friendService.getFriendList(currentMemberId, pageable);
+        FriendListResponseDTO response = friendService.getFriendList(currentMemberId, page, size);
         return ApiResponse.onSuccess(response);
     }
 
@@ -55,9 +53,7 @@ public class FriendController implements FriendApi {
     @Override
     public ApiResponse<FriendRequestListResponseDTO> getFriendRequestList(int receivedPage, int sentPage, int size) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        Pageable sentPageable = PageRequest.of(sentPage - 1, size);
-        Pageable receivedPageable = PageRequest.of(receivedPage - 1, size);
-        FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId, receivedPageable, sentPageable);
+        FriendRequestListResponseDTO response = friendService.getPendingFriendRequests(currentMemberId, receivedPage, sentPage, size);
         return ApiResponse.onSuccess(response);
     }
 
@@ -83,8 +79,7 @@ public class FriendController implements FriendApi {
         }
 
         Long memberId = SecurityUtil.getCurrentMemberId();
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return ApiResponse.onSuccess(friendService.searchFriends(memberId, query, pageable));
+        return ApiResponse.onSuccess(friendService.searchFriends(memberId, query, page, size));
     }
 
     @Override
