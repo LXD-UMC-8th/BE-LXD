@@ -13,6 +13,7 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.service.DiaryService;
 import org.lxdproject.lxd.diary.service.QuestionService;
 import org.lxdproject.lxd.infra.storage.S3FileService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class DiaryController implements DiaryApi{
     private final DiaryService diaryService;
     private final ImageService imageService;
