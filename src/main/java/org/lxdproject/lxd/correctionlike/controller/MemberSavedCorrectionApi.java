@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionResponseDTO;
+import org.lxdproject.lxd.validation.annotation.PageSizeValid;
+import org.lxdproject.lxd.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Saved Correction API", description = "로그인한 사용자의 저장한(좋아요) 교정 관련 API입니다.")
@@ -23,8 +25,8 @@ public interface MemberSavedCorrectionApi {
     )
     @GetMapping("")
     ApiResponse<MemberSavedCorrectionResponseDTO.SavedListResponseDTO> getSavedCorrections(
-            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") @PageValid int page,
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
 

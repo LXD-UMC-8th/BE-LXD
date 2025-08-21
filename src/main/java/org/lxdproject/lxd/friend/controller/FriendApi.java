@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.friend.dto.*;
+import org.lxdproject.lxd.validation.annotation.PageSizeValid;
+import org.lxdproject.lxd.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +27,8 @@ public interface FriendApi {
     })
     @GetMapping()
     ApiResponse<FriendListResponseDTO> getFriendList(
-            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") @PageValid int page,
+            @Parameter(description = "한 페이지에 포함할 친구 수 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
     @Operation(summary = "친구 요청 보내기 API", description = "receiverId를 전달받아 친구 요청을 보냅니다. 상태는 PENDING으로 저장됩니다.")
@@ -70,9 +72,9 @@ public interface FriendApi {
     })
     @GetMapping("/requests")
     ApiResponse<FriendRequestListResponseDTO> getFriendRequestList(
-            @Parameter(description = "내가 받은 요청 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int receivedPage,
-            @Parameter(description = "내가 보낸 요청 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int sentPage,
-            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "내가 받은 요청 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") @PageValid int receivedPage,
+            @Parameter(description = "내가 보낸 요청 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") @PageValid int sentPage,
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
     @Operation(summary = "친구 요청 거절 API", description = "자신에게 온 친구 요청을 거절합니다.")
@@ -103,7 +105,7 @@ public interface FriendApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     @GetMapping("/search")
-    ApiResponse<FriendSearchResponseDTO> searchFriends(@RequestParam("query") String query, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size);
+    ApiResponse<FriendSearchResponseDTO> searchFriends(@RequestParam("query") String query, @RequestParam(defaultValue = "1") @PageValid int page, @RequestParam(defaultValue = "10") @PageSizeValid int size);
 
     @Operation(summary = "친구 검색 기록 조회 API", description = "친구 검색 기록을 조회합니다. 최대 개수는 10개 입니다.")
     @ApiResponses({

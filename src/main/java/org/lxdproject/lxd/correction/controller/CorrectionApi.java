@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correction.dto.CorrectionRequestDTO;
 import org.lxdproject.lxd.correction.dto.CorrectionResponseDTO;
+import org.lxdproject.lxd.validation.annotation.PageSizeValid;
+import org.lxdproject.lxd.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Correction API", description = "교정 관련 API입니다.")
@@ -25,8 +27,8 @@ public interface CorrectionApi {
     )
     ApiResponse<CorrectionResponseDTO.DiaryCorrectionsResponseDTO> getDiaryCorrections(
             @PathVariable Long diaryId,
-            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") @PageValid int page,
+            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
     @Operation(
@@ -70,9 +72,9 @@ public interface CorrectionApi {
     ApiResponse<CorrectionResponseDTO.ProvidedCorrectionsResponseDTO> getMyProvidedCorrections(
 
             @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1")
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") @PageValid int page,
 
             @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10")
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 }
