@@ -9,6 +9,8 @@ import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentDeleteResponseDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentRequestDTO;
 import org.lxdproject.lxd.correctioncomment.dto.CorrectionCommentResponseDTO;
+import org.lxdproject.lxd.validation.annotation.PageSizeValid;
+import org.lxdproject.lxd.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Correction Comment API", description = "교정 댓글 관련 API 입니다.")
@@ -26,8 +28,8 @@ public interface CorrectionCommentApi {
     @GetMapping
     ApiResponse<PageDTO<CorrectionCommentResponseDTO>> getComments(
             @PathVariable Long correctionId,
-            @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "페이지당 개수", example = "10") @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") @PageValid int page,
+            @Parameter(description = "페이지당 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
     @Operation(summary = "나의 교정 댓글 삭제 API", description = "교정 댓글을 소프트 삭제합니다.")

@@ -6,10 +6,12 @@ import org.lxdproject.lxd.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.correctioncomment.dto.*;
 import org.lxdproject.lxd.correctioncomment.service.CorrectionCommentService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class CorrectionCommentController implements CorrectionCommentApi {
 
     private final CorrectionCommentService correctionCommentService;
