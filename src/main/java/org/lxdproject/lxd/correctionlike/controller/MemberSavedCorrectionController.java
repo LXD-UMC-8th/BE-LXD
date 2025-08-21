@@ -5,10 +5,12 @@ import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.correctionlike.service.MemberSavedCorrectionService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class MemberSavedCorrectionController implements MemberSavedCorrectionApi {
 
     private final MemberSavedCorrectionService memberSavedCorrectionService;
