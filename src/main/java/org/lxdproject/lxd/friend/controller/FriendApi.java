@@ -28,7 +28,7 @@ public interface FriendApi {
     @GetMapping()
     ApiResponse<FriendListResponseDTO> getFriendList(
             @Parameter(description = "조회할 페이지 번호 (1부터 시작)", example = "1") @RequestParam(defaultValue = "1") @PageValid int page,
-            @Parameter(description = "한 페이지에 포함할 교정 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
+            @Parameter(description = "한 페이지에 포함할 친구 수 개수", example = "10") @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
 
     @Operation(summary = "친구 요청 보내기 API", description = "receiverId를 전달받아 친구 요청을 보냅니다. 상태는 PENDING으로 저장됩니다.")
