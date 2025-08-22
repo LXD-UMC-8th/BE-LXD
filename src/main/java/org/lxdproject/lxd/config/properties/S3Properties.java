@@ -15,6 +15,4 @@ import org.springframework.validation.annotation.Validated;
 public class S3Properties {
     @NotBlank
     private String bucket;
-    @NotBlank
-    private String defaultProfileUrl;
 }
