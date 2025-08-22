@@ -5,7 +5,6 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
-import org.lxdproject.lxd.config.properties.S3Properties;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
@@ -18,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,7 +26,6 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
     private final S3FileService s3FileService;
-    private final S3Properties s3Properties;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -110,9 +106,11 @@ public class MemberService {
         if (profileImg != null && !profileImg.isEmpty()) {
             String newImageUrl = imageService.uploadImage(profileImg, ImageDir.PROFILE).getImageUrl();
             String oldImageUrl = member.getProfileImg();
-            if (oldImageUrl != null && !oldImageUrl.equals(s3Properties.getDefaultProfileUrl())) {
+
+            if (oldImageUrl != null) {
                 s3FileService.deleteImage(oldImageUrl);
             }
+
             member.setProfileImg(newImageUrl);
         }
 
@@ -165,19 +163,12 @@ public class MemberService {
 
     }
 
-    public String resetToDefaultProfileImage(){
+    public void deleteProfileImage(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        String current = member.getProfileImg();
-        if (current != null && !current.isBlank()
-                && !current.equals(s3Properties.getDefaultProfileUrl())) {
-            s3FileService.deleteImage(current);
-            member.setProfileImg(s3Properties.getDefaultProfileUrl());
-        }
-
-        return member.getProfileImg();
+        member.setProfileImg(null);
     }
 
 }
