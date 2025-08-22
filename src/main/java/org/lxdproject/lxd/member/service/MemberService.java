@@ -46,7 +46,7 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.USERNAME_DUPLICATION);
         }
 
-        String profileImgURL = s3Properties.getDefaultProfileUrl();
+        String profileImgURL = null;
         Member member = null;
 
         // 프로필 이미지가 있는 경우
@@ -107,16 +107,15 @@ public class MemberService {
             }
         }
 
-        if (profileImg != null && !profileImg.isEmpty()
-                && !member.getProfileImg().equals(s3Properties.getDefaultProfileUrl())){
-            String newImageUrl = imageService.uploadImage(profileImg, ImageDir.PROFILE)
-                    .getImageUrl();
-            // 기존 이미지 삭제
+        if (profileImg != null && !profileImg.isEmpty()) {
+            String newImageUrl = imageService.uploadImage(profileImg, ImageDir.PROFILE).getImageUrl();
             String oldImageUrl = member.getProfileImg();
-            s3FileService.deleteImage(oldImageUrl);
-            // 새 이미지 업로드
+            if (oldImageUrl != null && !oldImageUrl.equals(s3Properties.getDefaultProfileUrl())) {
+                s3FileService.deleteImage(oldImageUrl);
+            }
             member.setProfileImg(newImageUrl);
         }
+
 
         return MemberResponseDTO.MemberInfoDTO.builder()
                 .memberId(currentMemberId)

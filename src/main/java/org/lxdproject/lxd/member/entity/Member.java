@@ -78,7 +78,7 @@ public class Member extends BaseEntity {
 
     // 프로필 이미지 URL
     @Setter
-    @Column(name = "profile_img", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "profile_img", columnDefinition = "TEXT")
     private String profileImg;
 
     // 상태
