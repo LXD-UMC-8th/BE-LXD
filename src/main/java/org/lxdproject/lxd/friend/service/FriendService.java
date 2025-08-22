@@ -183,7 +183,7 @@ public class FriendService {
             throw new FriendHandler(ErrorStatus.NOT_FRIEND);
         }
 
-        friendRepository.softDeleteFriendship(current, target);
+        friendRepository.deleteFriendship(current, target);
     }
 
     @Transactional(readOnly = true)
