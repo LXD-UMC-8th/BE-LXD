@@ -66,7 +66,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
         String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
 
-        redisService.setValue(refreshToken, member.getEmail(), Duration.ofDays(7L));
+        redisService.setRefreshToken(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
@@ -100,10 +100,10 @@ public class AuthService {
 
         // Redis에 token -> [type, email] 형식으로 저장
         String typeStr = (verificationType == VerificationType.EMAIL) ? "email" : "password";
-        redisService.setVerificationList(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
+        redisService.setVerificationToken(token, typeStr, sendVerificationRequestDTO.getEmail(), Duration.ofMinutes(5));
 
         // 이메일 중복 처리를 위한 보조키 저장
-        redisService.setValue(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
+        redisService.setVerificationEmail(sendVerificationRequestDTO.getEmail(), token, Duration.ofMinutes(5));
 
         String title = "LXD 이메일 인증 번호";
         String verificationLink = UriComponentsBuilder
@@ -166,7 +166,7 @@ public class AuthService {
             String type = values.get(0);   // email 또는 password
             String email = values.get(1);
 
-            String latestToken = redisService.getValue(email);
+            String latestToken = redisService.getVerificationEmailToken(email);
 
             // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
             if(!token.equals(latestToken)) {
@@ -175,12 +175,12 @@ public class AuthService {
             }
 
             // 3. 원본 토큰 제거 -> 재사용 방지
-            redisService.delete(email);
-            redisService.delete(token);
+            redisService.deleteRefreshToken(token);  // 리스트 토큰 삭제
+            redisService.deleteRefreshToken(email);  // 이메일 토큰 삭제
 
             // 4. 이메일 토큰 생성 & 짧은 TTL로 저장
             String newToken = createSecureToken();
-            redisService.setValue(newToken, email, Duration.ofMinutes(3));
+            redisService.setVerificationEmail(email, newToken, Duration.ofMinutes(3));
 
             // 5. 타입에 따라 리다이렉트 분기
             String redirectUrl = UriComponentsBuilder
@@ -224,7 +224,7 @@ public class AuthService {
         String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
 
         // redis에 refreshToken 저장
-        redisService.setValue(refreshToken, member.getEmail(), Duration.ofDays(7L));
+        redisService.setRefreshToken(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
                 .isNewMember(Boolean.FALSE) // 기존 유저
@@ -251,7 +251,7 @@ public class AuthService {
         // refresh 토큰 유효성 검사
         jwtTokenProvider.validateRefreshTokenOrThrow(refreshToken);
 
-        String email = redisService.getValue(refreshToken);
+        String email = redisService.getRefreshTokenEmail(refreshToken);
 
         if(email == null) {
             throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
@@ -264,8 +264,8 @@ public class AuthService {
         String newAccessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
         String newRefreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
 
-        redisService.delete(refreshToken);
-        redisService.setValue(newRefreshToken, member.getEmail(), Duration.ofDays(7L));
+        redisService.deleteRefreshToken(refreshToken);
+        redisService.setRefreshToken(newRefreshToken, member.getEmail(), Duration.ofDays(7L));
 
         return AuthResponseDTO.ReissueResponseDTO.builder()
                 .accessToken(newAccessToken)
@@ -281,14 +281,13 @@ public class AuthService {
         // refresh 토큰 유효성 검사
         jwtTokenProvider.validateRefreshTokenOrThrow(refreshToken);
 
-        String email = redisService.getValue(refreshToken);
+        String email = redisService.getRefreshTokenEmail(refreshToken);
 
         if(email == null) {
             throw new AuthHandler(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
 
-        redisService.delete(refreshToken);
-
+        redisService.deleteRefreshToken(refreshToken);
     }
 
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
