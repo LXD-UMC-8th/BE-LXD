@@ -10,7 +10,7 @@ public interface FriendRepositoryCustom {
     Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable);
     long countFriendsByMemberId(Long memberId);
     void saveFriendship(Member requester, Member receiver);
-    void softDeleteFriendship(Member m1, Member m2);
+    void deleteFriendship(Member m1, Member m2);
     boolean areFriends(Long memberId, Long friendId);
     Set<Long> findFriendIdsByMemberId(Long memberId);
 }

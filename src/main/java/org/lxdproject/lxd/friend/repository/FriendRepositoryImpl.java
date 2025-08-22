@@ -55,20 +55,15 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     }
 
     // 3. 친구 관계 삭제 <delete> → 양방향 삭제
-    @Override
-    public void softDeleteFriendship(Member m1, Member m2) {
-        Long m1Id = m1.getId();
-        Long m2Id = m2.getId();
-
-        Friendship forward = findFriendshipEntity(m1Id, m2Id);
-        if (forward != null && !forward.isDeleted()) {
-            forward.softDelete();
-        }
-
-        Friendship reverse = findFriendshipEntity(m2Id, m1Id);
-        if (reverse != null && !reverse.isDeleted()) {
-            reverse.softDelete();
-        }
+    @Transactional
+    public void deleteFriendship(Member m1, Member m2) {
+        queryFactory
+                .delete(friendship)
+                .where(
+                        (friendship.requester.id.eq(m1.getId()).and(friendship.receiver.id.eq(m2.getId())))
+                                .or(friendship.requester.id.eq(m2.getId()).and(friendship.receiver.id.eq(m1.getId())))
+                )
+                .execute();
     }
 
    // 4. 친구 관계 저장 <create> → 양방향 저장
@@ -124,15 +119,14 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     // 7. 친구 관계 조회 <read> → 단방향 조회
     @Override
-    public boolean areFriends(Long memberId1, Long memberId2) {
+    public boolean areFriends(Long requesterId, Long receiverId) {
         return queryFactory
                 .selectOne()
                 .from(friendship)
                 .where(
-                        (
-                                friendship.requester.id.eq(memberId1).and(friendship.receiver.id.eq(memberId2))
-                                        .or(friendship.requester.id.eq(memberId2).and(friendship.receiver.id.eq(memberId1)))
-                        ).and(friendship.deletedAt.isNull())
+                        friendship.requester.id.eq(requesterId)
+                                .and(friendship.receiver.id.eq(receiverId))
+                                .and(friendship.deletedAt.isNull())
                 )
                 .fetchFirst() != null;
     }
