@@ -356,12 +356,13 @@ public class FriendService {
 
     public void deleteKeyword(Long memberId, String query) {
         String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-        redisService.removeListValue(key, query);
+        redisService.removeRecentSearchKeyword(key, query);
     }
 
     public void clearKeywords(Long memberId) {
         String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
         redisService.delete(key);
     }
+
 
 }
