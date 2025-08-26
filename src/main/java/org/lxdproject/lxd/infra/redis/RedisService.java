@@ -124,7 +124,7 @@ public class RedisService {
         stringRedisTemplate.opsForList().remove(key, 0, keyword);
     }
 
-    public void deleteRecentSearchKeywords(Long memberId) {
+    public void clearRecentSearchKeywords(Long memberId) {
         String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
         stringRedisTemplate.delete(key);
     }

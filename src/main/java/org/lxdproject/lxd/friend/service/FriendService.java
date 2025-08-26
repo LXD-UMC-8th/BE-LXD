@@ -357,7 +357,7 @@ public class FriendService {
     }
 
     public void clearKeywords(Long memberId) {
-        redisService.deleteRecentSearchKeywords(memberId);
+        redisService.clearRecentSearchKeywords(memberId);
     }
 
 
