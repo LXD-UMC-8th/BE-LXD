@@ -2,12 +2,12 @@ name: CI/CD using actions & docker
 
 on:
   push:
-    branches: ["main", "develop"]
+    branches: ["main"]
     paths-ignore:
       - "README.md"
       - "docs/**"
   pull_request:
-    branches: ["main", "develop"]
+    branches: ["main"]
     paths-ignore:
       - "README.md"
       - "docs/**"
