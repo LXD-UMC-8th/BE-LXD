@@ -180,6 +180,7 @@ public class AuthService {
 
             // 4. 이메일 토큰 생성 & 짧은 TTL로 저장
             String newToken = createSecureToken();
+            redisService.setVerificationToken(newToken, type, email, Duration.ofMinutes(3));
             redisService.setVerificationEmail(email, newToken, Duration.ofMinutes(3));
 
 
