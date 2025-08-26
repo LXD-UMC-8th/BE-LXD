@@ -342,26 +342,23 @@ public class FriendService {
 
     private void saveRecentSearchKeyword(Long memberId, String query) {
         try {
-            String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-            redisService.pushRecentSearchKeyword(key, query, 10);
+            redisService.pushRecentSearchKeyword(memberId, query, 10);
         } catch (Exception e) {
             log.warn("[FailedToSaveSearchKeyword] 멤버의 검색 기록 저장에 실패했습니다. {}: {}", memberId, e.getMessage());
         }
     }
 
     public List<String> getRecentSearchKeywords(Long memberId, int limit) {
-        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-        return redisService.getRecentSearchKeywords(key, limit);
+        return redisService.getRecentSearchKeywords(memberId, limit);
     }
 
     public void deleteKeyword(Long memberId, String query) {
-        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-        redisService.removeListValue(key, query);
+        redisService.removeRecentSearchKeyword(memberId, query);
     }
 
     public void clearKeywords(Long memberId) {
-        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
-        redisService.delete(key);
+        redisService.clearRecentSearchKeywords(memberId);
     }
+
 
 }
