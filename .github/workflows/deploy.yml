@@ -16,8 +16,6 @@ jobs:
   build-docker-image:
     runs-on: ubuntu-latest
 
-    if: ${{ github.event_name == 'push' }}
-
     steps:
       - uses: actions/checkout@v3
 
@@ -72,8 +70,6 @@ jobs:
   deploy:
     needs: build-docker-image
     runs-on: ubuntu-latest
-
-    if: ${{ github.event_name == 'push' }}
 
     steps:
       - name: Deploy to EC2

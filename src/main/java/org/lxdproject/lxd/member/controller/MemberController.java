@@ -79,6 +79,7 @@ public class MemberController implements MemberApi {
 
     @Override
     public ApiResponse<String> deleteProfileImage() {
-        return ApiResponse.onSuccess(memberService.resetToDefaultProfileImage());
+        memberService.deleteProfileImage();
+        return ApiResponse.onSuccess("프로필 이미지가 삭제되었습니다.");
     }
 }
