@@ -66,6 +66,11 @@ public class RedisService {
         return stringRedisTemplate.opsForList().range(key, 0, -1);
     }
 
+    public void deleteVerificationToken(String token) {
+        String key = RedisKeyPrefix.verificationTokenKey(token);
+        stringRedisTemplate.delete(key);
+    }
+
 
     /**
      * @: 이메일 → 마지막 인증 토큰 (중복 방지)
@@ -80,6 +85,11 @@ public class RedisService {
     public String getVerificationEmailToken(String email) {
         String key = RedisKeyPrefix.verificationEmailKey(email);
         return stringRedisTemplate.opsForValue().get(key);
+    }
+
+    public void deleteVerificationEmail(String email) {
+        String key = RedisKeyPrefix.verificationEmailKey(email);
+        stringRedisTemplate.delete(key);
     }
 
 

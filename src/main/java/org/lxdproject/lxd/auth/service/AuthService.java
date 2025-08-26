@@ -174,21 +174,20 @@ public class AuthService {
                 return;
             }
 
-            /** Todo 추후 리팩토링 하기
             // 3. 원본 토큰 제거 -> 재사용 방지
-            redisService.deleteRefreshToken(token);  // 리스트 토큰 삭제
-            redisService.deleteRefreshToken(email);  // 이메일 토큰 삭제
+            redisService.deleteVerificationToken(token);  // 리스트 토큰 삭제
+            redisService.deleteVerificationEmail(email);  // 이메일 토큰 삭제
 
             // 4. 이메일 토큰 생성 & 짧은 TTL로 저장
             String newToken = createSecureToken();
             redisService.setVerificationEmail(email, newToken, Duration.ofMinutes(3));
-            **/
+
 
             // 5. 타입에 따라 리다이렉트 분기
             String redirectUrl = UriComponentsBuilder
                     .fromHttpUrl(fe)
                     .path(type.equals("email") ? "/home/signup" : "/home/signup/change-pw")
-                    .queryParam("token", token)
+                    .queryParam("token", newToken)
                     .toUriString();
             System.out.println(redirectUrl);
 
