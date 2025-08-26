@@ -88,7 +88,9 @@ public class RedisService {
      * Key: friend:search:{memberId}
      * Value: [keywords...]
      */
-    public void pushRecentSearchKeyword(String key, String keyword, int limit) {
+    public void pushRecentSearchKeyword(Long memberId, String keyword, int limit) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
+
         stringRedisTemplate.execute(new SessionCallback<>() {
             @Override
             public List<Object> execute(RedisOperations operations) {
@@ -102,15 +104,18 @@ public class RedisService {
         });
     }
 
-    public List<String> getRecentSearchKeywords(String key, int limit) {
+    public List<String> getRecentSearchKeywords(Long memberId, int limit) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
         return stringRedisTemplate.opsForList().range(key, 0, limit - 1);
     }
 
-    public void removeRecentSearchKeyword(String key, String keyword) {
+    public void removeRecentSearchKeyword(Long memberId, String keyword) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
         stringRedisTemplate.opsForList().remove(key, 0, keyword);
     }
 
-    public void delete(String key) {
+    public void deleteRecentSearchKeywords(Long memberId) {
+        String key = RedisKeyPrefix.recentFriendSearchKey(memberId);
         stringRedisTemplate.delete(key);
     }
 
