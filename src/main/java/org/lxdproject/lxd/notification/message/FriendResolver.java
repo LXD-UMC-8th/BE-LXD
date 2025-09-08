@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Component
-public class FriendNotificationMessageResolver implements NotificationMessageResolver {
+public class FriendResolver implements MessageResolver {
 
     @Override
     public boolean supports(NotificationType type) {

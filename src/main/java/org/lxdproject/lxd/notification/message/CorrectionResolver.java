@@ -3,7 +3,6 @@ package org.lxdproject.lxd.notification.message;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
@@ -15,15 +14,15 @@ import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class DiaryCommentNotificationMessageResolver implements NotificationMessageResolver {
+public class CorrectionResolver implements MessageResolver {
     @Override
     public boolean supports(NotificationType type) {
-        return type == NotificationType.COMMENT_ADDED;
+        return type == NotificationType.CORRECTION_ADDED;
     }
 
     @Override
     public List<MessagePart> resolveParts(NotificationMessageContext event, Locale locale) {
-        if (event.getTargetType() != TargetType.DIARY_COMMENT) {
+        if (event.getTargetType() != TargetType.CORRECTION) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
 
@@ -33,7 +32,7 @@ public class DiaryCommentNotificationMessageResolver implements NotificationMess
         if (locale.getLanguage().equals("en")) {
             return List.of(
                     new MessagePart("bold", senderUsername),
-                    new MessagePart("text", " commented on the "),
+                    new MessagePart("text", " added a correction to the "),
                     new MessagePart("bold", diaryTitle),
                     new MessagePart("text", " diary entry.")
             );
@@ -42,9 +41,10 @@ public class DiaryCommentNotificationMessageResolver implements NotificationMess
                     new MessagePart("bold", senderUsername),
                     new MessagePart("text", "님이 "),
                     new MessagePart("bold", diaryTitle),
-                    new MessagePart("text", " 일기에 댓글을 작성했습니다.")
+                    new MessagePart("text", " 일기에 교정을 추가했습니다.")
             );
         }
     }
+
 
 }

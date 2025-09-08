@@ -3,7 +3,6 @@ package org.lxdproject.lxd.notification.message;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
 import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
@@ -15,7 +14,7 @@ import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class CorrectionCommentNotificationMessageResolver implements NotificationMessageResolver {
+public class CorrectionCommentResolver implements MessageResolver {
     @Override
     public boolean supports(NotificationType type) {
         return type == NotificationType.CORRECTION_REPLIED;

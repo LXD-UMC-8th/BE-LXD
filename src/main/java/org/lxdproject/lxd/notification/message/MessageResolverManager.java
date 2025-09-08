@@ -12,9 +12,9 @@ import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class NotificationMessageResolverManager {
+public class MessageResolverManager {
 
-    private final List<NotificationMessageResolver> resolvers;
+    private final List<MessageResolver> resolvers;
 
     public List<MessagePart> resolve(NotificationMessageContext publishEvent, Locale locale) {
         return resolvers.stream()

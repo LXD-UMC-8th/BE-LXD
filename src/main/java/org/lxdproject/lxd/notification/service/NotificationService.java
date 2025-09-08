@@ -17,7 +17,7 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
-import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
+import org.lxdproject.lxd.notification.message.MessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.springframework.data.domain.Page;
@@ -37,7 +37,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationPublisher notificationPublisher;
     private final MemberRepository memberRepository;
-    private final NotificationMessageResolverManager messageResolverManager;
+    private final MessageResolverManager messageResolverManager;
     private final SseEmitterService sseEmitterService;
     private final CorrectionCommentRepository correctionCommentRepository;
     private final CorrectionRepository correctionRepository;
