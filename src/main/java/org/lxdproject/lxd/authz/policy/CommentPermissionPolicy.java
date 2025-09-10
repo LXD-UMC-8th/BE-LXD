@@ -1,7 +1,9 @@
 package org.lxdproject.lxd.authz.policy;
 
 import org.lxdproject.lxd.authz.model.Permit;
+import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,4 +24,18 @@ public class CommentPermissionPolicy {
             default -> { return Permit.DENY; }
         }
     }
+
+    private Permit canDeleteInternal(Long requesterId, Long writerId) {
+        if (requesterId == null) return Permit.DENY;
+        return requesterId.equals(writerId) ? Permit.ALLOW : Permit.DENY;
+    }
+
+    public Permit canDelete(Long requesterId, DiaryComment comment) {
+        return canDeleteInternal(requesterId, comment.getMember().getId());
+    }
+
+    public Permit canDelete(Long requesterId, CorrectionComment comment) {
+        return canDeleteInternal(requesterId, comment.getMember().getId());
+    }
+
 }

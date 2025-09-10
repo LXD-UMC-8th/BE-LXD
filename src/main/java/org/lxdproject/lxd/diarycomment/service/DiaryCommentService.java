@@ -204,15 +204,18 @@ public class DiaryCommentService {
 
     @Transactional
     public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         DiaryComment comment = diaryCommentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
+        // 삭제 권한 검증
+        permissionGuard.canDeleteDiaryComment(requesterId, comment);
+
         comment.softDelete();
         diary.decreaseCommentCount();
-
 
         return DiaryCommentDeleteResponseDTO.from(comment);
     }

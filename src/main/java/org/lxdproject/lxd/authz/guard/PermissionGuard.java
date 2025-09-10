@@ -1,12 +1,14 @@
 package org.lxdproject.lxd.authz.guard;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.authz.policy.CommentPermissionPolicy;
 import org.lxdproject.lxd.authz.policy.DiaryVisibilityPolicy;
 import org.lxdproject.lxd.correction.entity.Correction;
+import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.springframework.stereotype.Component;
@@ -32,7 +34,21 @@ public class PermissionGuard {
     public void canCreateDiaryComment(Long writerId, Diary diary, boolean areFriends) {
         Permit permit = policy.canCreate(writerId, diary, areFriends);
         if (permit == Permit.DENY) {
-            throw new DiaryHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
+            throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
+        }
+    }
+
+    public void canDeleteDiaryComment(Long requesterId, DiaryComment comment) {
+        Permit permit = policy.canDelete(requesterId, comment);
+        if (permit == Permit.DENY) {
+            throw new CommentHandler(ErrorStatus.COMMENT_DELETE_PERMISSION_DENIED);
+        }
+    }
+
+    public void canDeleteCorrectionComment(Long requesterId, CorrectionComment comment) {
+        Permit permit = policy.canDelete(requesterId, comment);
+        if (permit == Permit.DENY) {
+            throw new CommentHandler(ErrorStatus.COMMENT_DELETE_PERMISSION_DENIED);
         }
     }
 
