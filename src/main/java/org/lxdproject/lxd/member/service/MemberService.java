@@ -171,4 +171,15 @@ public class MemberService {
         member.setProfileImg(null);
     }
 
+    public void deleteMember() {
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+
+        member.softDelete();
+
+
+    }
 }
