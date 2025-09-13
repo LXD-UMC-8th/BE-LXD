@@ -10,6 +10,7 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
+import org.lxdproject.lxd.auth.dto.CustomUserDetails;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.auth.enums.VerificationType;
@@ -23,6 +24,10 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -40,6 +45,7 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
 
     private final RedisService redisService;
     private final MailService mailService;
@@ -48,30 +54,28 @@ public class AuthService {
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
-        // 아이디 검사
-        Member member = memberRepository.findByEmail(loginRequestDTO.getEmail())
-                .orElseThrow(()-> new MemberHandler(ErrorStatus.INVALID_CREDENTIALS));
-
-        // 비밀번호 검사
-        if(!passwordEncoder.matches(loginRequestDTO.getPassword(), member.getPassword())) {
-            throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
-        }
-
         // 일반 로그인인지 검사
-        if(member.getLoginType() != LoginType.LOCAL) {
-            throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
-        }
+
+        // 아이디, 비밀번호 기반으로 UsernamePasswordAuthenticationToken 생성
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+
+        // 2. 실제 검증(비밀번호 비교)은 AuthenticationManager에게 위임
+        // 이 과정에서 CustomUserDetailsService가 호출됨
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // 인증 완료 후, 토큰 생성
-        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
-        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
+        String accessToken = jwtTokenProvider.generateToken(customUserDetails.getMemberId(), customUserDetails.getMemberEmail(), customUserDetails.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtTokenProvider.generateToken(customUserDetails.getMemberId(), customUserDetails.getMemberEmail(), customUserDetails.getRole().name(), TokenType.REFRESH);
 
-        redisService.setRefreshToken(refreshToken, member.getEmail(), Duration.ofDays(7L));
+        redisService.setRefreshToken(refreshToken, customUserDetails.getMemberEmail(), Duration.ofDays(7L));
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
                 refreshToken,
-                member
+                customUserDetails.getMember()
         );
     }
 
