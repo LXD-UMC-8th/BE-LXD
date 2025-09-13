@@ -52,6 +52,7 @@ public enum ErrorStatus implements BaseErrorCode {
     AUTHENTICATION_INFO_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH4320", "인증 정보를 찾을 수 없습니다."),
     INVALID_AUTHENTICATION_INFO(HttpStatus.FORBIDDEN, "AUTH4321", "인증된 사용자 정보가 올바르지 않습니다."),
     NOT_RESOURCE_OWNER(HttpStatus.FORBIDDEN,"AUTH4001","해당 리소스의 작성자가 아닙니다. 권한이 없습니다."),
+    WITHDRAWN_USER(HttpStatus.FORBIDDEN, "AUTH4330", "탈퇴한 사용자는 서비스를 이용할 수 없습니다."),
 
     // 일기 관련 에러
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),

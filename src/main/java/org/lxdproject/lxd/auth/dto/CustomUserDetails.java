@@ -34,6 +34,10 @@ public class CustomUserDetails implements UserDetails {
         return member;
     }
 
+    public boolean isDeleted() {
+        return member.isDeleted();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> collection = new ArrayList<>();

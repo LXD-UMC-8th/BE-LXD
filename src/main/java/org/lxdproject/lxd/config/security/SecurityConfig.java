@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.SecurityExceptionHandler;
+import org.lxdproject.lxd.auth.filter.WithdrawnAccountFilter;
 import org.lxdproject.lxd.config.properties.UrlProperties;
 import org.lxdproject.lxd.config.security.jwt.JwtAuthenticationFilter;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
@@ -77,6 +78,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new WithdrawnAccountFilter(), JwtAuthenticationFilter.class)
                 .addFilterBefore(securityExceptionHandler, JwtAuthenticationFilter.class);
 
         return http.build();
