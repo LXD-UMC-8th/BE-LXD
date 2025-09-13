@@ -8,10 +8,13 @@ import org.lxdproject.lxd.apiPayload.code.dto.ErrorReasonDTO;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -78,6 +81,24 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
                 e, body, HttpHeaders.EMPTY,
                 reason.getHttpStatus(), new ServletWebRequest(request)
         );
+    }
+
+    //
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<Object> handleUnauthorizedException(AuthenticationException e, WebRequest request) {
+
+        ApiResponse<Object> body = ApiResponse.onFailure(
+                ErrorStatus.INVALID_CREDENTIALS.getCode(),
+                ErrorStatus.INVALID_CREDENTIALS.getMessage(),
+                null
+        );
+
+        return super.handleExceptionInternal(
+                e, body, HttpHeaders.EMPTY,
+                ErrorStatus.INVALID_CREDENTIALS.getHttpStatus(), request
+        );
+
     }
 
     // 모든 기타 예외 처리 (예상치 못한 에러)
