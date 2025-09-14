@@ -2,6 +2,7 @@ package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.common.dto.MemberProfileView;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correctionlike.entity.MemberSavedCorrection;
@@ -64,7 +65,7 @@ public class CorrectionService {
                         .likeCount(correction.getLikeCount())
                         .commentCount(correction.getCommentCount())
                         .isLikedByMe(likedIds.contains(correction.getId()))
-                        .member(CorrectionResponseDTO.MemberInfo.from(correction.getAuthor()))
+                        .member(MemberProfileView.from(correction.getAuthor()))
                         .build())
                 .toList();
 
@@ -165,11 +166,11 @@ public class CorrectionService {
                 .likeCount(saved.getLikeCount())
                 .commentCount(saved.getCommentCount())
                 .isLikedByMe(false)
-                .member(CorrectionResponseDTO.MemberInfo.builder()
-                        .memberId(member.getId())
+                .member(MemberProfileView.builder()
+                        .id(member.getId())
                         .username(member.getUsername())
                         .nickname(member.getNickname())
-                        .profileImageUrl(member.getProfileImg())
+                        .profileImage(member.getProfileImg())
                         .build())
                 .build();
     }
@@ -195,7 +196,7 @@ public class CorrectionService {
         );
 
         return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
-                .member(CorrectionResponseDTO.MemberInfo.from(member))
+                .memberProfileView(MemberProfileView.from(member))
                 .corrections(pageDTO)
                 .build();
     }
