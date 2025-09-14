@@ -25,4 +25,11 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
       AND d.deletedAt <= :threshold
     """)
     void deleteDiariesOlderThan30Days(@Param("threshold") LocalDateTime threshold);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Diary d SET d.deletedAt = NULL WHERE d.member.id = :memberId AND d.deletedAt = :deletedAt")
+    void recoverDiariesByMemberIdAndDeletedAt(
+            @Param("memberId") Long memberId,
+            @Param("deletedAt") LocalDateTime deletedAt
+    );
 }

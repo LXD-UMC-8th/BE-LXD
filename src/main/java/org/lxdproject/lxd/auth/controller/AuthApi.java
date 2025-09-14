@@ -85,5 +85,13 @@ public interface AuthApi {
     })
     ApiResponse<String> logout(@RequestBody @Valid AuthRequestDTO.LogoutRequestDTO logoutRequestDTO);
 
+    @PatchMapping("/recover")
+    @Operation(summary = "회원 탈퇴 복구 API", description = "회원의 deletedAt를 null로 바꾸고 관련 엔티티들의 status도 변경합니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "구글 로그인 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "사용자 정보 요청 실패"),
+    })
+    ApiResponse<String> recover();
 }
 

@@ -15,7 +15,10 @@ import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.auth.enums.VerificationType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
@@ -30,6 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
@@ -53,7 +57,10 @@ public class AuthService {
     private final MailService mailService;
 
     private final UrlProperties urlProperties;
+    private final DiaryRepository diaryRepository;
+    private final DiaryCommentRepository diaryCommentRepository;
 
+    @Transactional
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
         // 일반 로그인인지 검사
@@ -91,6 +98,7 @@ public class AuthService {
         );
     }
 
+    @Transactional(readOnly = true)
     public void validateSendVerificationRequestDTOOrThrow(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
@@ -166,6 +174,7 @@ public class AuthService {
                 .encodeToString(UUID.randomUUID().toString().getBytes());
     }
 
+    @Transactional(readOnly = true)
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
         try {
             // 1. 리스트로 조회
@@ -217,7 +226,7 @@ public class AuthService {
 
     }
 
-
+    @Transactional
     public AuthResponseDTO.SocialLoginResponseDTO socialLogin(OAuthUserInfo oAuthUserInfo) {
 
 
@@ -263,6 +272,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public AuthResponseDTO.ReissueResponseDTO reissue(AuthRequestDTO.@Valid ReissueRequestDTO reissueRequestDTO) {
 
         String refreshToken = reissueRequestDTO.getRefreshToken();
@@ -293,6 +303,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public void logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
 
         String refreshToken = logoutRequestDTO.getRefreshToken();
@@ -309,6 +320,7 @@ public class AuthService {
         redisService.deleteRefreshToken(refreshToken);
     }
 
+    @Transactional(readOnly = true)
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
         String email = redisService.getVerificationToken(token).get(1);
@@ -320,5 +332,28 @@ public class AuthService {
         return AuthResponseDTO.GetEmailByTokenResponseDTO.builder()
                 .email(email)
                 .build();
+    }
+
+    @Transactional
+    public void recover() {
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if(member.getDeletedAt() == null){
+            throw new AuthHandler(ErrorStatus.NO_WITHDRAWN_USER);
+        }
+
+        LocalDateTime deletedAt = member.getDeletedAt();
+
+        member.restore();
+        // 멤버 탈퇴 날짜와 일기 삭제 날짜가 같은 일기만 복구
+        diaryRepository.recoverDiariesByMemberIdAndDeletedAt(memberId, deletedAt);
+        // 멤버 탈퇴 날짜와 일기 댓글 삭제 날짜가 같은 댓글만 복구
+        diaryCommentRepository.recoverDiaryCommentsByMemberIdAndDeletedAt(memberId, deletedAt);
+
+
     }
 }

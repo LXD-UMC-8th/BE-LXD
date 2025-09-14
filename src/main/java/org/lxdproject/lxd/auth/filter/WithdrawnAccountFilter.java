@@ -26,9 +26,11 @@ public class WithdrawnAccountFilter extends OncePerRequestFilter {
         // 탈퇴 상태인 경우
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails principal) {
             if (principal.isDeleted()) {
-                //TODO 복구 로직인지 검증하는 부분 추가하기
+                String requestURI = request.getRequestURI();
 
-                throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+                if (!requestURI.startsWith("/auth/recover")) {
+                    throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+                }
             }
         }
 

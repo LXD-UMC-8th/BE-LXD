@@ -27,4 +27,11 @@ public interface DiaryCommentRepository extends JpaRepository<DiaryComment, Long
       AND dc.deletedAt <= :threshold
     """)
     void deleteDiaryCommentsOlderThan30Days(@Param("threshold") LocalDateTime threshold);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE DiaryComment dc SET dc.deletedAt = NULL WHERE dc.member.id = :memberId AND dc.deletedAt = :deletedAt")
+    void recoverDiaryCommentsByMemberIdAndDeletedAt(
+            @Param("memberId") Long memberId,
+            @Param("deletedAt") LocalDateTime deletedAt
+    );
 }
