@@ -26,7 +26,7 @@ public class PermissionGuard {
         boolean areFriends = viewerId != null && friendshipQueryPort.areFriends(viewerId, ownerId);
 
         Permit permit = diaryVisibilityPolicy.canView(viewerId, diary, areFriends);
-        if (permit == Permit.DENY) {
+        if (permit == Permit.DENY || permit == Permit.WITHDRAWN) {
             throw new DiaryHandler(ErrorStatus.DIARY_PERMISSION_DENIED);
         }
     }
