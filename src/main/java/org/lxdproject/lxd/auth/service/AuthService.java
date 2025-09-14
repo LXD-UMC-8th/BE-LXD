@@ -318,6 +318,9 @@ public class AuthService {
         }
 
         redisService.deleteRefreshToken(refreshToken);
+
+        // 현재 스레드에서 SecurityContext, Authentication, Principal 제거
+        SecurityContextHolder.clearContext();
     }
 
     @Transactional(readOnly = true)
