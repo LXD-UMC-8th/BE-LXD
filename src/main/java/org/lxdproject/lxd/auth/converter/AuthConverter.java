@@ -6,7 +6,7 @@ import org.lxdproject.lxd.member.entity.Member;
 
 public class AuthConverter {
 
-    public static AuthResponseDTO.LoginResponseDTO toLoginResponseDTO(String accessToken, String refreshToken, Member member) {
+    public static AuthResponseDTO.LoginResponseDTO toLoginResponseDTO(String accessToken, String refreshToken, Member member, Boolean isWithDrawn) {
         return AuthResponseDTO.LoginResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -19,6 +19,7 @@ public class AuthConverter {
                         .nativeLanguage(member.getNativeLanguage().name())
                         .studyLanguage(member.getLanguage().name())
                         .build())
+                .isWithdrawn(isWithDrawn)
                 .build();
     }
 

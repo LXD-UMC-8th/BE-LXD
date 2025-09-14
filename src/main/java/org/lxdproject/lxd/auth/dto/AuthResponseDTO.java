@@ -21,6 +21,9 @@ public class AuthResponseDTO {
         @Schema(description = "리프레쉬 토큰")
         private String refreshToken;
 
+        @Schema(description = "탈퇴한 사용자인지 여부")
+        private Boolean isWithdrawn;
+
         @Schema(description = "로그인한 멤버 정보")
         private MemberDTO member;
 

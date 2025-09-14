@@ -35,6 +35,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -72,10 +74,20 @@ public class AuthService {
 
         redisService.setRefreshToken(refreshToken, customUserDetails.getMemberEmail(), Duration.ofDays(7L));
 
+        Boolean isWithdrawn = false;
+
+
+        if(customUserDetails.getDeletedAt() != null &&
+                ChronoUnit.DAYS.between(customUserDetails.getDeletedAt(), LocalDateTime.now()) < 30) {
+
+            isWithdrawn = true;
+        }
+
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
                 refreshToken,
-                customUserDetails.getMember()
+                customUserDetails.getMember(),
+                isWithdrawn
         );
     }
 

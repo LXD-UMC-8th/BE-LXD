@@ -6,6 +6,7 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,10 @@ public class CustomUserDetails implements UserDetails {
 
     public boolean isDeleted() {
         return member.isDeleted();
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return member.getDeletedAt();
     }
 
     @Override
