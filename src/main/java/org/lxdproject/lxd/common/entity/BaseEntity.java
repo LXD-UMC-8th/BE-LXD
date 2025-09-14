@@ -31,6 +31,10 @@ public abstract class BaseEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void softDelete(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
     public void restore() {
         this.deletedAt = null;
     }

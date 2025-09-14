@@ -5,6 +5,14 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
+import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
+import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
+import org.lxdproject.lxd.diarycommentlike.entity.DiaryCommentLike;
+import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
+import org.lxdproject.lxd.diarylike.entity.DiaryLike;
+import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
@@ -17,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +37,10 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
     private final S3FileService s3FileService;
+    private final DiaryRepository diaryRepository;
+    private final DiaryCommentRepository diaryCommentRepository;
+    private final DiaryLikeRepository diaryLikeRepository;
+    private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -171,6 +186,7 @@ public class MemberService {
         member.setProfileImg(null);
     }
 
+    @Transactional
     public void deleteMember() {
 
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -178,8 +194,18 @@ public class MemberService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 
-        member.softDelete();
+        LocalDateTime deletedAt = LocalDateTime.now();
 
+        // 멤버 soft delete
+        member.softDelete(deletedAt);
+
+        // 일기 soft delete
+        diaryRepository.softDeleteDiariesByMemberId(memberId, deletedAt);
+
+        // 일기 댓글 soft delete
+        diaryCommentRepository.softDeleteDiaryCommentsByMemberId(memberId, deletedAt);
+
+        // 해당 일기,댓글 및 각 좋아요는 스케쥴러로 hard delete
 
     }
 }
