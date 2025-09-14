@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -205,7 +206,21 @@ public class MemberService {
         // 일기 댓글 soft delete
         diaryCommentRepository.softDeleteDiaryCommentsByMemberId(memberId, deletedAt);
 
-        // 해당 일기,댓글 및 각 좋아요는 스케쥴러로 hard delete
+        // 해당 일기 좋아요는 hard delete
+        diaryLikeRepository.deleteAllByMemberId(memberId);
+
+        // 해당 일기 댓글 좋아요는 hard delete
+        diaryCommentLikeRepository.deleteAllByMemberId(memberId);
+
+    }
+
+    @Transactional
+    public void hardDeleteWithdrawnMembers(){
+
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+
+        diaryRepository.deleteDiariesOlderThan30Days(threshold);
+        diaryCommentRepository.deleteDiaryCommentsOlderThan30Days(threshold);
 
     }
 }

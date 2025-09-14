@@ -17,4 +17,12 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Diary d SET d.deletedAt = :deletedAt WHERE d.member.id = :memberId")
     void softDeleteDiariesByMemberId(@Param("memberId") Long memberId, @Param("deletedAt") LocalDateTime deletedAt);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+    DELETE FROM Diary d 
+    WHERE d.deletedAt IS NOT NULL 
+      AND d.deletedAt <= :threshold
+    """)
+    void deleteDiariesOlderThan30Days(@Param("threshold") LocalDateTime threshold);
 }
