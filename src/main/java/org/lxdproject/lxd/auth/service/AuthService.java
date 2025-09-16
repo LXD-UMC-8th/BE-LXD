@@ -240,6 +240,8 @@ public class AuthService {
             return AuthResponseDTO.SocialLoginResponseDTO.builder()
                     .isNewMember(Boolean.TRUE) // 새로운 유저
                     .accessToken(null)
+                    .refreshToken(null)
+                    .isWithdrawn(Boolean.FALSE)
                     .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                             .email(email)
                             .loginType(oAuthUserInfo.getLoginType()) // 로그인 방법도 response에 포함
@@ -254,10 +256,19 @@ public class AuthService {
         // redis에 refreshToken 저장
         redisService.setRefreshToken(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
+        // 기존 회원인 경우, 탈퇴여부 확인
+        Boolean isWithdrawn = Boolean.FALSE;
+
+        if(member.getDeletedAt() != null &&
+                ChronoUnit.DAYS.between(member.getDeletedAt(), LocalDateTime.now()) < 30) {
+            isWithdrawn = Boolean.TRUE;
+        }
+
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
                 .isNewMember(Boolean.FALSE) // 기존 유저
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .isWithdrawn(isWithdrawn) // 탈퇴 여부(30일 이내)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
                         .email(member.getEmail())
