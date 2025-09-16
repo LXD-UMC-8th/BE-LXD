@@ -5,13 +5,9 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
-import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
-import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
-import org.lxdproject.lxd.diarycommentlike.entity.DiaryCommentLike;
 import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
-import org.lxdproject.lxd.diarylike.entity.DiaryLike;
 import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -25,9 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -219,7 +213,14 @@ public class MemberService {
 
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
+        // 30일이 지난 회원의 isPurged 값을 true로 만들고
+        // nickname/email의 unique 조건을 피하기 위해 null 값으로 채워주기
+        memberRepository.deleteMembersOlderThan30Days(threshold);
+
+        // 탈퇴자의 댓글 모두 hard delete
         diaryCommentRepository.deleteDiaryCommentsOlderThan30Days(threshold);
+
+        // 탈퇴자의 일기 모두 hard delete
         diaryRepository.deleteDiariesOlderThan30Days(threshold);
 
 
