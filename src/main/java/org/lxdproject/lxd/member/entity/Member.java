@@ -23,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @DynamicUpdate
 @DynamicInsert
-//@Where(clause = "deleted_at IS NULL")
+@Where(clause = "is_purged = false")
 public class Member extends BaseEntity {
 
     // 고유번호
@@ -89,6 +89,11 @@ public class Member extends BaseEntity {
     // 알림 설정 여부
     @Column(name = "is_alarm_agreed", nullable = false)
     private Boolean isAlarmAgreed;
+
+    // 탈퇴 후 30일이 지나 완전히 삭제된 회원 여부
+    // true면 시스템 내 모든 조회에서 제외됨 (@Where 조건에 사용)
+    @Column(name = "is_purged", nullable = false)
+    private Boolean isPurged = false;
 
     // 일기 연관관계 설정
     @OneToMany(mappedBy = "member")
