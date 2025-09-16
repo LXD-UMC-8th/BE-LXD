@@ -219,8 +219,9 @@ public class MemberService {
 
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
-        diaryRepository.deleteDiariesOlderThan30Days(threshold);
         diaryCommentRepository.deleteDiaryCommentsOlderThan30Days(threshold);
+        diaryRepository.deleteDiariesOlderThan30Days(threshold);
+
 
     }
 }
