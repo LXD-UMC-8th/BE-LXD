@@ -2,6 +2,7 @@ package org.lxdproject.lxd.correctionlike.dto;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 
 public class MemberSavedCorrectionResponseDTO {
@@ -19,7 +20,7 @@ public class MemberSavedCorrectionResponseDTO {
             private String memo;
             private CorrectionInfo correction;
             private DiaryInfo diary;
-            private MemberInfo member;
+            private MemberProfileDTO memberProfile;
 
             @Getter
             @Builder

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correctionlike.dto.MemberSavedCorrectionRequestDTO;
@@ -140,12 +141,7 @@ public class MemberSavedCorrectionService {
                         .diaryCreatedAt(DateFormatUtil.formatDate(diary.getCreatedAt()))
                         .thumbImg(diary.getThumbImg())
                         .build())
-                .member(MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.MemberInfo.builder()
-                        .memberId(member.getId())
-                        .userId(member.getUsername())
-                        .nickname(member.getNickname())
-                        .profileImageUrl(member.getProfileImg())
-                        .build())
+                .memberProfile(MemberProfileDTO.from(member))
                 .build();
     }
 
