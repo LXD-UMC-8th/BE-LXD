@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -104,13 +105,11 @@ public class DiaryCommentService {
             notificationService.saveAndPublishNotification(dto);
         }
 
+
         return DiaryCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberId(commentOwner.getId())
-                .username(commentOwner.getUsername())
-                .nickname(commentOwner.getNickname())
+                .memberProfile(MemberProfileDTO.from(commentOwner))
                 .diaryId(diary.getId())
-                .profileImage(commentOwner.getProfileImg())
                 .commentText(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
                 .replyCount(0)
@@ -155,10 +154,7 @@ public class DiaryCommentService {
                                     .map(reply -> DiaryCommentResponseDTO.Comment.builder()
                                             .commentId(reply.getId())
                                             .parentId(parent.getId())
-                                            .memberId(reply.getMember().getId())
-                                            .username(reply.getMember().getUsername())
-                                            .nickname(reply.getMember().getNickname())
-                                            .profileImage(reply.getMember().getProfileImg())
+                                            .memberProfile(MemberProfileDTO.from(reply.getMember()))
                                             .content(reply.getCommentText())
                                             .likeCount(reply.getLikeCount())
                                             .isLiked(likedCommentIds.contains(reply.getId()))
@@ -171,10 +167,7 @@ public class DiaryCommentService {
                     return DiaryCommentResponseDTO.Comment.builder()
                             .commentId(parent.getId())
                             .parentId(null)
-                            .memberId(parent.getMember().getId())
-                            .username(parent.getMember().getUsername())
-                            .nickname(parent.getMember().getNickname())
-                            .profileImage(parent.getMember().getProfileImg())
+                            .memberProfile(MemberProfileDTO.from(parent.getMember()))
                             .content(parent.getCommentText())
                             .likeCount(parent.getLikeCount())
                             .isLiked(likedCommentIds.contains(parent.getId()))
