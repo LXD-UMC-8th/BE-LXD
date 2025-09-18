@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.authz.guard;
 
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
@@ -29,8 +30,12 @@ public class PermissionGuard {
         boolean areFriends = viewerId != null && friendshipQueryPort.areFriends(viewerId, ownerId);
 
         Permit permit = diaryVisibilityPolicy.canView(viewerId, diary, areFriends);
-        if (permit == Permit.DENY || permit == Permit.WITHDRAWN) {
+        if (permit == Permit.DENY) {
             throw new DiaryHandler(ErrorStatus.DIARY_PERMISSION_DENIED);
+        }
+
+        if (permit == Permit.WITHDRAWN){
+            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
         }
     }
 
@@ -59,7 +64,7 @@ public class PermissionGuard {
 
         Permit permit = friendPolicy.validateDeletedMember(request, receiver);
         if(permit == Permit.WITHDRAWN) {
-            throw new FriendHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
         }
 
         permit = friendPolicy.validateSameMember(request, receiver);
@@ -78,7 +83,7 @@ public class PermissionGuard {
 
         Permit permit = friendPolicy.validateDeletedMember(request, receiver);
         if(permit == Permit.WITHDRAWN) {
-            throw new FriendHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
         }
 
         permit = friendPolicy.validateSameMember(request, receiver);
@@ -97,7 +102,7 @@ public class PermissionGuard {
 
         Permit permit = friendPolicy.validateDeletedMember(current, target);
         if(permit == Permit.WITHDRAWN) {
-            throw new FriendHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
         }
     }
 
