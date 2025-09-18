@@ -17,7 +17,7 @@ public interface DiaryCommentRepository extends JpaRepository<DiaryComment, Long
     Optional<String> findDiaryTitleByCommentId(@Param("id") Long id);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE DiaryComment dc SET dc.deletedAt = :deletedAt WHERE dc.member.id = :memberId")
+    @Query("UPDATE DiaryComment dc SET dc.deletedAt = :deletedAt WHERE dc.diary.member.id = :memberId")
     void softDeleteDiaryCommentsByMemberId(@Param("memberId") Long memberId, @Param("deletedAt") LocalDateTime deletedAt);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
