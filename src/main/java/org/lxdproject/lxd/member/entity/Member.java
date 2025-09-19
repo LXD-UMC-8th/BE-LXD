@@ -93,6 +93,7 @@ public class Member extends BaseEntity {
     // 탈퇴 후 30일이 지나 완전히 삭제된 회원 여부
     // true면 시스템 내 모든 조회에서 제외됨 (@Where 조건에 사용)
     @Column(name = "is_purged", nullable = false)
+    @Builder.Default
     private Boolean isPurged = false;
 
     // 일기 연관관계 설정
