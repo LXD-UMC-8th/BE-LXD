@@ -7,7 +7,6 @@ import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.correction.entity.Correction;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
-import org.lxdproject.lxd.member.entity.Member;
 
 
 public class CorrectionResponseDTO {
@@ -25,31 +24,13 @@ public class CorrectionResponseDTO {
         private Long correctionId;
         private Long diaryId;
         private String createdAt;
-        private MemberProfileDTO member;
+        private MemberProfileDTO memberProfile;
         private String original;
         private String corrected;
         private String commentText;
         private int likeCount;
         private int commentCount;
         private boolean isLikedByMe;
-    }
-
-    @Getter
-    @Builder
-    public static class MemberInfo {
-        private Long memberId;
-        private String username;
-        private String nickname;
-        private String profileImageUrl;
-
-        public static MemberInfo from(Member member) {
-            return MemberInfo.builder()
-                    .memberId(member.getId())
-                    .username(member.getUsername())
-                    .nickname(member.getNickname())
-                    .profileImageUrl(member.getProfileImg())
-                    .build();
-        }
     }
 
     @Getter
@@ -109,7 +90,7 @@ public class CorrectionResponseDTO {
     @Getter
     @Builder
     public static class ProvidedCorrectionsResponseDTO {
-        private MemberProfileDTO memberProfileDTO;
+        private MemberProfileDTO memberProfile;
         private PageDTO<ProvidedCorrectionItem> corrections;
     }
 

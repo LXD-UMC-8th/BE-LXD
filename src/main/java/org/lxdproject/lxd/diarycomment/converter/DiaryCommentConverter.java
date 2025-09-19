@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diarycomment.converter;
 
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diarycomment.dto.DiaryCommentResponseDTO;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
@@ -22,10 +23,7 @@ public class DiaryCommentConverter {
         return DiaryCommentResponseDTO.Comment.builder()
                 .commentId(comment.getId())
                 .parentId(parentId)
-                .memberId(writer.getId())
-                .username(writer.getUsername())
-                .nickname(writer.getNickname())
-                .profileImage(writer.getProfileImg())
+                .memberProfile(MemberProfileDTO.from(writer))
                 .content(comment.getCommentText())
                 .likeCount(comment.getLikeCount())
                 .isLiked(likedCommentIds.contains(comment.getId()))
