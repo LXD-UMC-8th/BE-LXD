@@ -21,8 +21,8 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     @Query("""
     UPDATE Member m
     SET m.isPurged = true,
-        m.nickname = null,
-        m.email = null
+        m.nickname = CONCAT('deleted_', m.id),
+        m.email = CONCAT('deleted_', m.id, '@deleted.local')
     WHERE m.deletedAt IS NOT NULL
       AND m.deletedAt <= :threshold
       AND m.isPurged = false
