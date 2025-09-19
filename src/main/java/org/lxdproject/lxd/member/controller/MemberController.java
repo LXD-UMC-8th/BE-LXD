@@ -85,7 +85,8 @@ public class MemberController implements MemberApi {
 
     @Override
     public ApiResponse<String> deleteMember() {
-        memberService.deleteMember();
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        memberService.deleteMember(memberId);
         return ApiResponse.onSuccess("회원이 탈퇴되었습니다.");
     }
 }
