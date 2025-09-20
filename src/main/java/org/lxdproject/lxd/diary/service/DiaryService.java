@@ -153,7 +153,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        if (!diary.getMember().getId().equals(memberId)) {
+        if (diary.getMember() == null || !diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
@@ -322,6 +322,10 @@ public class DiaryService {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
+        if (member.isDeleted()) {
+            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+        }
+
         Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
 
         Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
@@ -358,6 +362,10 @@ public class DiaryService {
     public PageDTO<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if (member.isDeleted()) {
+            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+        }
 
         Long viewerId = SecurityUtil.getCurrentMemberId();
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(viewerId);
