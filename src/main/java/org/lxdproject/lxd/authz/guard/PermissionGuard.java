@@ -1,10 +1,7 @@
 package org.lxdproject.lxd.authz.guard;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.*;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.authz.policy.CommentPermissionPolicy;
@@ -35,7 +32,7 @@ public class PermissionGuard {
         }
 
         if (permit == Permit.WITHDRAWN){
-            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
     }
 
@@ -64,7 +61,7 @@ public class PermissionGuard {
 
         Permit permit = friendPolicy.validateDeletedMember(request, receiver);
         if(permit == Permit.WITHDRAWN) {
-            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
 
         permit = friendPolicy.validateSameMember(request, receiver);
@@ -83,7 +80,7 @@ public class PermissionGuard {
 
         Permit permit = friendPolicy.validateDeletedMember(request, receiver);
         if(permit == Permit.WITHDRAWN) {
-            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
 
         permit = friendPolicy.validateSameMember(request, receiver);
@@ -102,7 +99,7 @@ public class PermissionGuard {
 
         Permit permit = friendPolicy.validateDeletedMember(current, target);
         if(permit == Permit.WITHDRAWN) {
-            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
     }
 

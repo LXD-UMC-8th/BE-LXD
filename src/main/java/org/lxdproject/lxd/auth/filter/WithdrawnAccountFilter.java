@@ -29,7 +29,7 @@ public class WithdrawnAccountFilter extends OncePerRequestFilter {
                 String requestURI = request.getRequestURI();
 
                 if (!requestURI.startsWith("/auth/recover")) {
-                    throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+                    throw new AuthHandler(ErrorStatus.SELF_WITHDRAWN_USER);
                 }
             }
         }

@@ -323,7 +323,7 @@ public class DiaryService {
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (member.isDeleted()) {
-            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
 
         Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
@@ -364,7 +364,7 @@ public class DiaryService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (member.isDeleted()) {
-            throw new AuthHandler(ErrorStatus.WITHDRAWN_USER);
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
 
         Long viewerId = SecurityUtil.getCurrentMemberId();
