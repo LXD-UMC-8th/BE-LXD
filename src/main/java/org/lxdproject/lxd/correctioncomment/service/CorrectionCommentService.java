@@ -72,7 +72,7 @@ public class CorrectionCommentService {
 
         return CorrectionCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberProfileDTO(MemberProfileDTO.from(member))
+                .memberProfile(MemberProfileDTO.from(member))
                 .content(saved.getContent())
                 .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .build();
@@ -91,7 +91,7 @@ public class CorrectionCommentService {
         List<CorrectionCommentResponseDTO> content = commentPage.stream()
                 .map(comment -> CorrectionCommentResponseDTO.builder()
                         .commentId(comment.getId())
-                        .memberProfileDTO(MemberProfileDTO.from(comment.getMember()))
+                        .memberProfile(MemberProfileDTO.from(comment.getMember()))
                         .content(comment.getDisplayContent())
                         .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
                         .build())

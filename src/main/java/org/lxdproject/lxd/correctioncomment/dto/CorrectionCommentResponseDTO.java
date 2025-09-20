@@ -12,7 +12,7 @@ import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 @NoArgsConstructor
 public class CorrectionCommentResponseDTO {
     private Long commentId;
-    private MemberProfileDTO memberProfileDTO;
+    private MemberProfileDTO memberProfile;
     private String content;
     private String createdAt;
 }
