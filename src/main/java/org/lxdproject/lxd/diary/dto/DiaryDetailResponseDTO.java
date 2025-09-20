@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
@@ -18,10 +19,8 @@ public class DiaryDetailResponseDTO {
     private Visibility visibility;
     private String title;
     private Language language;
-    private Long writerId;
-    private String profileImg;
-    private String writerNickName;
-    private String writerUserName;
+    private MemberProfileDTO memberProfile;
+
     private String createdAt;
     private int commentCount;
     private int likeCount;
@@ -40,10 +39,7 @@ public class DiaryDetailResponseDTO {
                 diary.getVisibility(),
                 diary.getTitle(),
                 diary.getLanguage(),
-                member.getId(),
-                member.getProfileImg(),
-                member.getNickname(),
-                member.getUsername(),
+                MemberProfileDTO.from(member),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
@@ -64,10 +60,7 @@ public class DiaryDetailResponseDTO {
                 diary.getVisibility(),
                 diary.getTitle(),
                 diary.getLanguage(),
-                member.getId(),
-                member.getProfileImg(),
-                member.getNickname(),
-                member.getUsername(),
+                MemberProfileDTO.from(member),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),

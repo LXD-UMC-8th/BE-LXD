@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.util.DiaryUtil;
@@ -225,10 +226,7 @@ public class DiaryService {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
@@ -270,10 +268,7 @@ public class DiaryService {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
                         .build()
                 )
@@ -298,10 +293,7 @@ public class DiaryService {
 
         List<DiarySummaryResponseDTO> dto = diaryPage.getContent().stream()
                 .map(d -> DiarySummaryResponseDTO.builder()
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
@@ -353,9 +345,7 @@ public class DiaryService {
         }
 
         return MemberDiarySummaryResponseDTO.builder()
-                .profileImg(member.getProfileImg())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
+                .memberProfile(MemberProfileDTO.from(member))
                 .nativeLanguage(member.getNativeLanguage())
                 .language(member.getLanguage())
                 .diaryCount(diaryCount)

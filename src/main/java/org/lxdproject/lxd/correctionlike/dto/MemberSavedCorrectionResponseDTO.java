@@ -43,14 +43,6 @@ public class MemberSavedCorrectionResponseDTO {
                 private String thumbImg;
             }
 
-            @Getter
-            @Builder
-            public static class MemberInfo {
-                private Long memberId;
-                private String userId;
-                private String nickname;
-                private String profileImageUrl;
-            }
         }
     }
 
