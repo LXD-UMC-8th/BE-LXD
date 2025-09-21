@@ -4,6 +4,7 @@ package org.lxdproject.lxd.friend.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
@@ -54,6 +55,8 @@ public class FriendService {
     @Transactional(readOnly = true)
     public FriendListResponseDTO getFriendList(Long memberId, int page, int size) {
         Member member = findMemberById(memberId);
+
+        permissionGuard.canViewFriendList(member);
 
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<Member> friendsPage = getFriends(memberId, pageable);

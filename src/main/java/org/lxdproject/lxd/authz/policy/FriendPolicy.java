@@ -37,6 +37,15 @@ public class FriendPolicy {
     }
 
     // 탈퇴한 유저인지 확인
+    public Permit validateDeletedMember(Member member){
+        if(member == null || member.isDeleted()){
+            return Permit.WITHDRAWN;
+        }
+        return Permit.ALLOW;
+    }
+
+
+
     public Permit validateDeletedMember(Member memberA, Member memberB) {
         if (memberA == null || memberB == null)
             throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);

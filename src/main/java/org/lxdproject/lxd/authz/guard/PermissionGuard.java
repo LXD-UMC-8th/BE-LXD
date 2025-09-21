@@ -57,6 +57,14 @@ public class PermissionGuard {
         }
     }
 
+    public void canViewFriendList(Member member) {
+        Permit permit = friendPolicy.validateDeletedMember(member);
+        if(permit == Permit.WITHDRAWN){
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
+        }
+
+    }
+
     public void canSendFriendRequest(Member request, Member receiver) {
 
         Permit permit = friendPolicy.validateDeletedMember(request, receiver);
