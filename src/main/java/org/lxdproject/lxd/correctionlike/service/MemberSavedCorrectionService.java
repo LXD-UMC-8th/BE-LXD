@@ -140,6 +140,7 @@ public class MemberSavedCorrectionService {
                         .diaryTitle(diary.getTitle())
                         .diaryCreatedAt(DateFormatUtil.formatDate(diary.getCreatedAt()))
                         .thumbImg(diary.getThumbImg())
+                        .diaryWriterId(diary.getMember().getId())
                         .build())
                 .memberProfile(MemberProfileDTO.from(member))
                 .build();

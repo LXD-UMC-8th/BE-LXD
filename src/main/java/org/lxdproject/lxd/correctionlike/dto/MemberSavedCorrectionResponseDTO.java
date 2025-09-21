@@ -41,6 +41,7 @@ public class MemberSavedCorrectionResponseDTO {
                 private String diaryTitle;
                 private String diaryCreatedAt;
                 private String thumbImg;
+                private Long diaryWriterId;
             }
 
         }
