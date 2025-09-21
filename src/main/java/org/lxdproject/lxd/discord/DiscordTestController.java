@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiscordTestController {
     @GetMapping("/discord-test/throw")
     public String throwErr() {
-        throw new RuntimeException("디스코드 테스트용");
+        throw new RuntimeException("디스코드 연동 테스트 성공");
     }
 }
