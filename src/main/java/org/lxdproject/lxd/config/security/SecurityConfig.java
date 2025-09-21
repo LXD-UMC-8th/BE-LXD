@@ -47,7 +47,8 @@ public class SecurityConfig {
             "/auth/email",
             "/auth/email/**", // 쿼리 파라미터가 있는 경우 /** uri 추가로 붙여주기
             "/auth/reissue",
-            "/auth/logout"
+            "/auth/logout",
+            "/discord-test/**" // TEMP
     };
 
     private final JwtTokenProvider jwtTokenProvider;
