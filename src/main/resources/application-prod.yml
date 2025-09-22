@@ -73,7 +73,7 @@ sentry:
   environment: prod
   sample-rate: 1.0
   traces-sample-rate: 0.2
-  send-default-pii: false
+  send-default-pii: true
 
   exception-resolver-order: -2147483647
 
