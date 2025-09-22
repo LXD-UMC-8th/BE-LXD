@@ -67,3 +67,26 @@ google:
   client-id: ${GOOGLE_CLIENT_ID}
   client-secret: ${GOOGLE_CLIENT_SECRET}
   redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  environment: prod
+  sample-rate: 1.0
+  traces-sample-rate: 0.2
+  send-default-pii: true
+
+  exception-resolver-order: -2147483647
+
+  # Sentry 이슈 생성에서 제외되는 예외들
+  ignored-exceptions-for-type:
+    - org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException
+    - org.springframework.web.bind.MethodArgumentNotValidException
+    - org.springframework.http.converter.HttpMessageNotReadableException
+    - jakarta.validation.ConstraintViolationException
+    - org.springframework.validation.BindException
+    - org.springframework.web.bind.MissingServletRequestParameterException
+
+discord:
+  error-alert-url: ${DISCORD_ERROR_WEBHOOK_URL}
+  enabled: true
+  timeout-ms: 2000
