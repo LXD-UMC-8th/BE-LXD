@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.apiPayload.code.exception;
 
+import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -89,7 +90,7 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception e, HttpServletRequest req, WebRequest request) {
         log.error("[UNCAUGHT_EXCEPTION]", e);  // 민감 정보는 로그로만
-
+        Sentry.captureException(e);
         try {
             discord.sendErrorAlertAsync(
                     e,
