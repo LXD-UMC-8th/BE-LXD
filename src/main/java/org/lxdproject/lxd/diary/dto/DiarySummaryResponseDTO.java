@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 
@@ -11,10 +12,7 @@ import org.lxdproject.lxd.diary.entity.enums.Visibility;
 @AllArgsConstructor
 @Builder
 public class DiarySummaryResponseDTO {
-    private String writerUsername;
-    private String writerNickname;
-    private String writerProfileImg;
-    private Long writerId;
+    private MemberProfileDTO writerMemberProfile;
     private Long diaryId;
     private String createdAt;
     private String title;

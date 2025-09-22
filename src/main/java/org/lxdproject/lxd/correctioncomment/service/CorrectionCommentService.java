@@ -1,12 +1,12 @@
 package org.lxdproject.lxd.correctioncomment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -72,10 +72,7 @@ public class CorrectionCommentService {
 
         return CorrectionCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberId(member.getId())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
-                .profileImage(member.getProfileImg())
+                .memberProfile(MemberProfileDTO.from(member))
                 .content(saved.getContent())
                 .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .build();
@@ -94,10 +91,7 @@ public class CorrectionCommentService {
         List<CorrectionCommentResponseDTO> content = commentPage.stream()
                 .map(comment -> CorrectionCommentResponseDTO.builder()
                         .commentId(comment.getId())
-                        .memberId(comment.getMember().getId())
-                        .username(comment.getMember().getUsername())
-                        .nickname(comment.getMember().getNickname())
-                        .profileImage(comment.getMember().getProfileImg())
+                        .memberProfile(MemberProfileDTO.from(comment.getMember()))
                         .content(comment.getDisplayContent())
                         .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
                         .build())

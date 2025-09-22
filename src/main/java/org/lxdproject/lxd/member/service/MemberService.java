@@ -5,6 +5,10 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.common.service.ImageService;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
+import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
+import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.storage.S3FileService;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.member.converter.MemberConverter;
@@ -17,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +32,10 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
     private final S3FileService s3FileService;
+    private final DiaryRepository diaryRepository;
+    private final DiaryCommentRepository diaryCommentRepository;
+    private final DiaryLikeRepository diaryLikeRepository;
+    private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -169,6 +179,43 @@ public class MemberService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         member.setProfileImg(null);
+    }
+
+    @Transactional
+    public void deleteMember(Long memberId) {
+        LocalDateTime deletedAt = LocalDateTime.now();
+
+        // 멤버 soft delete
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        member.softDelete(deletedAt);
+
+        // 일기 soft delete
+        diaryRepository.softDeleteDiariesByMemberId(memberId, deletedAt);
+
+        // 일기 댓글 soft delete
+        diaryCommentRepository.softDeleteMemberComments(memberId, deletedAt);
+
+        // 해당 일기 좋아요는 hard delete
+        diaryLikeRepository.deleteAllByMemberId(memberId);
+
+        // 해당 일기 댓글 좋아요는 hard delete
+        diaryCommentLikeRepository.deleteAllByMemberId(memberId);
+    }
+
+    @Transactional
+    public void hardDeleteWithdrawnMembers() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+
+        // 탈퇴자의 댓글 모두 hard delete
+        diaryCommentRepository.hardDeleteWithdrawnMemberComments(threshold);
+
+        // 탈퇴자의 일기 모두 hard delete
+        diaryRepository.deleteDiariesOlderThan30Days(threshold);
+
+        // 30일이 지난 회원의 isPurged 값을 true로 만들고
+        // 새로운 유저의 nickname/email의 unique 조건을 피하기 위해 대체값으로 치환
+        memberRepository.deleteMembersOlderThan30Days(threshold);
     }
 
 }

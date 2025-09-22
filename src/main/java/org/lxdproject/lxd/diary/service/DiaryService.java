@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.util.DiaryUtil;
@@ -152,7 +153,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        if (!diary.getMember().getId().equals(memberId)) {
+        if (diary.getMember() == null || !diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
@@ -225,10 +226,7 @@ public class DiaryService {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
@@ -270,10 +268,7 @@ public class DiaryService {
                         .correctionCount(d.getCorrectionCount())
                         .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
                         .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
                         .build()
                 )
@@ -298,10 +293,7 @@ public class DiaryService {
 
         List<DiarySummaryResponseDTO> dto = diaryPage.getContent().stream()
                 .map(d -> DiarySummaryResponseDTO.builder()
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
@@ -330,6 +322,10 @@ public class DiaryService {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
+        if (member.isDeleted()) {
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
+        }
+
         Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
 
         Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
@@ -353,9 +349,7 @@ public class DiaryService {
         }
 
         return MemberDiarySummaryResponseDTO.builder()
-                .profileImg(member.getProfileImg())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
+                .memberProfile(MemberProfileDTO.from(member))
                 .nativeLanguage(member.getNativeLanguage())
                 .language(member.getLanguage())
                 .diaryCount(diaryCount)
@@ -368,6 +362,10 @@ public class DiaryService {
     public PageDTO<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if (member.isDeleted()) {
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
+        }
 
         Long viewerId = SecurityUtil.getCurrentMemberId();
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(viewerId);

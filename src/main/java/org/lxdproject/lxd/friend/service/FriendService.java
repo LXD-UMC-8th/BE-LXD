@@ -4,13 +4,14 @@ package org.lxdproject.lxd.friend.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
+import org.lxdproject.lxd.authz.guard.PermissionGuard;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.friend.entity.FriendRequest;
-import org.lxdproject.lxd.infra.redis.RedisKeyPrefix;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
@@ -49,9 +50,13 @@ public class FriendService {
     private final NotificationRepository notificationRepository;
     private final RedisService redisService;
 
+    private final PermissionGuard permissionGuard;
+
     @Transactional(readOnly = true)
     public FriendListResponseDTO getFriendList(Long memberId, int page, int size) {
         Member member = findMemberById(memberId);
+
+        permissionGuard.canViewFriendList(member);
 
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<Member> friendsPage = getFriends(memberId, pageable);
@@ -89,6 +94,9 @@ public class FriendService {
 
         Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 친구 요청이 가능한 지에 대하 인가 검사
+        permissionGuard.canSendFriendRequest(requester, receiver);
 
         boolean alreadyRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 requester, receiver, FriendRequestStatus.PENDING);
@@ -137,6 +145,10 @@ public class FriendService {
         // 친구 관계 양방향 저장
         Member requester = request.getRequester();
         Member receiver = request.getReceiver();
+
+        // 친구 요청 수락에 대한 인가 검사
+        permissionGuard.canAcceptFriendRequest(requester, receiver);
+
         friendRepository.saveFriendship(requester, receiver);
 
         // 친구 요청 알림 삭제
@@ -177,6 +189,8 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Member target = memberRepository.findById(friendId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        permissionGuard.canDeleteFriend(current, target);
 
         boolean exists = friendRepository.areFriends(currentMemberId, friendId);
         if (!exists) {

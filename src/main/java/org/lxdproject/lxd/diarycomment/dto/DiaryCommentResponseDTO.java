@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.diarycomment.dto;
 
 import lombok.*;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 
 
 import java.time.LocalDateTime;
@@ -10,12 +11,9 @@ import java.util.List;
 @Builder
 public class DiaryCommentResponseDTO {
     private Long commentId; // 댓글 ID
-    private Long memberId; // 작성자 ID
-    private String username;
-    private String nickname;  // 작성자 닉네임
     private Long diaryId;
     private Long parentId; // nullable
-    private String profileImage;
+    private MemberProfileDTO memberProfile;
     private String commentText;
     private int replyCount;
     private int likeCount;
@@ -29,10 +27,7 @@ public class DiaryCommentResponseDTO {
     public static class Comment {
         private Long commentId;
         private Long parentId;
-        private Long memberId;
-        private String username;
-        private String nickname;
-        private String profileImage;
+        private MemberProfileDTO memberProfile;
         private String content;
         private int likeCount;
         private boolean isLiked;

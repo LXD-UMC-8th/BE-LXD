@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class DiaryVisibilityPolicy {
     public Permit canView(Long viewerId, Diary diary, boolean areFriends) {
         Long ownerId = diary.getMember().getId();
+        if (diary.getMember().isDeleted()) return Permit.WITHDRAWN;
+
         if (viewerId != null && viewerId.equals(ownerId)) return Permit.ALLOW;
 
         return switch (diary.getVisibility()) {

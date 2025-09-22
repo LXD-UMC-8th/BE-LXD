@@ -16,7 +16,8 @@ public class VisibilityPredicates {
         BooleanExpression isFriends = (viewerId != null && friendIds != null && !friendIds.isEmpty())
                 ? D.visibility.eq(Visibility.FRIENDS).and(D.member.id.in(friendIds))
                 : Expressions.FALSE;
-        return isPublic.or(isFriends).or(isMine);
+        BooleanExpression isAuthorNotDeleted = D.member.isNotNull().and(D.member.deletedAt.isNull());
+        return isPublic.or(isFriends).or(isMine).or(isAuthorNotDeleted);
     }
 
     // 내 글 제외

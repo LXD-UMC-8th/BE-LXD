@@ -71,4 +71,12 @@ public interface MemberApi {
     })
     @DeleteMapping(value = "/profile-image")
     ApiResponse<String> deleteProfileImage();
+
+    @Operation(summary = "회원 탈퇴 API", description = "계정을 soft delete 한 후 일정 기간 후 hard delete을 진행합니다.", responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 에러")
+    })
+    @PatchMapping(value = "/status")
+    ApiResponse<String> deleteMember();
 }

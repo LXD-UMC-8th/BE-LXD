@@ -7,6 +7,7 @@ import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.diarycommentlike.entity.QDiaryCommentLike;
 import org.lxdproject.lxd.member.entity.QMember;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -50,4 +51,37 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                         .and(comment.parent.isNull()))
                 .fetchOne();
     }
+
+    @Override
+    public void softDeleteMemberComments(Long memberId, LocalDateTime deletedAt) {
+        // 해당 회원이 작성한 댓글 + 그 회원의 일기에 달린 모든 댓글 삭제
+        queryFactory.update(comment)
+                .set(comment.deletedAt, deletedAt)
+                .where(comment.member.id.eq(memberId)
+                        .or(comment.diary.member.id.eq(memberId)))
+                .execute();
+    }
+
+    @Override
+    public void hardDeleteWithdrawnMemberComments(LocalDateTime threshold) {
+        // purge 안 된 탈퇴 회원 조회
+        List<Long> withdrawnMemberIds = queryFactory
+                .select(member.id)
+                .from(member)
+                .where(member.deletedAt.isNotNull()
+                        .and(member.deletedAt.loe(threshold))
+                        .and(member.isPurged.isFalse()))
+                .fetch();
+
+        if (withdrawnMemberIds.isEmpty()) return;
+
+        // 탈퇴 회원이 작성한 댓글 + 탈퇴 회원의 일기에 달린 모든 댓글 삭제
+        queryFactory.delete(comment)
+                .where(
+                        comment.member.id.in(withdrawnMemberIds)
+                                .or(comment.diary.member.id.in(withdrawnMemberIds))
+                )
+                .execute();
+    }
+
 }

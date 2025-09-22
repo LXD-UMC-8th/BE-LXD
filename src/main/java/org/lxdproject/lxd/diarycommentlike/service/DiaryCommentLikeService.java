@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
@@ -56,7 +57,7 @@ public class DiaryCommentLikeService {
 
         return DiaryCommentLikeResponseDTO.builder()
                 .commentId(commentId)
-                .memberId(memberId)
+                .memberProfile(MemberProfileDTO.from(member))
                 .liked(liked)
                 .likeCount(comment.getLikeCount())
                 .build();

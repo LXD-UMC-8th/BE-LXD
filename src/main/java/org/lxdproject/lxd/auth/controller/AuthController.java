@@ -77,5 +77,13 @@ public class AuthController implements AuthApi {
 
     }
 
+    @Override
+    public ApiResponse<String> recover() {
+
+        authService.recover();
+
+        return ApiResponse.onSuccess("계정이 복구 되었습니다. 재로그인 해주세요");
+    }
+
 
 }

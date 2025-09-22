@@ -1,16 +1,16 @@
 package org.lxdproject.lxd.authz.guard;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.*;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.authz.policy.CommentPermissionPolicy;
 import org.lxdproject.lxd.authz.policy.DiaryVisibilityPolicy;
-import org.lxdproject.lxd.correction.entity.Correction;
+import org.lxdproject.lxd.authz.policy.FriendPolicy;
 import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
+import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +20,7 @@ public class PermissionGuard {
     private final FriendshipQueryPort friendshipQueryPort;
     private final DiaryVisibilityPolicy diaryVisibilityPolicy;
     private final CommentPermissionPolicy policy;
+    private final FriendPolicy friendPolicy;
 
     public void canViewDiary(Long viewerId, Diary diary) {
         Long ownerId = diary.getMember().getId();
@@ -28,6 +29,10 @@ public class PermissionGuard {
         Permit permit = diaryVisibilityPolicy.canView(viewerId, diary, areFriends);
         if (permit == Permit.DENY) {
             throw new DiaryHandler(ErrorStatus.DIARY_PERMISSION_DENIED);
+        }
+
+        if (permit == Permit.WITHDRAWN){
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
     }
 
@@ -51,5 +56,60 @@ public class PermissionGuard {
             throw new CommentHandler(ErrorStatus.COMMENT_DELETE_PERMISSION_DENIED);
         }
     }
+
+    public void canViewFriendList(Member member) {
+        Permit permit = friendPolicy.validateDeletedMember(member);
+        if(permit == Permit.WITHDRAWN){
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
+        }
+
+    }
+
+    public void canSendFriendRequest(Member request, Member receiver) {
+
+        Permit permit = friendPolicy.validateDeletedMember(request, receiver);
+        if(permit == Permit.WITHDRAWN) {
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
+        }
+
+        permit = friendPolicy.validateSameMember(request, receiver);
+        if(permit == Permit.DENY) {
+            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
+        }
+
+        permit = friendPolicy.validateFriends(request, receiver);
+        if(permit == Permit.DENY) {
+            throw new FriendHandler(ErrorStatus.ALREADY_FRIENDS);
+        }
+
+    }
+
+    public void canAcceptFriendRequest(Member request, Member receiver) {
+
+        Permit permit = friendPolicy.validateDeletedMember(request, receiver);
+        if(permit == Permit.WITHDRAWN) {
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
+        }
+
+        permit = friendPolicy.validateSameMember(request, receiver);
+        if(permit == Permit.DENY) {
+            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
+        }
+
+        permit = friendPolicy.validateFriends(request, receiver);
+        if(permit == Permit.DENY) {
+            throw new FriendHandler(ErrorStatus.ALREADY_FRIENDS);
+        }
+
+    }
+
+    public void canDeleteFriend(Member current, Member target){
+
+        Permit permit = friendPolicy.validateDeletedMember(current, target);
+        if(permit == Permit.WITHDRAWN) {
+            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
+        }
+    }
+
 
 }
