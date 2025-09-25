@@ -40,6 +40,9 @@ public class Diary extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(columnDefinition = "TEXT")
+    private String modifiedContent;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @NotNull
@@ -76,9 +79,9 @@ public class Diary extends BaseEntity {
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryLike> likes = new ArrayList<>();
 
-    public void update(DiaryUpdateDTO dto) {
+    public void update(DiaryUpdateDTO dto, String diffHtmlContent) {
         this.title = dto.getTitle();
-        this.content = dto.getContent();
+        this.modifiedContent = diffHtmlContent;
         this.visibility = dto.getVisibility();
         this.commentPermission = dto.getCommentPermission();
         this.language = dto.getLanguage();
