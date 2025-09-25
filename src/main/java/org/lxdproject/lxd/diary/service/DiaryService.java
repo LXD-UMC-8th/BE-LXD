@@ -60,6 +60,7 @@ public class DiaryService {
         Diary diary = Diary.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
+                .modifiedContent(request.getContent())
                 .style(request.getStyle())
                 .visibility(request.getVisibility())
                 .commentPermission(request.getCommentPermission())
@@ -70,7 +71,7 @@ public class DiaryService {
 
         diaryRepository.save(diary);
 
-        return DiaryDetailResponseDTO.from(diary,null,false);
+        return DiaryDetailResponseDTO.from(diary, false);
     }
 
     @Transactional(readOnly = true)
@@ -84,7 +85,7 @@ public class DiaryService {
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
 
-        return DiaryDetailResponseDTO.from(diary, null, likedSet.contains(diary.getId()));
+        return DiaryDetailResponseDTO.from(diary, likedSet.contains(diary.getId()));
     }
 
     @Transactional
@@ -150,7 +151,6 @@ public class DiaryService {
     }
 
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
-
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
@@ -164,18 +164,18 @@ public class DiaryService {
             s3FileService.deleteImage(diary.getThumbImg());
         }
 
-        String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
+        String originalContent = diary.getContent();
+
+        // 원문 내용과 수정 내용의 diff 계산
+        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
 
         // DB에 새로운 내용 저장
-        diary.update(request);
+        diary.update(request, diffHtmlContent);
         diaryRepository.save(diary);
-
-        // diff 계산
-        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
 
-        return DiaryDetailResponseDTO.from(diary, diffHtmlContent, likedSet.contains(diary.getId()));
+        return DiaryDetailResponseDTO.from(diary, likedSet.contains(diary.getId()));
     }
 
     private String generateDiffHtml(String oldContent, String newContent) {
