@@ -150,7 +150,7 @@ public class DiaryService {
         );
     }
 
-    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateRequestDTO request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)

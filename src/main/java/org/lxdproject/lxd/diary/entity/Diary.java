@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
 import org.lxdproject.lxd.common.entity.BaseEntity;
-import org.lxdproject.lxd.diary.dto.DiaryUpdateDTO;
+import org.lxdproject.lxd.diary.dto.DiaryUpdateRequestDTO;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
@@ -79,7 +79,7 @@ public class Diary extends BaseEntity {
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryLike> likes = new ArrayList<>();
 
-    public void update(DiaryUpdateDTO dto, String diffHtmlContent) {
+    public void update(DiaryUpdateRequestDTO dto, String diffHtmlContent) {
         this.title = dto.getTitle();
         this.modifiedContent = diffHtmlContent;
         this.visibility = dto.getVisibility();
