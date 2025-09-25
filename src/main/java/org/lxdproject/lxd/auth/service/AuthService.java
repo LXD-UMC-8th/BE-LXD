@@ -337,6 +337,9 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
+        if(redisService.getVerificationToken(token) == null){
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
         String email = redisService.getVerificationToken(token).get(1);
 
         if(email == null) {
