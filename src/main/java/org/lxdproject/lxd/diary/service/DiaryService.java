@@ -70,18 +70,21 @@ public class DiaryService {
 
         diaryRepository.save(diary);
 
-        return DiaryDetailResponseDTO.from(diary);
+        return DiaryDetailResponseDTO.from(diary,null,false);
     }
 
     @Transactional(readOnly = true)
     public DiaryDetailResponseDTO getDiaryDetail(Long id) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
         permissionGuard.canViewDiary(currentMemberId, diary);
 
-        return DiaryDetailResponseDTO.from(diary);
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
+
+        return DiaryDetailResponseDTO.from(diary, null, likedSet.contains(diary.getId()));
     }
 
     @Transactional
@@ -165,12 +168,14 @@ public class DiaryService {
 
         // DB에 새로운 내용 저장
         diary.update(request);
-        Diary updated = diaryRepository.save(diary);
+        diaryRepository.save(diary);
 
         // diff 계산
         String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
 
-        return DiaryDetailResponseDTO.fromWithDiff(updated, diffHtmlContent);
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
+
+        return DiaryDetailResponseDTO.from(diary, diffHtmlContent, likedSet.contains(diary.getId()));
     }
 
     private String generateDiffHtml(String oldContent, String newContent) {
