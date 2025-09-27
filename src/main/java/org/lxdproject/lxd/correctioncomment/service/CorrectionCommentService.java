@@ -70,9 +70,7 @@ public class CorrectionCommentService {
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId() + "/comments/" + saved.getId())
                     .build();
 
-            Notification notification = notificationService.createNotification(dto);
-
-            eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
+            notificationService.createAndPublish(dto);
         }
 
         return CorrectionCommentResponseDTO.builder()

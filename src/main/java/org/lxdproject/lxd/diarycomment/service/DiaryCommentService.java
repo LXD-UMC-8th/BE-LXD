@@ -105,9 +105,7 @@ public class DiaryCommentService {
                     .redirectUrl("/diaries/" + diary.getId() + "/comments/" + saved.getId())
                     .build();
 
-            Notification notification = notificationService.createNotification(dto);
-
-            eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
+            notificationService.createAndPublish(dto);
         }
 
         return DiaryCommentResponseDTO.builder()

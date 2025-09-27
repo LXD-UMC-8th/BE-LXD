@@ -123,9 +123,7 @@ public class FriendService {
                 .redirectUrl("/members/" + requester.getId())
                 .build();
 
-        Notification notification = notificationService.createNotification(dto);
-
-        eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
+        notificationService.createAndPublish(dto);
     }
 
     @Transactional
@@ -144,24 +142,13 @@ public class FriendService {
         Member receiver = request.getReceiver();
         friendRepository.saveFriendship(requester, receiver);
 
-        // 삭제할 친구 요청 알림 ID 조회
-        Long notificationId = notificationRepository.findFriendRequestNotificationId(receiverId, requesterId);
-        if (notificationId == null) {
-            throw new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
-        }
-
-        // 친구 요청 알림 삭제
-        notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
-
-        // 친구 요청 알림 삭제 이벤트 발행
-        eventPublisher.publishEvent(
-                new NotificationDeletedEvent(
-                        notificationId,
-                        receiverId,
-                        NotificationType.FRIEND_REQUEST,
-                        TargetType.MEMBER,
-                        requesterId
-                )
+        // 기존 친구 요청 알림 삭제
+        notificationService.deleteAndPublish(
+                receiverId,
+                requesterId,
+                NotificationType.FRIEND_REQUEST,
+                TargetType.MEMBER,
+                requesterId
         );
 
         // 친구 요청 엔티티 삭제
@@ -177,9 +164,7 @@ public class FriendService {
                 .redirectUrl("/members/" + receiver.getId())
                 .build();
 
-        Notification notification = notificationService.createNotification(dto);
-
-        eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
+        notificationService.createAndPublish(dto);
     }
 
     public void deleteFriend(Long currentMemberId, Long friendId) {
@@ -255,24 +240,13 @@ public class FriendService {
                 .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
-        // 삭제할 친구 요청 알림 ID 조회
-        Long notificationId = notificationRepository.findFriendRequestNotificationId(receiverId, requesterId);
-        if (notificationId == null) {
-            throw new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
-        }
-
-        // 친구 요청 알림 삭제
-        notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
-
-        // 친구 요청 알림 삭제
-        eventPublisher.publishEvent(
-                new NotificationDeletedEvent(
-                        notificationId,
-                        receiverId,
-                        NotificationType.FRIEND_REQUEST,
-                        TargetType.MEMBER,
-                        requesterId
-                )
+        // 기존 찬구 요청 알림 삭제
+        notificationService.deleteAndPublish(
+                receiverId,
+                requesterId,
+                NotificationType.FRIEND_REQUEST,
+                TargetType.MEMBER,
+                requesterId
         );
 
         // 친구 요청 엔티티 삭제
@@ -288,23 +262,13 @@ public class FriendService {
                 .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
-        // 삭제할 친구 요청 알림 ID 조회
-        Long notificationId = notificationRepository.findFriendRequestNotificationId(receiverId, requesterId);
-        if (notificationId == null) {
-            throw new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
-        }
-
-        // 친구 요청 알림 삭제
-        notificationRepository.deleteFriendRequestNotification(receiverId, requesterId);
-
-        eventPublisher.publishEvent(
-                new NotificationDeletedEvent(
-                        notificationId,
-                        receiverId,
-                        NotificationType.FRIEND_REQUEST,
-                        TargetType.MEMBER,
-                        requesterId
-                )
+        // 기존 친구 요청 알림 삭제
+        notificationService.deleteAndPublish(
+                receiverId,
+                requesterId,
+                NotificationType.FRIEND_REQUEST,
+                TargetType.MEMBER,
+                requesterId
         );
 
         friendRequestRepository.delete(request);

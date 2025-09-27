@@ -17,7 +17,10 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.lxdproject.lxd.notification.event.NotificationAllReadEvent;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
+import org.lxdproject.lxd.notification.event.NotificationDeletedEvent;
 import org.lxdproject.lxd.notification.event.NotificationReadEvent;
 import org.lxdproject.lxd.notification.message.MessageResolverManager;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
@@ -44,7 +47,7 @@ public class NotificationService {
     private final MessageResolverManager messageResolverManager;
     private final ApplicationEventPublisher eventPublisher;
 
-    public Notification createNotification(NotificationRequestDTO dto) {
+    public Long createNotification(NotificationRequestDTO dto) {
 
         Member receiver = memberRepository.findById(dto.getReceiverId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -52,7 +55,7 @@ public class NotificationService {
         Member sender = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        return notificationRepository.save(
+        Notification notification = notificationRepository.save(
                 Notification.builder()
                         .receiver(receiver)
                         .sender(sender)
@@ -62,6 +65,8 @@ public class NotificationService {
                         .redirectUrl(dto.getRedirectUrl())
                         .build()
         );
+
+        return notification.getId();
     }
 
     @Transactional(readOnly = true)
@@ -219,5 +224,28 @@ public class NotificationService {
         );
     }
 
+    @Transactional
+    public void createAndPublish(NotificationRequestDTO dto) {
+        Long notificationId = createNotification(dto);
+        eventPublisher.publishEvent(new NotificationCreatedEvent(notificationId));
+    }
+
+    @Transactional
+    public void deleteAndPublish(Long receiverId, Long senderId, NotificationType type, TargetType targetType, Long targetId) {
+
+        // 삭제할 친구 요청 알림 ID 조회
+        Long notificationId = notificationRepository.findFriendRequestNotificationId(receiverId, senderId);
+        if (notificationId == null) {
+            throw new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
+        }
+
+        // 친구 요청 알림 삭제
+        notificationRepository.deleteFriendRequestNotification(receiverId, senderId);
+
+        // 친구 요청 알림 삭제
+        eventPublisher.publishEvent(
+                new NotificationDeletedEvent(notificationId, receiverId, type, targetType, targetId)
+        );
+    }
 }
 

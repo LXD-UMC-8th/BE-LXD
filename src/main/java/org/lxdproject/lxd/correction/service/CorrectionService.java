@@ -152,9 +152,8 @@ public class CorrectionService {
                     .targetId(saved.getId())
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId())
                     .build();
-            Notification notification = notificationService.createNotification(dto);
 
-            eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
+            notificationService.createAndPublish(dto);
         }
 
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
