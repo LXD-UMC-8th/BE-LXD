@@ -32,7 +32,7 @@ public class NotificationController implements NotificationApi {
 
     @Override
     public ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO) {
-        notificationService.createNotification(requestDTO);
+        notificationService.createAndPublish(requestDTO);
         return ApiResponse.onSuccess("테스트 알림 발행 성공");
     }
 
