@@ -2,13 +2,12 @@ package org.lxdproject.lxd.notification.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
+import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
-import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
-import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.EventType;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
@@ -33,7 +32,8 @@ public class NotificationEventHandler {
     // 생성 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCreated(NotificationCreatedEvent event) {
-        Notification notification = event.getNotification();
+        Notification notification = notificationRepository.findById(event.getNotificationId())
+                .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
 
         NotificationMessageContext message = NotificationMessageContext.builder()
                 .eventType(EventType.CREATED)
@@ -69,23 +69,16 @@ public class NotificationEventHandler {
     // 삭제 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleDeleted(NotificationDeletedEvent event) {
-        long deleted = notificationRepository.deleteFriendRequestNotification(
-                event.getReceiverId(),
-                event.getTargetId()
-        );
+        NotificationMessageContext message = NotificationMessageContext.builder()
+                .eventType(EventType.DELETED)
+                .receiverId(event.getReceiverId())
+                .notificationId(event.getNotificationId())
+                .notificationType(event.getNotificationType())
+                .targetType(event.getTargetType())
+                .targetId(event.getTargetId())
+                .build();
 
-        if (deleted > 0) {
-            NotificationMessageContext message = NotificationMessageContext.builder()
-                    .eventType(EventType.DELETED)
-                    .receiverId(event.getReceiverId())
-                    .notificationId(event.getNotificationId())
-                    .notificationType(event.getNotificationType())
-                    .targetType(event.getTargetType())
-                    .targetId(event.getTargetId())
-                    .build();
-
-            notificationPublisher.publishAfterCommit(message);
-        }
+        notificationPublisher.publishAfterCommit(message);
     }
 
     // 단일 읽음 이벤트 처리
