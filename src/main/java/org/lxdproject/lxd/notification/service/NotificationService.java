@@ -64,6 +64,21 @@ public class NotificationService {
         );
     }
 
+    @Transactional(readOnly = true)
+    protected String getDiaryTitleIfExists(Notification notification) {
+        Long targetId = notification.getTargetId();
+
+        return switch (notification.getNotificationType()) {
+            case COMMENT_ADDED ->
+                    diaryCommentRepository.findDiaryTitleByCommentId(targetId).orElse(null);
+            case CORRECTION_ADDED ->
+                    correctionRepository.findDiaryTitleByCorrectionId(targetId).orElse(null);
+            case CORRECTION_REPLIED ->
+                    correctionCommentRepository.findDiaryTitleByCorrectionCommentId(targetId).orElse(null);
+            default -> null;
+        };
+    }
+
     public PageDTO<NotificationResponseDTO> getNotifications(Boolean isRead, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
@@ -79,11 +94,17 @@ public class NotificationService {
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
-                    NotificationMessageContext context = NotificationMessageContext.of(
-                            notification,
-                            senderUsername,
-                            diaryTitle
-                    );
+                    NotificationMessageContext context = NotificationMessageContext.builder()
+                            .notificationId(notification.getId())
+                            .receiverId(notification.getReceiver().getId())
+                            .senderId(notification.getSender().getId())
+                            .senderUsername(senderUsername)
+                            .notificationType(notification.getNotificationType())
+                            .targetType(notification.getTargetType())
+                            .targetId(notification.getTargetId())
+                            .redirectUrl(notification.getRedirectUrl())
+                            .diaryTitle(diaryTitle)
+                            .build();
 
                     List<MessagePart> parts = messageResolverManager.resolve(context, locale);
 
@@ -109,7 +130,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public ReadRedirectResponseDTO markAsReadAndSendSse(Long id) {
+    public ReadRedirectResponseDTO markAsRead(Long id) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Notification notification = notificationRepository.findById(id)
@@ -122,7 +143,10 @@ public class NotificationService {
         if (!notification.isRead()) {
             notification.markAsRead();
             notificationRepository.flush();
-            sseEmitterService.sendNotificationReadUpdate(notification);
+
+            eventPublisher.publishEvent(
+                    new NotificationReadEvent(memberId, notification.getId())
+            );
         }
 
         return ReadRedirectResponseDTO.builder()
@@ -144,24 +168,33 @@ public class NotificationService {
         for (Notification notification : unreadList) {
             notification.markAsRead();
         }
+
         notificationRepository.flush();
 
-        sseEmitterService.sendAllReadUpdate(memberId);
+        eventPublisher.publishEvent(
+                new NotificationAllReadEvent(memberId)
+        );
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, null, pageable);
 
         List<NotificationResponseDTO> responses = notificationPage.stream()
                 .map(notification -> {
-                    Locale locale = member.getNativeLanguage().toLocale();
+                    Locale locale = member.getSystemLanguage().toLocale();
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
-                    NotificationMessageContext context = NotificationMessageContext.of(
-                            notification,
-                            senderUsername,
-                            diaryTitle
-                    );
+                    NotificationMessageContext context = NotificationMessageContext.builder()
+                            .notificationId(notification.getId())
+                            .receiverId(notification.getReceiver().getId())
+                            .senderId(notification.getSender().getId())
+                            .senderUsername(senderUsername)
+                            .notificationType(notification.getNotificationType())
+                            .targetType(notification.getTargetType())
+                            .targetId(notification.getTargetId())
+                            .redirectUrl(notification.getRedirectUrl())
+                            .diaryTitle(diaryTitle)
+                            .build();
 
                     List<MessagePart> parts = messageResolverManager.resolve(context, locale);
 
