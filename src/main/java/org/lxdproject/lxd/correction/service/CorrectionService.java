@@ -9,9 +9,12 @@ import org.lxdproject.lxd.correctionlike.repository.MemberSavedCorrectionReposit
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +39,7 @@ public class CorrectionService {
     private final DiaryRepository diaryRepository;
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
     private final MemberRepository memberRepository;
-
+    private final ApplicationEventPublisher eventPublisher;
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
@@ -84,9 +87,7 @@ public class CorrectionService {
 
 
     @Transactional
-    public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(
-            Long correctionId
-    ) {
+    public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(Long correctionId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Correction correction = correctionRepository.findByIdWithPessimisticLock(correctionId).orElseThrow(()
                 -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
@@ -151,8 +152,9 @@ public class CorrectionService {
                     .targetId(saved.getId())
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId())
                     .build();
+            Notification notification = notificationService.createNotification(dto);
 
-            notificationService.saveAndPublishNotification(dto);
+            eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
         }
 
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()

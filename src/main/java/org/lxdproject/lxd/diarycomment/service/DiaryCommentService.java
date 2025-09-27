@@ -20,9 +20,12 @@ import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
@@ -44,6 +47,7 @@ public class DiaryCommentService {
     private final DiaryCommentLikeRepository likeRepository;
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
     private final PermissionGuard permissionGuard;
 
     @Transactional
@@ -101,7 +105,9 @@ public class DiaryCommentService {
                     .redirectUrl("/diaries/" + diary.getId() + "/comments/" + saved.getId())
                     .build();
 
-            notificationService.saveAndPublishNotification(dto);
+            Notification notification = notificationService.createNotification(dto);
+
+            eventPublisher.publishEvent(new NotificationCreatedEvent(notification.getId()));
         }
 
         return DiaryCommentResponseDTO.builder()

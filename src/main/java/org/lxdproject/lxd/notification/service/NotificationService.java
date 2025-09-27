@@ -17,10 +17,11 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
-import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
+import org.lxdproject.lxd.notification.event.NotificationAllReadEvent;
+import org.lxdproject.lxd.notification.event.NotificationReadEvent;
 import org.lxdproject.lxd.notification.message.MessageResolverManager;
-import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,14 +38,13 @@ import java.util.Locale;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
-    private final MessageResolverManager messageResolverManager;
-    private final SseEmitterService sseEmitterService;
     private final CorrectionCommentRepository correctionCommentRepository;
     private final CorrectionRepository correctionRepository;
     private final DiaryCommentRepository diaryCommentRepository;
+    private final MessageResolverManager messageResolverManager;
+    private final ApplicationEventPublisher eventPublisher;
 
-
-    public void saveAndPublishNotification(NotificationRequestDTO dto) {
+    public Notification createNotification(NotificationRequestDTO dto) {
 
         Member receiver = memberRepository.findById(dto.getReceiverId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -52,7 +52,7 @@ public class NotificationService {
         Member sender = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        Notification notification = notificationRepository.save(
+        return notificationRepository.save(
                 Notification.builder()
                         .receiver(receiver)
                         .sender(sender)
@@ -62,23 +62,6 @@ public class NotificationService {
                         .redirectUrl(dto.getRedirectUrl())
                         .build()
         );
-
-        eventPublisher.publishEvent(new NotificationCreatedEvent(notification));
-    }
-
-    @Transactional(readOnly = true)
-    protected String getDiaryTitleIfExists(Notification notification) {
-        Long targetId = notification.getTargetId();
-
-        return switch (notification.getNotificationType()) {
-            case COMMENT_ADDED ->
-                    diaryCommentRepository.findDiaryTitleByCommentId(targetId).orElse(null);
-            case CORRECTION_ADDED ->
-                    correctionRepository.findDiaryTitleByCorrectionId(targetId).orElse(null);
-            case CORRECTION_REPLIED ->
-                    correctionCommentRepository.findDiaryTitleByCorrectionCommentId(targetId).orElse(null);
-            default -> null;
-        };
     }
 
     public PageDTO<NotificationResponseDTO> getNotifications(Boolean isRead, int page, int size) {
@@ -162,7 +145,7 @@ public class NotificationService {
             notification.markAsRead();
         }
         notificationRepository.flush();
-        
+
         sseEmitterService.sendAllReadUpdate(memberId);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
