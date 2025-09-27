@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diarylike.service;
 
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
@@ -61,7 +62,7 @@ public class DiaryLikeService {
 
         return DiaryLikeResponseDTO.ToggleDiaryLikeResponseDTO.builder()
                 .diaryId(diaryId)
-                .memberId(memberId)
+                .memberProfile(MemberProfileDTO.from(member))
                 .liked(liked)
                 .likedCount(diary.getLikeCount())
                 .build();

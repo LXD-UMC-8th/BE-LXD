@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "io.sentry.jvm.gradle" version "5.11.0"
 }
 
 group = 'org.lxdproject'
@@ -70,8 +71,20 @@ dependencies {
 	annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
 	annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 
+	// shed lock
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:5.12.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.12.0'
+
 	// Apache Commons Text
 	implementation 'org.apache.commons:commons-text:1.10.0'
+
+	// Sentry Alert
+	implementation(platform("io.sentry:sentry-bom:8.21.1"))
+	implementation "io.sentry:sentry-spring-boot-starter-jakarta"
+	implementation "io.sentry:sentry-logback"
+
+	// Web Client
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.named('test') {
@@ -83,4 +96,12 @@ def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
 sourceSets {
 	main.java.srcDirs += querydslDir
+}
+
+// Sentry 추가 설정
+sentry {
+	includeSourceContext = true
+	org = "lxd"
+	projectName = "java-spring-boot"
+	authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }

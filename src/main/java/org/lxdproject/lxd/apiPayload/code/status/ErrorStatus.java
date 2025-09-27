@@ -27,6 +27,8 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "MEMBER4315", "올바르지 않은 닉네임 형식입니다."),
     INVALID_PROFILE_DATA(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임을 {\"nickname\":\"수정할 닉네임\"} 형식으로 요청해주세요."),
     NEW_PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER4316", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다"),
+    RESOURCE_OWNER_WITHDRAWN(HttpStatus.FORBIDDEN, "MEMBER4320", "리소스 소유자가 탈퇴하여 접근할 수 없습니다."),
+    TARGET_USER_WITHDRAWN(HttpStatus.FORBIDDEN, "AUTH4321", "해당 유저가 탈퇴하였습니다."),
 
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),
@@ -52,6 +54,8 @@ public enum ErrorStatus implements BaseErrorCode {
     AUTHENTICATION_INFO_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH4320", "인증 정보를 찾을 수 없습니다."),
     INVALID_AUTHENTICATION_INFO(HttpStatus.FORBIDDEN, "AUTH4321", "인증된 사용자 정보가 올바르지 않습니다."),
     NOT_RESOURCE_OWNER(HttpStatus.FORBIDDEN,"AUTH4001","해당 리소스의 작성자가 아닙니다. 권한이 없습니다."),
+    SELF_WITHDRAWN_USER(HttpStatus.FORBIDDEN, "AUTH4330", "탈퇴한 사용자는 서비스를 이용할 수 없습니다."),
+    NO_WITHDRAWN_USER(HttpStatus.FORBIDDEN, "AUTH4331", "탈퇴한 사용자가 아닙니다."),
 
     // 일기 관련 에러
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),
@@ -78,6 +82,7 @@ public enum ErrorStatus implements BaseErrorCode {
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"COMMENT4002","댓글을 찾을 수 없습니다."),
     COMMENT_DEPTH_EXCEEDED(HttpStatus.FORBIDDEN,"COMMENT4003", "댓글은 한 단계까지만 허용됩니다."),
     COMMENT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "COMMENT4004", "댓글 작성 권한이 없습니다."),
+    COMMENT_DELETE_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "COMMENT4005", "댓글 삭제 권한이 없습니다."),
 
     // S3 관련 에러
     FILE_STREAM_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"S34001","파일 스트림 읽기 실패"),
