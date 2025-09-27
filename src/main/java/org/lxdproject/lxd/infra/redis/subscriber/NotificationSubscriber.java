@@ -43,32 +43,64 @@ public class NotificationSubscriber implements MessageListener {
 
             log.debug("[RedisSubscriber] 메시지 수신: {}", dto);
 
-            // 클라이언트용 메시지 생성
-            Notification notification = notificationRepository.findWithSenderAndReceiverById(dto.getNotificationId())
-                    .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
-
-            Member sender = notification.getSender();
-            Member receiver = notification.getReceiver();
-
-            // 알림 받는 사람의 언어를 기준으로 메시지 생성
-            Locale locale = receiver.getNativeLanguage().toLocale();
-            List<MessagePart> parts = messageResolverManager.resolve(dto, locale);
-
-            NotificationResponseDTO response = NotificationResponseDTO.builder()
-                    .id(notification.getId())
-                    .profileImg(sender.getProfileImg())
-                    .messageParts(parts)
-                    .redirectUrl(notification.getRedirectUrl())
-                    .isRead(notification.isRead())
-                    .buttonField(notification.getNotificationType() == NotificationType.FRIEND_REQUEST)
-                    .createdAt(DateFormatUtil.formatDate(notification.getCreatedAt()))
-                    .build();
-
-            // SSE 전송
-            sseEmitterService.send(dto.getReceiverId(), response);
+            // 이벤트 타입에 따라 분기 처리
+            switch (dto.getEventType()) {
+                case CREATED -> handleCreated(dto);
+                case DELETED -> handleDeleted(dto);
+                case READ -> handleRead(dto);
+                case ALL_READ -> handleAllRead(dto);
+                default -> log.warn("[RedisSubscriber] 알 수 없는 이벤트 타입: {}", dto.getEventType());
+            }
 
         } catch (Exception e) {
             log.error("[RedisSubscriber] 메시지 처리 실패", e);
         }
+    }
+
+    private void handleCreated(NotificationMessageContext dto) {
+        notificationRepository.findWithSenderAndReceiverById(dto.getNotificationId())
+                .ifPresentOrElse(notification -> {
+                    Member sender = notification.getSender();
+                    Member receiver = notification.getReceiver();
+
+                    // 알림 받는 사람의 언어 기준 메시지 생성
+                    Locale locale = receiver.getNativeLanguage().toLocale();
+                    List<MessagePart> parts = messageResolverManager.resolve(dto, locale);
+
+                    NotificationResponseDTO response = NotificationResponseDTO.builder()
+                            .id(notification.getId())
+                            .profileImg(sender.getProfileImg())
+                            .messageParts(parts)
+                            .redirectUrl(notification.getRedirectUrl())
+                            .isRead(notification.isRead())
+                            .buttonField(notification.getNotificationType() == NotificationType.FRIEND_REQUEST)
+                            .createdAt(DateFormatUtil.formatDate(notification.getCreatedAt()))
+                            .build();
+
+                    // SSE 전송
+                    sseEmitterService.send(dto.getReceiverId(), response);
+                }, () -> {
+                    new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
+                });
+    }
+
+    private void handleDeleted(NotificationMessageContext dto) {
+        sseEmitterService.sendNotificationDeleted(
+                dto.getReceiverId(),
+                dto.getNotificationType(),
+                dto.getTargetType(),
+                dto.getTargetId()
+        );
+    }
+
+    private void handleRead(NotificationMessageContext dto) {
+        sseEmitterService.sendNotificationReadUpdate(
+                dto.getReceiverId(),
+                dto.getNotificationId()
+        );
+    }
+
+    private void handleAllRead(NotificationMessageContext dto) {
+        sseEmitterService.sendAllReadUpdate(dto.getReceiverId());
     }
 }

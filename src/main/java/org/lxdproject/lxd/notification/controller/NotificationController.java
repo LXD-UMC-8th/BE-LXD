@@ -27,7 +27,7 @@ public class NotificationController implements NotificationApi {
 
     @Override
     public SseEmitter subscribe() {
-        return emitterService.connect();
+        return emitterService.subscribe();
     }
 
     @Override
