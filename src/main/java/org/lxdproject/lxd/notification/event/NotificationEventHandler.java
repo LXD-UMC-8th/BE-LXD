@@ -7,7 +7,7 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentRepository;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
-import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
+import org.lxdproject.lxd.notification.message.MessageContext;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.EventType;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
@@ -35,7 +35,7 @@ public class NotificationEventHandler {
         Notification notification = notificationRepository.findById(event.getNotificationId())
                 .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
 
-        NotificationMessageContext message = NotificationMessageContext.builder()
+        MessageContext message = MessageContext.builder()
                 .eventType(EventType.CREATED)
                 .notificationId(notification.getId())
                 .receiverId(notification.getReceiver().getId())
@@ -69,7 +69,7 @@ public class NotificationEventHandler {
     // 삭제 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleDeleted(NotificationDeletedEvent event) {
-        NotificationMessageContext message = NotificationMessageContext.builder()
+        MessageContext message = MessageContext.builder()
                 .eventType(EventType.DELETED)
                 .receiverId(event.getReceiverId())
                 .notificationId(event.getNotificationId())
@@ -84,7 +84,7 @@ public class NotificationEventHandler {
     // 단일 읽음 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleRead(NotificationReadEvent event) {
-        NotificationMessageContext message = NotificationMessageContext.builder()
+        MessageContext message = MessageContext.builder()
                 .eventType(EventType.READ)
                 .receiverId(event.getMemberId())
                 .notificationId(event.getNotificationId())
@@ -96,7 +96,7 @@ public class NotificationEventHandler {
     // 전체 읽음 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAllRead(NotificationAllReadEvent event) {
-        NotificationMessageContext message = NotificationMessageContext.builder()
+        MessageContext message = MessageContext.builder()
                 .eventType(EventType.ALL_READ)
                 .receiverId(event.getMemberId())
                 .build();

@@ -23,6 +23,7 @@ import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.event.NotificationDeletedEvent;
 import org.lxdproject.lxd.notification.event.NotificationReadEvent;
 import org.lxdproject.lxd.notification.message.MessageResolverManager;
+import org.lxdproject.lxd.notification.message.MessageContext;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -99,7 +100,7 @@ public class NotificationService {
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
-                    NotificationMessageContext context = NotificationMessageContext.builder()
+                    MessageContext context = MessageContext.builder()
                             .notificationId(notification.getId())
                             .receiverId(notification.getReceiver().getId())
                             .senderId(notification.getSender().getId())
@@ -189,7 +190,7 @@ public class NotificationService {
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
-                    NotificationMessageContext context = NotificationMessageContext.builder()
+                    MessageContext context = MessageContext.builder()
                             .notificationId(notification.getId())
                             .receiverId(notification.getReceiver().getId())
                             .senderId(notification.getSender().getId())

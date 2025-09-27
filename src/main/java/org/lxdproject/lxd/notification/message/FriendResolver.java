@@ -3,7 +3,6 @@ package org.lxdproject.lxd.notification.message;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.notification.dto.MessagePart;
-import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ public class FriendResolver implements MessageResolver {
     }
 
     @Override
-    public List<MessagePart> resolveParts(NotificationMessageContext event, Locale locale) {
+    public List<MessagePart> resolveParts(MessageContext event, Locale locale) {
         String senderUsername = "@" + event.getSenderUsername();
         NotificationType type = event.getNotificationType();
 

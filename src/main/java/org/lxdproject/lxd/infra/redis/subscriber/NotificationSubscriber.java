@@ -7,11 +7,9 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
-import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
-import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.message.MessageContext;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.message.MessageResolverManager;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
@@ -38,7 +36,7 @@ public class NotificationSubscriber implements MessageListener {
         try {
             // Redis 메시지 수신
             String body = new String(message.getBody());
-            NotificationMessageContext dto = objectMapper.readValue(body, NotificationMessageContext.class);
+            MessageContext dto = objectMapper.readValue(body, MessageContext.class);
 
             log.debug("[RedisSubscriber] 메시지 수신: {}", dto);
 
@@ -56,7 +54,7 @@ public class NotificationSubscriber implements MessageListener {
         }
     }
 
-    private void handleCreated(NotificationMessageContext dto) {
+    private void handleCreated(MessageContext dto) {
         notificationRepository.findWithSenderAndReceiverById(dto.getNotificationId())
                 .ifPresentOrElse(notification -> {
                     Member sender = notification.getSender();
@@ -83,7 +81,7 @@ public class NotificationSubscriber implements MessageListener {
                 });
     }
 
-    private void handleDeleted(NotificationMessageContext dto) {
+    private void handleDeleted(MessageContext dto) {
         sseEmitterService.sendNotificationDeleted(
                 dto.getReceiverId(),
                 dto.getNotificationId(),
@@ -93,14 +91,14 @@ public class NotificationSubscriber implements MessageListener {
         );
     }
 
-    private void handleRead(NotificationMessageContext dto) {
+    private void handleRead(MessageContext dto) {
         sseEmitterService.sendNotificationReadUpdate(
                 dto.getReceiverId(),
                 dto.getNotificationId()
         );
     }
 
-    private void handleAllRead(NotificationMessageContext dto) {
+    private void handleAllRead(MessageContext dto) {
         sseEmitterService.sendAllReadUpdate(dto.getReceiverId());
     }
 }

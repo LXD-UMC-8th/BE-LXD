@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.notification.dto.MessagePart;
-import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public class MessageResolverManager {
 
     private final List<MessageResolver> resolvers;
 
-    public List<MessagePart> resolve(NotificationMessageContext publishEvent, Locale locale) {
+    public List<MessagePart> resolve(MessageContext publishEvent, Locale locale) {
         return resolvers.stream()
                 .filter(resolver -> resolver.supports(publishEvent.getNotificationType()))
                 .findFirst()

@@ -1,7 +1,6 @@
-package org.lxdproject.lxd.notification.dto;
+package org.lxdproject.lxd.notification.message;
 
 import lombok.*;
-import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.EventType;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
@@ -11,7 +10,7 @@ import org.lxdproject.lxd.notification.entity.enums.TargetType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class NotificationMessageContext {
+public class MessageContext {
     private EventType eventType;
     private Long notificationId;
     private Long receiverId;
