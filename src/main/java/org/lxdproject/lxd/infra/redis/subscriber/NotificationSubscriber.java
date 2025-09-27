@@ -77,7 +77,7 @@ public class NotificationSubscriber implements MessageListener {
                     // SSE 전송
                     sseEmitterService.send(dto.getReceiverId(), response);
                 }, () -> {
-                    new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
+                    throw new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
                 });
     }
 
