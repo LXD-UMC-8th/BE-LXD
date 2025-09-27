@@ -31,7 +31,6 @@ public class NotificationSubscriber implements MessageListener {
     private final ObjectMapper objectMapper; // 메시지 역직렬화용
     private final SseEmitterService sseEmitterService;
     private final NotificationRepository notificationRepository;
-    private final MemberRepository memberRepository;
     private final MessageResolverManager messageResolverManager;
 
     @Override
