@@ -17,6 +17,7 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.message.MessageResolverManager;
 import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
@@ -35,13 +36,13 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final NotificationPublisher notificationPublisher;
     private final MemberRepository memberRepository;
     private final MessageResolverManager messageResolverManager;
     private final SseEmitterService sseEmitterService;
     private final CorrectionCommentRepository correctionCommentRepository;
     private final CorrectionRepository correctionRepository;
     private final DiaryCommentRepository diaryCommentRepository;
+
 
     public void saveAndPublishNotification(NotificationRequestDTO dto) {
 
@@ -51,27 +52,18 @@ public class NotificationService {
         Member sender = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // Notification 저장
-        Notification notification = Notification.builder()
-                .receiver(receiver)
-                .sender(sender)
-                .notificationType(dto.getNotificationType())
-                .targetType(dto.getTargetType())
-                .targetId(dto.getTargetId())
-                .redirectUrl(dto.getRedirectUrl())
-                .build();
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .receiver(receiver)
+                        .sender(sender)
+                        .notificationType(dto.getNotificationType())
+                        .targetType(dto.getTargetType())
+                        .targetId(dto.getTargetId())
+                        .redirectUrl(dto.getRedirectUrl())
+                        .build()
+        );
 
-        notificationRepository.save(notification);
-        notificationRepository.flush();
-
-        String senderUsername = sender.getUsername();
-        String diaryTitle = getDiaryTitleIfExists(notification);
-
-        // Notification을 기반으로 Redis에 발행되는 메시지 생성
-        NotificationMessageContext publishEventDTO = NotificationMessageContext.of(notification, senderUsername, diaryTitle);
-
-        // Redis에 publish
-        notificationPublisher.publish(publishEventDTO);
+        eventPublisher.publishEvent(new NotificationCreatedEvent(notification));
     }
 
     @Transactional(readOnly = true)
