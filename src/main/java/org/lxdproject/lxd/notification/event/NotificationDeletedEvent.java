@@ -8,6 +8,7 @@ import org.lxdproject.lxd.notification.entity.enums.TargetType;
 @Getter
 @RequiredArgsConstructor
 public class NotificationDeletedEvent {
+    private final Long notificationId;
     private final Long receiverId;
     private final NotificationType notificationType;
     private final TargetType targetType;

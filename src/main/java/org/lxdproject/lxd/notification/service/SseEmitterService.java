@@ -69,8 +69,9 @@ public class SseEmitterService {
     }
 
     // 알림 삭제
-    public void sendNotificationDeleted(Long receiverId, NotificationType type, TargetType targetType, Long targetId) {
+    public void sendNotificationDeleted(Long receiverId, Long notificationId, NotificationType type, TargetType targetType, Long targetId) {
         Map<String, Object> payload = Map.of(
+                "notificationId", notificationId,
                 "notificationType", type,
                 "targetType", targetType,
                 "targetId", targetId

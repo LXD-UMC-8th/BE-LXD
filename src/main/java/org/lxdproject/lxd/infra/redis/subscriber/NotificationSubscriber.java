@@ -87,6 +87,7 @@ public class NotificationSubscriber implements MessageListener {
     private void handleDeleted(NotificationMessageContext dto) {
         sseEmitterService.sendNotificationDeleted(
                 dto.getReceiverId(),
+                dto.getNotificationId(),
                 dto.getNotificationType(),
                 dto.getTargetType(),
                 dto.getTargetId()

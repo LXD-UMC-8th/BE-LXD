@@ -78,6 +78,7 @@ public class NotificationEventHandler {
             NotificationMessageContext message = NotificationMessageContext.builder()
                     .eventType(EventType.DELETED)
                     .receiverId(event.getReceiverId())
+                    .notificationId(event.getNotificationId())
                     .notificationType(event.getNotificationType())
                     .targetType(event.getTargetType())
                     .targetId(event.getTargetId())
