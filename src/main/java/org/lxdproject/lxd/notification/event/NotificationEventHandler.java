@@ -30,7 +30,6 @@ public class NotificationEventHandler {
     private final CorrectionCommentRepository correctionCommentRepository;
 
     // 생성 이벤트 처리
-    @Transactional(readOnly = true)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCreated(NotificationCreatedEvent event) {
         Notification notification = notificationRepository.findById(event.getNotificationId())
