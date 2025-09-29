@@ -32,39 +32,22 @@ public class NotificationEventHandler {
     // 생성 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCreated(NotificationCreatedEvent event) {
-        Notification notification = notificationRepository.findById(event.getNotificationId())
-                .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
-
         MessageContext message = MessageContext.builder()
                 .eventType(EventType.CREATED)
-                .notificationId(notification.getId())
-                .receiverId(notification.getReceiver().getId())
-                .senderId(notification.getSender().getId())
-                .senderUsername(notification.getSender().getUsername())
-                .notificationType(notification.getNotificationType())
-                .targetType(notification.getTargetType())
-                .targetId(notification.getTargetId())
-                .redirectUrl(notification.getRedirectUrl())
-                .diaryTitle(getDiaryTitleIfExists(notification))
+                .notificationId(event.getNotificationId())
+                .receiverId(event.getReceiverId())
+                .senderId(event.getSenderId())
+                .senderUsername(event.getSenderUsername())
+                .notificationType(event.getNotificationType())
+                .targetType(event.getTargetType())
+                .targetId(event.getTargetId())
+                .redirectUrl(event.getRedirectUrl())
+                .diaryTitle(event.getDiaryTitle())
                 .build();
 
         notificationPublisher.publishAfterCommit(message);
     }
 
-    @Transactional(readOnly = true)
-    protected String getDiaryTitleIfExists(Notification notification) {
-        Long targetId = notification.getTargetId();
-
-        return switch (notification.getNotificationType()) {
-            case COMMENT_ADDED ->
-                    diaryCommentRepository.findDiaryTitleByCommentId(targetId).orElse(null);
-            case CORRECTION_ADDED ->
-                    correctionRepository.findDiaryTitleByCorrectionId(targetId).orElse(null);
-            case CORRECTION_REPLIED ->
-                    correctionCommentRepository.findDiaryTitleByCorrectionCommentId(targetId).orElse(null);
-            default -> null;
-        };
-    }
 
     // 삭제 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

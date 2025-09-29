@@ -228,7 +228,23 @@ public class NotificationService {
     @Transactional
     public void createAndPublish(NotificationRequestDTO dto) {
         Long notificationId = createNotification(dto);
-        eventPublisher.publishEvent(new NotificationCreatedEvent(notificationId));
+
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
+
+        eventPublisher.publishEvent(
+                NotificationCreatedEvent.builder()
+                    .notificationId(notificationId)
+                    .receiverId(notification.getReceiver().getId())
+                    .senderId(notification.getSender().getId())
+                    .senderUsername(notification.getSender().getUsername())
+                    .notificationType(notification.getNotificationType())
+                    .targetType(notification.getTargetType())
+                    .targetId(notification.getTargetId())
+                    .redirectUrl(notification.getRedirectUrl())
+                    .diaryTitle(getDiaryTitleIfExists(notification))
+                    .build()
+        );
     }
 
     @Transactional
