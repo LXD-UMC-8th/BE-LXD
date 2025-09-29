@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommentPolicy {
 
-    private final MemberPolicy memberPolicy;
-
     public Permit canCreate(Long writerId, Diary diary, boolean areFriends) {
         if (writerId == null) return Permit.DENY;
 

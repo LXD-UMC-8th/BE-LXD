@@ -1,7 +1,5 @@
 package org.lxdproject.lxd.authz.policy;
 
-import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
-import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Component;
