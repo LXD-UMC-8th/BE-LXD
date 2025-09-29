@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.Locale;
 
 public interface MessageResolver {
-    boolean supports(NotificationType type);
+    NotificationType getSupportedType();
     List<MessagePart> resolveParts(MessageContext event, Locale locale);
 }

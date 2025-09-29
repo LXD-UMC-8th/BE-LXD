@@ -15,8 +15,8 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class DiaryCommentResolver implements MessageResolver {
     @Override
-    public boolean supports(NotificationType type) {
-        return type == NotificationType.COMMENT_ADDED;
+    public NotificationType getSupportedType() {
+        return NotificationType.COMMENT_ADDED;
     }
 
     @Override
