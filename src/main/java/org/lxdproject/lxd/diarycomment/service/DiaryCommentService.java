@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.guard.CommentGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -45,7 +45,7 @@ public class DiaryCommentService {
     private final DiaryCommentLikeRepository likeRepository;
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
-    private final PermissionGuard permissionGuard;
+    private final CommentGuard commentGuard;
 
     @Transactional
     public DiaryCommentResponseDTO writeComment(Long diaryId, DiaryCommentRequestDTO request) {
@@ -60,7 +60,7 @@ public class DiaryCommentService {
         boolean areFriends = friendRepository.areFriends(memberId, diaryOwner.getId());
 
         // 댓글 작성 권한 검증
-        permissionGuard.canCreateDiaryComment(memberId, diary, areFriends);
+        commentGuard.canCreateDiaryComment(memberId, diary, areFriends);
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
@@ -205,7 +205,7 @@ public class DiaryCommentService {
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         // 삭제 권한 검증
-        permissionGuard.canDeleteDiaryComment(requesterId, comment);
+        commentGuard.canDeleteDiaryComment(requesterId, comment);
 
         comment.softDelete();
         diary.decreaseCommentCount();

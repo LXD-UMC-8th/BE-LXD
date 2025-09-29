@@ -5,7 +5,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.guard.CommentGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -37,7 +37,7 @@ public class CorrectionCommentService {
     private final CorrectionCommentRepository commentRepository;
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
-    private final PermissionGuard permissionGuard;
+    private final CommentGuard commentGuard;
     private final NotificationService notificationService;
 
     @Transactional
@@ -115,7 +115,7 @@ public class CorrectionCommentService {
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         // 삭제 권한 검증
-        permissionGuard.canDeleteCorrectionComment(requesterId, comment);
+        commentGuard.canDeleteCorrectionComment(requesterId, comment);
 
         comment.softDelete();
 
