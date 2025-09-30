@@ -18,9 +18,12 @@ import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentReposito
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +42,7 @@ public class CorrectionCommentService {
     private final MemberRepository memberRepository;
     private final PermissionGuard permissionGuard;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public CorrectionCommentResponseDTO writeComment(Long correctionId, CorrectionCommentRequestDTO request) {
@@ -67,7 +71,7 @@ public class CorrectionCommentService {
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId() + "/comments/" + saved.getId())
                     .build();
 
-            notificationService.saveAndPublishNotification(dto);
+            notificationService.createAndPublish(dto);
         }
 
         return CorrectionCommentResponseDTO.builder()

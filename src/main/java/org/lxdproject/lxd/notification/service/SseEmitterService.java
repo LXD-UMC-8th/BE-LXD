@@ -3,9 +3,7 @@ package org.lxdproject.lxd.notification.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.config.security.SecurityUtil;
-import org.lxdproject.lxd.notification.dto.NotificationDeleteEvent;
-import org.lxdproject.lxd.notification.dto.NotificationReadUpdateEvent;
-import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.dto.NotificationResponseDTO;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SseEmitterService {
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    public SseEmitter connect() {
+    public SseEmitter subscribe() {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1시간
@@ -47,79 +45,50 @@ public class SseEmitterService {
         return emitter;
     }
 
-    public void send(Long memberId, Object data) {
+
+    private void sendToClient(Long memberId, String eventName, Object data) {
         SseEmitter emitter = emitters.get(memberId);
         if (emitter != null) {
             try {
-                log.info("[SSE] 알림 전송 - to: {}, data: {}", memberId, data);
                 emitter.send(SseEmitter.event()
-                        .name("notification")
+                        .name(eventName)
                         .data(data));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 emitters.remove(memberId);
-                log.error("[SSE] 알림 전송 실패 - memberId: {}", memberId, e);
+                log.warn("[SSE] 전송 실패 → emitter 제거, memberId={}", memberId, e);
             }
-        } else {
-            log.warn("[SSE] 알림 전송 실패: 연결 없음 - memberId: {}", memberId);
         }
     }
 
-    public void sendNotificationReadUpdate(Notification notification) {
-        Long receiverId = notification.getReceiver().getId();
+    // 알림 생성
+    public void send(Long receiverId, NotificationResponseDTO response) {
+        sendToClient(receiverId, "notification-created", response);
+    }
 
-        NotificationReadUpdateEvent dto = new NotificationReadUpdateEvent(
-                notification.getId(), true
+    // 알림 삭제
+    public void sendNotificationDeleted(Long receiverId, Long notificationId, NotificationType type, TargetType targetType, Long targetId) {
+        Map<String, Object> payload = Map.of(
+                "notificationId", notificationId,
+                "notificationType", type,
+                "targetType", targetType,
+                "targetId", targetId
         );
-
-        SseEmitter emitter = emitters.get(receiverId);
-        if (emitter != null) {
-            try {
-                log.info("[SSE] 알림 읽음 상태 전송 - to: {}, notificationId: {}", receiverId, notification.getId());
-                emitter.send(SseEmitter.event()
-                        .name("notification-read")
-                        .data(dto));
-            } catch (IOException e) {
-                emitters.remove(receiverId);
-                log.error("[SSE] 알림 읽음 상태 전송 실패 - receiverId: {}", receiverId, e);
-            }
-        }
-        else {
-            log.warn("[SSE] 알림 읽음 상태 전송 실패: 연결 없음 - receiverId: {}", receiverId);
-        }
+        sendToClient(receiverId, "notification-deleted", payload);
     }
 
+    // 알림 단일 읽음
+    public void sendNotificationReadUpdate(Long receiverId, Long notificationId) {
+        Map<String, Object> payload = Map.of(
+                "notificationId", notificationId,
+                "isRead", true
+        );
+        sendToClient(receiverId, "notification-read", payload);
+    }
+
+    // 알림 전체 읽음
     public void sendAllReadUpdate(Long receiverId) {
-        SseEmitter emitter = emitters.get(receiverId);
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("notification-all-read")
-                        .data("ALL_READ"));
-            } catch (IOException e) {
-                emitters.remove(receiverId);
-            }
-        }
-    }
-
-    public void sendNotificationDeleted(Long receiverId,
-                                        NotificationType type,
-                                        TargetType targetType,
-                                        Long targetId) {
-        SseEmitter emitter = emitters.get(receiverId);
-        if (emitter == null) {
-            log.warn("[SSE] 알림 삭제 전송 실패: 연결 없음 - receiverId: {}", receiverId);
-            return;
-        }
-
-        NotificationDeleteEvent payload = new NotificationDeleteEvent(type, targetType, targetId);
-
-        try {
-            emitter.send(SseEmitter.event()
-                    .name("notification-deleted")
-                    .data(payload));
-        } catch (Exception e) {
-            log.error("[SSE] 알림 삭제 실패 - receiverId: {}", receiverId, e);
-        }
+        Map<String, Object> payload = Map.of("isAllRead", true);
+        sendToClient(receiverId, "notification-all-read", payload);
     }
 
 }

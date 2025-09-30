@@ -3,9 +3,7 @@ package org.lxdproject.lxd.notification.message;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.notification.dto.MessagePart;
-import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
 import org.springframework.stereotype.Component;
@@ -15,14 +13,14 @@ import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class CorrectionNotificationMessageResolver implements NotificationMessageResolver {
+public class CorrectionResolver implements MessageResolver {
     @Override
-    public boolean supports(NotificationType type) {
-        return type == NotificationType.CORRECTION_ADDED;
+    public NotificationType getSupportedType() {
+        return NotificationType.CORRECTION_ADDED;
     }
 
     @Override
-    public List<MessagePart> resolveParts(NotificationMessageContext event, Locale locale) {
+    public List<MessagePart> resolveParts(MessageContext event, Locale locale) {
         if (event.getTargetType() != TargetType.CORRECTION) {
             throw new NotificationHandler(ErrorStatus.TARGET_TYPE_MISMATCH);
         }
