@@ -16,13 +16,6 @@ public class FriendGuard {
     private final FriendPolicy friendPolicy;
     private final MemberPolicy memberPolicy;
 
-    public void canViewFriendList(Member member) {
-        Permit memberPermit = memberPolicy.checkDeletedMember(member);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-    }
-
     public void canSendFriendRequest(Member request, Member receiver) {
 
         Permit memberPermit = memberPolicy.checkDeletedMember(request);
