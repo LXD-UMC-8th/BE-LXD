@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 
 @Component
-public class VisibilityPredicates {
+public class DiaryPredicates {
     public static BooleanExpression diaryVisibleTo(Long viewerId, QDiary D, Set<Long> friendIds) {
         BooleanExpression isPublic = D.visibility.eq(Visibility.PUBLIC);
         BooleanExpression isMine   = viewerId == null ? Expressions.FALSE : D.member.id.eq(viewerId);
