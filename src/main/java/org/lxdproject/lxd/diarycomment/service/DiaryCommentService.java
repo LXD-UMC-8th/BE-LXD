@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.CommentGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -46,6 +47,7 @@ public class DiaryCommentService {
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
     private final CommentGuard commentGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public DiaryCommentResponseDTO writeComment(Long diaryId, DiaryCommentRequestDTO request) {
@@ -122,6 +124,11 @@ public class DiaryCommentService {
     @Transactional(readOnly = true)
     public PageDTO<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
+
         int offset = page * size;
 
         // 부모 댓글
@@ -179,9 +186,7 @@ public class DiaryCommentService {
                 .toList();
 
         // 전체 댓글 개수(부모 + 자식)
-        int totalElements = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND))
-                .getCommentCount();
+        int totalElements = diary.getCommentCount();
 
         // hasNext는 부모 댓글 수 기준
         boolean hasNext = diaryCommentRepository.countParentComments(diaryId) > offset + size;
