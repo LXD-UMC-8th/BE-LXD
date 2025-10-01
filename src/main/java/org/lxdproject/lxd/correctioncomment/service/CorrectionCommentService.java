@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.CommentGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -39,6 +40,7 @@ public class CorrectionCommentService {
     private final MemberRepository memberRepository;
     private final CommentGuard commentGuard;
     private final NotificationService notificationService;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public CorrectionCommentResponseDTO writeComment(Long correctionId, CorrectionCommentRequestDTO request) {
@@ -47,6 +49,7 @@ public class CorrectionCommentService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Correction correction = correctionRepository.findById(correctionId)
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(correction.getDiary().getMember());
 
         CorrectionComment comment = CorrectionComment.builder()
                 .member(member)
@@ -83,6 +86,7 @@ public class CorrectionCommentService {
     public PageDTO<CorrectionCommentResponseDTO> getComments(Long correctionId, int page, int size) {
         Correction correction = correctionRepository.findById(correctionId)
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(correction.getDiary().getMember());
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createdAt"));
 
