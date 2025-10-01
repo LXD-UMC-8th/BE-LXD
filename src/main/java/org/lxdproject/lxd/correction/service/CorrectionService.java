@@ -2,6 +2,7 @@ package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -37,8 +38,8 @@ public class CorrectionService {
     private final DiaryRepository diaryRepository;
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
     private final MemberRepository memberRepository;
-
     private final NotificationService notificationService;
+    private final MemberGuard memberGuard;
 
     @Transactional(readOnly = true)
     public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(Long diaryId, int page, int size) {
@@ -129,6 +130,7 @@ public class CorrectionService {
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(requestDto.getDiaryId())
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
         Correction correction = Correction.builder()
                 .diary(diary)
