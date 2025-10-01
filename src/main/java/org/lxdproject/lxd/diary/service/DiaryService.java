@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.guard.DiaryGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -49,6 +50,7 @@ public class DiaryService {
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final DiaryGuard diaryGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -79,6 +81,8 @@ public class DiaryService {
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
         diaryGuard.hasVisibilityPermission(currentMemberId, diary);
 
         return DiaryDetailResponseDTO.from(diary);
