@@ -49,6 +49,7 @@ public class CorrectionService {
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
         Page<Correction> correctionPage = correctionRepository.findByDiaryId(diaryId, pageable);
