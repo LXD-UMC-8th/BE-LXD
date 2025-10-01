@@ -17,7 +17,7 @@ public class FriendGuard {
     private final MemberPolicy memberPolicy;
 
     public void canViewFriendList(Member member) {
-        Permit memberPermit = memberPolicy.canUse(member);
+        Permit memberPermit = memberPolicy.checkDeletedMember(member);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
@@ -25,11 +25,11 @@ public class FriendGuard {
 
     public void canSendFriendRequest(Member request, Member receiver) {
 
-        Permit memberPermit = memberPolicy.canUse(request);
+        Permit memberPermit = memberPolicy.checkDeletedMember(request);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
-        memberPermit = memberPolicy.canUse(receiver);
+        memberPermit = memberPolicy.checkDeletedMember(receiver);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
@@ -48,11 +48,11 @@ public class FriendGuard {
 
     public void canAcceptFriendRequest(Member request, Member receiver) {
 
-        Permit memberPermit = memberPolicy.canUse(request);
+        Permit memberPermit = memberPolicy.checkDeletedMember(request);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
-        memberPermit = memberPolicy.canUse(receiver);
+        memberPermit = memberPolicy.checkDeletedMember(receiver);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
@@ -71,11 +71,11 @@ public class FriendGuard {
 
     public void canDeleteFriend(Member current, Member target){
 
-        Permit memberPermit = memberPolicy.canUse(current);
+        Permit memberPermit = memberPolicy.checkDeletedMember(current);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }
-        memberPermit = memberPolicy.canUse(target);
+        memberPermit = memberPolicy.checkDeletedMember(target);
         if (memberPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
         }

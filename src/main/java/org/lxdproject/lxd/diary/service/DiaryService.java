@@ -79,7 +79,7 @@ public class DiaryService {
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        diaryGuard.canView(currentMemberId, diary);
+        diaryGuard.hasVisibilityPermission(currentMemberId, diary);
 
         return DiaryDetailResponseDTO.from(diary);
     }

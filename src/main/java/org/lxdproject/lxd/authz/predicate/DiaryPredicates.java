@@ -10,19 +10,19 @@ import java.util.Set;
 
 @Component
 public class DiaryPredicates {
-    public static BooleanExpression diaryVisibleTo(Long viewerId, QDiary D, Set<Long> friendIds) {
+    public static BooleanExpression isVisibleTo(Long viewerId, QDiary D, Set<Long> friendIds) {
         BooleanExpression isPublic = D.visibility.eq(Visibility.PUBLIC);
         BooleanExpression isMine   = viewerId == null ? Expressions.FALSE : D.member.id.eq(viewerId);
         BooleanExpression isFriends = (viewerId != null && friendIds != null && !friendIds.isEmpty())
                 ? D.visibility.eq(Visibility.FRIENDS).and(D.member.id.in(friendIds))
                 : Expressions.FALSE;
-        BooleanExpression isAuthorNotDeleted = D.member.isNotNull().and(D.member.deletedAt.isNull());
-        return isPublic.or(isFriends).or(isMine).or(isAuthorNotDeleted);
+
+        return isPublic.or(isFriends).or(isMine);
     }
 
     // 내 글 제외
-    public static BooleanExpression diaryVisibleToOthers(Long viewerId, QDiary D, Set<Long> friendIds) {
-        BooleanExpression visible = diaryVisibleTo(viewerId, D, friendIds);
+    public BooleanExpression isVisibleToOthers(Long viewerId, QDiary D, Set<Long> friendIds) {
+        BooleanExpression visible = isVisibleTo(viewerId, D, friendIds);
         return viewerId == null ? visible : visible.and(D.member.id.ne(viewerId));
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MemberPolicy {
-    public Permit canUse(Member member) {
+    public Permit checkDeletedMember(Member member) {
         if (member == null || member.isDeleted()) {
             return Permit.WITHDRAWN; // 탈퇴 회원
         }

@@ -18,15 +18,15 @@ public class CommentGuard {
     private final CommentPolicy commentPolicy;
     private final MemberPolicy memberPolicy;
 
-    public void canCreateDiaryComment(Long writerId, Diary diary, boolean areFriends) {
+    public void hasCommentPermission(Long writerId, Diary diary, boolean areFriends) {
 
         // 탈퇴한 사용자의 일기에 댓글 작성하는 요청인지 검사
-        Permit ownerPermit = memberPolicy.canUse(diary.getMember());
+        Permit ownerPermit = memberPolicy.checkDeletedMember(diary.getMember());
         if (ownerPermit == Permit.WITHDRAWN) {
             throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
 
-        Permit permit = commentPolicy.canCreate(writerId, diary, areFriends);
+        Permit permit = commentPolicy.hasCommentPermission(writerId, diary, areFriends);
         if (permit == Permit.DENY) {
             throw new CommentHandler(ErrorStatus.COMMENT_PERMISSION_DENIED);
         }

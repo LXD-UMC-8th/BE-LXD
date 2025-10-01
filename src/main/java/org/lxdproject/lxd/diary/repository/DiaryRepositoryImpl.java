@@ -84,7 +84,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public Page<Diary> findDiariesByMemberId(Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable){
-        BooleanExpression visibility = DiaryPredicates.diaryVisibleToOthers(viewerId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(viewerId, DIARY, friendIds);
         BooleanExpression condition = DIARY.member.id.eq(ownerId)
                 .and(DIARY.deletedAt.isNull())
                 .and(visibility);
@@ -139,7 +139,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public Page<Diary> findFriendDiaries(Long memberId, Set<Long> friendIds, Pageable pageable) {
-        BooleanExpression visibility = DiaryPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(memberId, DIARY, friendIds);
 
         BooleanExpression condition = DIARY.member.id.in(friendIds)
                 .and(DIARY.deletedAt.isNull())
@@ -169,7 +169,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        BooleanExpression visibility = DiaryPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(memberId, DIARY, friendIds);
 
         BooleanExpression condition = DIARY.id.in(likedDiaryIds)
                 .and(DIARY.deletedAt.isNull())
@@ -196,7 +196,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     @Override
     public Page<Diary> findExploreDiaries(Long memberId, Language language, Set<Long> friendIds, Pageable pageable) {
 
-        BooleanExpression visibility = DiaryPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(memberId, DIARY, friendIds);
 
         BooleanExpression condition = DIARY.deletedAt.isNull()
                 .and(DIARY.visibility.eq(Visibility.PUBLIC))

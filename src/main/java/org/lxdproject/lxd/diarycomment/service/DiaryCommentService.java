@@ -60,7 +60,7 @@ public class DiaryCommentService {
         boolean areFriends = friendRepository.areFriends(memberId, diaryOwner.getId());
 
         // 댓글 작성 권한 검증
-        commentGuard.canCreateDiaryComment(memberId, diary, areFriends);
+        commentGuard.hasCommentPermission(memberId, diary, areFriends);
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
