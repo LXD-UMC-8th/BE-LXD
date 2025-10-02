@@ -7,6 +7,7 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 
 import org.lxdproject.lxd.authz.guard.FriendGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
@@ -50,6 +51,7 @@ public class FriendService {
     private final RedisService redisService;
 
     private final FriendGuard friendGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional(readOnly = true)
     public FriendListResponseDTO getFriendList(Long memberId, int page, int size) {
@@ -88,12 +90,14 @@ public class FriendService {
 
         Member requester = memberRepository.findById(requesterId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(requester);
 
         Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(receiver);
 
         // 친구 요청이 가능한 지에 대하 인가 검사
-        friendGuard.canSendFriendRequest(requester, receiver);
+        friendGuard.validateFriendRequest(requester, receiver);
 
         boolean alreadyRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 requester, receiver, FriendRequestStatus.PENDING);
@@ -139,13 +143,15 @@ public class FriendService {
             throw new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // 친구 관계 양방향 저장
         Member requester = request.getRequester();
+        memberGuard.checkOwnerIsNotDeleted(requester);
         Member receiver = request.getReceiver();
+        memberGuard.checkOwnerIsNotDeleted(receiver);
 
         // 친구 요청 수락에 대한 인가 검사
-        friendGuard.canAcceptFriendRequest(requester, receiver);
+        friendGuard.validateFriendRequest(requester, receiver);
 
+        // 친구 관계 양방향 저장
         friendRepository.saveFriendship(requester, receiver);
 
         // 친구 요청 알림 삭제
@@ -184,10 +190,11 @@ public class FriendService {
     public void deleteFriend(Long currentMemberId, Long friendId) {
         Member current = memberRepository.findById(currentMemberId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(current);
+
         Member target = memberRepository.findById(friendId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-        friendGuard.canDeleteFriend(current, target);
+        memberGuard.checkOwnerIsNotDeleted(target);
 
         boolean exists = friendRepository.areFriends(currentMemberId, friendId);
         if (!exists) {

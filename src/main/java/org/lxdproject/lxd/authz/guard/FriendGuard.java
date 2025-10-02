@@ -14,19 +14,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class FriendGuard {
     private final FriendPolicy friendPolicy;
-    private final MemberPolicy memberPolicy;
 
-    public void canSendFriendRequest(Member request, Member receiver) {
-
-        Permit memberPermit = memberPolicy.checkDeletedMember(request);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-        memberPermit = memberPolicy.checkDeletedMember(receiver);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-
+    public void validateFriendRequest(Member request, Member receiver) {
         // 동일인 검사
         if (friendPolicy.validateSameMember(request, receiver) == Permit.DENY) {
             throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
@@ -36,42 +25,6 @@ public class FriendGuard {
         if (friendPolicy.validateFriends(request, receiver) == Permit.DENY) {
             throw new FriendHandler(ErrorStatus.ALREADY_FRIENDS);
         }
-
     }
 
-    public void canAcceptFriendRequest(Member request, Member receiver) {
-
-        Permit memberPermit = memberPolicy.checkDeletedMember(request);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-        memberPermit = memberPolicy.checkDeletedMember(receiver);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-
-        // 동일인 검사
-        if (friendPolicy.validateSameMember(request, receiver) == Permit.DENY) {
-            throw new FriendHandler(ErrorStatus.INVALID_FRIEND_REQUEST);
-        }
-
-        // 이미 친구인지 검사
-        if (friendPolicy.validateFriends(request, receiver) == Permit.DENY) {
-            throw new FriendHandler(ErrorStatus.ALREADY_FRIENDS);
-        }
-
-    }
-
-    public void canDeleteFriend(Member current, Member target){
-
-        Permit memberPermit = memberPolicy.checkDeletedMember(current);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-        memberPermit = memberPolicy.checkDeletedMember(target);
-        if (memberPermit == Permit.WITHDRAWN) {
-            throw new MemberHandler(ErrorStatus.TARGET_USER_WITHDRAWN);
-        }
-
-    }
 }
