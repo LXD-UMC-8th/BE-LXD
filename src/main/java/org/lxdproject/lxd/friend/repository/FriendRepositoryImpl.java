@@ -158,11 +158,13 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     @Transactional
     public long countFriendsByMemberId(Long memberId) {
         return Optional.ofNullable(queryFactory
-                .select(friendship.count())
+                .select(Wildcard.count)
                 .from(friendship)
+                .join(friendship.receiver, MEMBER)
                 .where(
                         friendship.requester.id.eq(memberId),
-                        friendship.deletedAt.isNull()
+                        friendship.deletedAt.isNull(),
+                        MemberPredicates.isNotDeleted(MEMBER)
                 )
                 .fetchOne()).orElse(0L);
     }
