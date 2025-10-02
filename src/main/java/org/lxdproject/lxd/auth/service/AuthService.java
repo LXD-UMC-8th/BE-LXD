@@ -22,7 +22,6 @@ import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -191,7 +190,7 @@ public class AuthService {
             String type = values.get(0);   // email 또는 password
             String email = values.get(1);
 
-            String latestToken = redisService.getVerificationEmailToken(email);
+            String latestToken = redisService.getVerificationEmail(email);
 
             // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
             if(!token.equals(latestToken)) {
@@ -212,7 +211,7 @@ public class AuthService {
             // 5. 타입에 따라 리다이렉트 분기
             String redirectUrl = UriComponentsBuilder
                     .fromHttpUrl(fe)
-                    .path(type.equals("email") ? "/home/signup" : "/home/signup/change-pw")
+                    .path(type.equals("email") ? "/home/signup" : "/editprofile/change-pw")
                     .queryParam("token", newToken)
                     .toUriString();
             System.out.println(redirectUrl);
@@ -337,6 +336,9 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
+        if(redisService.getVerificationToken(token) == null){
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
         String email = redisService.getVerificationToken(token).get(1);
 
         if(email == null) {

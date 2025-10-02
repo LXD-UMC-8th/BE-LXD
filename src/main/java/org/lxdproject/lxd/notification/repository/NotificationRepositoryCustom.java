@@ -10,6 +10,6 @@ public interface NotificationRepositoryCustom {
     Page<Notification> findPageByMemberId(Long memberId, Boolean isRead, Pageable pageable);
     List<Notification> findUnreadWithSenderByReceiverId(Long receiverId);
     long deleteFriendRequestNotification(Long receiverId, Long requesterId);
-
+    Long findFriendRequestNotificationId(Long receiverId, Long requesterId);
 }
 

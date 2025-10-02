@@ -17,9 +17,15 @@ import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
-import org.lxdproject.lxd.notification.message.NotificationMessageResolverManager;
-import org.lxdproject.lxd.notification.publisher.NotificationPublisher;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationAllReadEvent;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
+import org.lxdproject.lxd.notification.event.NotificationDeletedEvent;
+import org.lxdproject.lxd.notification.event.NotificationReadEvent;
+import org.lxdproject.lxd.notification.message.MessageResolverManager;
+import org.lxdproject.lxd.notification.message.MessageContext;
 import org.lxdproject.lxd.notification.repository.NotificationRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,15 +41,14 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final NotificationPublisher notificationPublisher;
     private final MemberRepository memberRepository;
-    private final NotificationMessageResolverManager messageResolverManager;
-    private final SseEmitterService sseEmitterService;
     private final CorrectionCommentRepository correctionCommentRepository;
     private final CorrectionRepository correctionRepository;
     private final DiaryCommentRepository diaryCommentRepository;
+    private final MessageResolverManager messageResolverManager;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public void saveAndPublishNotification(NotificationRequestDTO dto) {
+    public Long createNotification(NotificationRequestDTO dto) {
 
         Member receiver = memberRepository.findById(dto.getReceiverId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -51,27 +56,18 @@ public class NotificationService {
         Member sender = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // Notification 저장
-        Notification notification = Notification.builder()
-                .receiver(receiver)
-                .sender(sender)
-                .notificationType(dto.getNotificationType())
-                .targetType(dto.getTargetType())
-                .targetId(dto.getTargetId())
-                .redirectUrl(dto.getRedirectUrl())
-                .build();
+        Notification notification = notificationRepository.save(
+                Notification.builder()
+                        .receiver(receiver)
+                        .sender(sender)
+                        .notificationType(dto.getNotificationType())
+                        .targetType(dto.getTargetType())
+                        .targetId(dto.getTargetId())
+                        .redirectUrl(dto.getRedirectUrl())
+                        .build()
+        );
 
-        notificationRepository.save(notification);
-        notificationRepository.flush();
-
-        String senderUsername = sender.getUsername();
-        String diaryTitle = getDiaryTitleIfExists(notification);
-
-        // Notification을 기반으로 Redis에 발행되는 메시지 생성
-        NotificationMessageContext publishEventDTO = NotificationMessageContext.of(notification, senderUsername, diaryTitle);
-
-        // Redis에 publish
-        notificationPublisher.publish(publishEventDTO);
+        return notification.getId();
     }
 
     @Transactional(readOnly = true)
@@ -104,11 +100,17 @@ public class NotificationService {
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
-                    NotificationMessageContext context = NotificationMessageContext.of(
-                            notification,
-                            senderUsername,
-                            diaryTitle
-                    );
+                    MessageContext context = MessageContext.builder()
+                            .notificationId(notification.getId())
+                            .receiverId(notification.getReceiver().getId())
+                            .senderId(notification.getSender().getId())
+                            .senderUsername(senderUsername)
+                            .notificationType(notification.getNotificationType())
+                            .targetType(notification.getTargetType())
+                            .targetId(notification.getTargetId())
+                            .redirectUrl(notification.getRedirectUrl())
+                            .diaryTitle(diaryTitle)
+                            .build();
 
                     List<MessagePart> parts = messageResolverManager.resolve(context, locale);
 
@@ -134,7 +136,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public ReadRedirectResponseDTO markAsReadAndSendSse(Long id) {
+    public ReadRedirectResponseDTO markAsRead(Long id) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Notification notification = notificationRepository.findById(id)
@@ -147,7 +149,10 @@ public class NotificationService {
         if (!notification.isRead()) {
             notification.markAsRead();
             notificationRepository.flush();
-            sseEmitterService.sendNotificationReadUpdate(notification);
+
+            eventPublisher.publishEvent(
+                    new NotificationReadEvent(memberId, notification.getId())
+            );
         }
 
         return ReadRedirectResponseDTO.builder()
@@ -169,24 +174,33 @@ public class NotificationService {
         for (Notification notification : unreadList) {
             notification.markAsRead();
         }
+
         notificationRepository.flush();
-        
-        sseEmitterService.sendAllReadUpdate(memberId);
+
+        eventPublisher.publishEvent(
+                new NotificationAllReadEvent(memberId)
+        );
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> notificationPage = notificationRepository.findPageByMemberId(memberId, null, pageable);
 
         List<NotificationResponseDTO> responses = notificationPage.stream()
                 .map(notification -> {
-                    Locale locale = member.getNativeLanguage().toLocale();
+                    Locale locale = member.getSystemLanguage().toLocale();
                     String senderUsername = notification.getSender().getUsername();
                     String diaryTitle = getDiaryTitleIfExists(notification);
 
-                    NotificationMessageContext context = NotificationMessageContext.of(
-                            notification,
-                            senderUsername,
-                            diaryTitle
-                    );
+                    MessageContext context = MessageContext.builder()
+                            .notificationId(notification.getId())
+                            .receiverId(notification.getReceiver().getId())
+                            .senderId(notification.getSender().getId())
+                            .senderUsername(senderUsername)
+                            .notificationType(notification.getNotificationType())
+                            .targetType(notification.getTargetType())
+                            .targetId(notification.getTargetId())
+                            .redirectUrl(notification.getRedirectUrl())
+                            .diaryTitle(diaryTitle)
+                            .build();
 
                     List<MessagePart> parts = messageResolverManager.resolve(context, locale);
 
@@ -211,5 +225,44 @@ public class NotificationService {
         );
     }
 
+    @Transactional
+    public void createAndPublish(NotificationRequestDTO dto) {
+        Long notificationId = createNotification(dto);
+
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND));
+
+        eventPublisher.publishEvent(
+                NotificationCreatedEvent.builder()
+                    .notificationId(notificationId)
+                    .receiverId(notification.getReceiver().getId())
+                    .senderId(notification.getSender().getId())
+                    .senderUsername(notification.getSender().getUsername())
+                    .notificationType(notification.getNotificationType())
+                    .targetType(notification.getTargetType())
+                    .targetId(notification.getTargetId())
+                    .redirectUrl(notification.getRedirectUrl())
+                    .diaryTitle(getDiaryTitleIfExists(notification))
+                    .build()
+        );
+    }
+
+    @Transactional
+    public void deleteAndPublish(Long receiverId, Long senderId, NotificationType type, TargetType targetType, Long targetId) {
+
+        // 삭제할 친구 요청 알림 ID 조회
+        Long notificationId = notificationRepository.findFriendRequestNotificationId(receiverId, senderId);
+        if (notificationId == null) {
+            throw new NotificationHandler(ErrorStatus.NOTIFICATION_NOT_FOUND);
+        }
+
+        // 친구 요청 알림 삭제
+        notificationRepository.deleteFriendRequestNotification(receiverId, senderId);
+
+        // 친구 요청 알림 삭제
+        eventPublisher.publishEvent(
+                new NotificationDeletedEvent(notificationId, receiverId, type, targetType, targetId)
+        );
+    }
 }
 
