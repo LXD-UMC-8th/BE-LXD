@@ -188,10 +188,8 @@ public class FriendService {
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
         memberGuard.checkOwnerIsNotDeleted(target);
 
-        boolean exists = friendRepository.areFriends(currentMemberId, friendId);
-        if (!exists) {
-            throw new FriendHandler(ErrorStatus.NOT_FRIEND);
-        }
+        // 친구 삭제에 대한 인가 검사
+        friendGuard.validateBeforeManageAction(target, current);
 
         friendRepository.deleteFriendship(current, target);
     }
