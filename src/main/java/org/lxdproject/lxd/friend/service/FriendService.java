@@ -284,6 +284,17 @@ public class FriendService {
         Long requesterId = SecurityUtil.getCurrentMemberId();
         Long receiverId = requestDto.getReceiverId();
 
+        Member receiver = findMemberById(receiverId);
+        // 탈퇴한 사용자인지 검사
+        memberGuard.checkOwnerIsNotDeleted(receiver);
+
+        Member requester = findMemberById(requesterId);
+        // 탈퇴한 사용자인지 검사
+        memberGuard.checkOwnerIsNotDeleted(requester);
+
+        // 친구 요청 취소에 대하 인가 검사
+        friendGuard.validateBeforeRequestAction(requester, receiver);
+
         FriendRequest request = friendRequestRepository
                 .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
