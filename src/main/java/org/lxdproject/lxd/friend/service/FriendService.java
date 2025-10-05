@@ -96,7 +96,7 @@ public class FriendService {
         memberGuard.checkOwnerIsNotDeleted(receiver);
 
         // 친구 요청이 가능한 지에 대하 인가 검사
-        friendGuard.validateFriendRequest(requester, receiver);
+        friendGuard.validateBeforeRequestAction(requester, receiver);
 
         boolean alreadyRequested = friendRequestRepository.existsByRequesterAndReceiverAndStatus(
                 requester, receiver, FriendRequestStatus.PENDING);
@@ -149,7 +149,7 @@ public class FriendService {
         memberGuard.checkOwnerIsNotDeleted(receiver);
 
         // 친구 요청 수락에 대한 인가 검사
-        friendGuard.validateFriendRequest(requester, receiver);
+        friendGuard.validateBeforeRequestAction(requester, receiver);
 
         // 친구 관계 양방향 저장
         friendRepository.saveFriendship(requester, receiver);
@@ -250,6 +250,17 @@ public class FriendService {
     public void refuseFriendRequest(FriendRequestRefuseRequestDTO requestDto) {
         Long receiverId = SecurityUtil.getCurrentMemberId();
         Long requesterId = requestDto.getRequesterId();
+
+        Member receiver = findMemberById(receiverId);
+        // 탈퇴한 사용자인지 검사
+        memberGuard.checkOwnerIsNotDeleted(receiver);
+
+        Member requester = findMemberById(requesterId);
+        // 탈퇴한 사용자인지 검사
+        memberGuard.checkOwnerIsNotDeleted(requester);
+
+        // 친구 요청 거절에 대하 인가 검사
+        friendGuard.validateBeforeRequestAction(requester, receiver);
 
         FriendRequest request = friendRequestRepository
                 .findByRequesterIdAndReceiverIdAndStatus(requesterId, receiverId, FriendRequestStatus.PENDING)
