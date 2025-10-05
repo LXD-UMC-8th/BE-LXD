@@ -21,9 +21,7 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final EntityManager entityManager;
 
-    private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
-    private static final QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
 
     @Override
     public Set<Long> findLikedDiaryIdSet(Long memberId) {
