@@ -6,6 +6,7 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.authz.policy.DiaryPolicy;
 import org.lxdproject.lxd.diary.entity.Diary;
+import org.lxdproject.lxd.friend.adapter.FriendshipQueryPort;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
