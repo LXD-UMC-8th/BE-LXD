@@ -8,4 +8,6 @@ public interface DiaryLikeRepositoryCustom {
     Set<Long> findLikedDiaryIdSet(Long memberId);
     List<Long> findLikedDiaryIdList(Long memberId);
     void softDeleteDiaryLikes(Long memberId, LocalDateTime localDateTime);
+
+    void hardDeleteDiaryLikesOlderThanThreshold(LocalDateTime threshold);
 }

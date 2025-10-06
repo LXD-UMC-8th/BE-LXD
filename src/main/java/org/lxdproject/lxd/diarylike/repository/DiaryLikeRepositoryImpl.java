@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
+import org.lxdproject.lxd.member.entity.QMember;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
 
     private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
+    private static final QMember member = QMember.member;
 
     @Override
     public Set<Long> findLikedDiaryIdSet(Long memberId) {
@@ -99,6 +101,34 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
                     .where(DIARY.id.eq(diaryId))
                     .execute();
         });
+
+    }
+
+    @Override
+    public void hardDeleteDiaryLikesOlderThanThreshold(LocalDateTime threshold) {
+
+        // purge 안 된 탈퇴 회원 조회
+        List<Long> withdrawnMemberIds = queryFactory
+                .select(member.id)
+                .from(member)
+                .where(member.deletedAt.isNotNull()
+                        .and(member.deletedAt.loe(threshold))
+                        .and(member.isPurged.isFalse()))
+                .fetch();
+
+        if (withdrawnMemberIds.isEmpty()) return;
+
+        entityManager.flush();
+
+        // 탈퇴 회원 누른 일기 좋아요 + 탈퇴 회원의 일기에 달린 모든 일기 좋아요 삭제
+        queryFactory.delete(DIARY_LIKE)
+                .where(
+                        DIARY_LIKE.member.id.in(withdrawnMemberIds)
+                                .or(DIARY_LIKE.diary.member.id.in(withdrawnMemberIds))
+                )
+                .execute();
+
+        entityManager.clear();
 
     }
 

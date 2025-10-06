@@ -210,6 +210,9 @@ public class MemberService {
         // 탈퇴자의 댓글 좋아요 모두 hard delete
         diaryCommentLikeRepository.hardDeleteDiaryCommentLikesOlderThanThreshold(threshold);
 
+        // 탈퇴자의 일기 좋아요 모두 hard delete
+        diaryLikeRepository.hardDeleteDiaryLikesOlderThanThreshold(threshold);
+
         // 탈퇴자의 댓글 모두 hard delete
         diaryCommentRepository.hardDeleteWithdrawnMemberComments(threshold);
 
