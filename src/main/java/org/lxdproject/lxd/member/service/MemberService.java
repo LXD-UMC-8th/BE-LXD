@@ -193,7 +193,7 @@ public class MemberService {
         // 일기 soft delete
         diaryRepository.softDeleteDiariesByMemberId(memberId, deletedAt);
 
-        // 일기 댓글 soft delete
+        // 탈퇴자가 작성한 일기 댓글 및 탈퇴자가 작성한 일기에 달린 댓글 soft delete
         diaryCommentRepository.softDeleteMemberComments(memberId, deletedAt);
 
         // 탈퇴자가 누른 일기 좋아요 및 탈퇴자가 작성한 일기가 받은 좋아요 soft delete
