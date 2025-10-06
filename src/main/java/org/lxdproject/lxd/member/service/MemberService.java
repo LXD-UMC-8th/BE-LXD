@@ -214,14 +214,14 @@ public class MemberService {
         diaryLikeRepository.hardDeleteDiaryLikesOlderThanThreshold(threshold);
 
         // 탈퇴자의 댓글 모두 hard delete
-        diaryCommentRepository.hardDeleteWithdrawnMemberComments(threshold);
+        diaryCommentRepository.hardDeleteDiaryCommentsOlderThanThreshold(threshold);
 
         // 탈퇴자의 일기 모두 hard delete
-        diaryRepository.deleteDiariesOlderThan30Days(threshold);
+        diaryRepository.hardDeleteDiariesOlderThanThreshold(threshold);
 
         // 30일이 지난 회원의 isPurged 값을 true로 만들고
         // 새로운 유저의 nickname/email의 unique 조건을 피하기 위해 대체값으로 치환
-        memberRepository.deleteMembersOlderThan30Days(threshold);
+        memberRepository.hardDeleteMembersOlderThanThreshold(threshold);
     }
 
 }

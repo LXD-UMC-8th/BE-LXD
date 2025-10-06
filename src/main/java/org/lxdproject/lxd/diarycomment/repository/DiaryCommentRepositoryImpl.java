@@ -122,7 +122,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
     }
 
     @Override
-    public void hardDeleteWithdrawnMemberComments(LocalDateTime threshold) {
+    public void hardDeleteDiaryCommentsOlderThanThreshold(LocalDateTime threshold) {
         // purge 안 된 탈퇴 회원 조회
         List<Long> withdrawnMemberIds = queryFactory
                 .select(MEMBER.id)
