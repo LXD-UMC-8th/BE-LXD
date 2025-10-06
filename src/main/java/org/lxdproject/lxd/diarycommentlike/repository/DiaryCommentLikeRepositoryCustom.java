@@ -7,4 +7,6 @@ public interface DiaryCommentLikeRepositoryCustom {
     void softDeleteDiaryCommentLikes(Long memberId, LocalDateTime localDateTime);
 
     void hardDeleteDiaryCommentLikesOlderThanThreshold(LocalDateTime threshold);
+
+    void recoverDiaryCommentLikesByMemberIdAndDeletedAt(Long memberId, LocalDateTime deletedAt);
 }
