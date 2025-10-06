@@ -80,7 +80,8 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
         List<Long> ownCommentDiaryIds = queryFactory
                 .select(DIARY_COMMENT.diary.id)
                 .from(DIARY_COMMENT)
-                .where(DIARY_COMMENT.member.id.eq(memberId)) .distinct()
+                .where(DIARY_COMMENT.member.id.eq(memberId))
+                .distinct()
                 .fetch();
 
         Set<Long> affectedDiaryIds = new HashSet<>();
@@ -141,6 +142,70 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                                 .or(DIARY_COMMENT.diary.member.id.in(withdrawnMemberIds))
                 )
                 .execute();
+    }
+
+    // CaseBuilder로 최적화 하기
+    @Override
+    public void recoverDiaryCommentsByMemberIdAndDeletedAt(Long memberId, LocalDateTime deletedAt) {
+
+        // 회원이 탈퇴한 시간에 삭제된 '회원이 작성한 일기 id' 가져오기
+        List<Long> diaryIdsOfMember = queryFactory
+                .select(DIARY.id)
+                .from(DIARY)
+                .where(DIARY.member.id.eq(memberId)
+                        .and(DIARY.deletedAt.eq(deletedAt)))
+                .fetch();
+
+        // 회원이 탈퇴한 시간에 삭제된 '회원이 작성한 댓글의 일기 id' 가져오기
+        List<Long> ownCommentDiaryIds = queryFactory
+                .select(DIARY_COMMENT.diary.id)
+                .from(DIARY_COMMENT)
+                .where(DIARY_COMMENT.member.id.eq(memberId)
+                        .and(DIARY_COMMENT.deletedAt.eq(deletedAt)))
+                .distinct()
+                .fetch();
+
+        Set<Long> affectedDiaryIds = new HashSet<>();
+        affectedDiaryIds.addAll(diaryIdsOfMember);
+        affectedDiaryIds.addAll(ownCommentDiaryIds);
+
+
+        // 연관된 일기가 없을 시 메서드 종료
+        if (affectedDiaryIds.isEmpty()) return;
+
+        // 기존 변경 먼저 DB 반영
+        entityManager.flush();
+
+        // 댓글 복구 (회원이 쓴 댓글 + 회원의 일기에 달린 댓글)
+        queryFactory.update(DIARY_COMMENT)
+                .set(DIARY_COMMENT.deletedAt, (LocalDateTime)null)
+                .where(
+                        DIARY_COMMENT.deletedAt.eq(deletedAt)
+                                .and(
+                                        DIARY_COMMENT.member.id.eq(memberId) // 탈퇴한 회원이 쓴 댓글 soft delete
+                                                .or(DIARY_COMMENT.diary.member.id.eq(memberId))// 탈퇴한 회원의 일기에 달린 댓글 soft delete
+                                )
+                )
+                .execute();
+
+        // 캐시 비우기
+        entityManager.clear();
+
+        // 일기 엔티티의 countComment 업데이트
+        affectedDiaryIds.forEach(diaryId -> {
+            Long commentCount = Optional.ofNullable(queryFactory
+                    .select(Wildcard.count)
+                    .from(DIARY_COMMENT)
+                    .where(DIARY_COMMENT.diary.id.eq(diaryId)
+                            .and(DIARY_COMMENT.deletedAt.isNull()))
+                    .fetchOne()).orElse(0L);
+
+            queryFactory
+                    .update(DIARY)
+                    .set(DIARY.commentCount, commentCount.intValue())
+                    .where(DIARY.id.eq(diaryId))
+                    .execute();
+        });
     }
 
 }

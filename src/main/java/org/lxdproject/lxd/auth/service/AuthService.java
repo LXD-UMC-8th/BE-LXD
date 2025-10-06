@@ -367,7 +367,7 @@ public class AuthService {
         member.restore();
         // 멤버 탈퇴 날짜와 일기 삭제 날짜가 같은 일기만 복구
         diaryRepository.recoverDiariesByMemberIdAndDeletedAt(memberId, deletedAt);
-        // 멤버 탈퇴 날짜와 일기 댓글 삭제 날짜가 같은 댓글만 복구
+        // 멤버 탈퇴 날짜와 일기 댓글 삭제 날짜가 같은 댓글만 복구 + 일기의 commentCount 재계산
         diaryCommentRepository.recoverDiaryCommentsByMemberIdAndDeletedAt(memberId, deletedAt);
 
 
