@@ -21,6 +21,7 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final EntityManager entityManager;
 
+    private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
 
     @Override
@@ -43,20 +44,62 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
                 .fetch();
     }
 
+    // 규모 커지면 루프 기반 update 에서 native 쿼리로 최적화 고려
     @Override
     public void softDeleteDiaryLikes(Long memberId, LocalDateTime localDateTime) {
+
+        // 탈퇴한 회원이 작성한 일기 id 가져오기
+        List<Long> writtenDiaryIds = queryFactory
+                .select(DIARY.id)
+                .from(DIARY)
+                .where(DIARY.member.id.eq(memberId))
+                .fetch();
+
+        // 탈퇴한 회원이 좋아요를 누른 일기 id 가져오기
+        List<Long> likedDiaryIds = queryFactory
+                .select(DIARY_LIKE.diary.id)
+                .from(DIARY_LIKE)
+                .where(DIARY_LIKE.member.id.eq(memberId))
+                .distinct()
+                .fetch();
+
+        Set<Long> affectedDiaryIds = new HashSet<>();
+        affectedDiaryIds.addAll(writtenDiaryIds);
+        affectedDiaryIds.addAll(likedDiaryIds);
+
+        // 연관된 일기가 없으면 메서드 종료
+        if (affectedDiaryIds.isEmpty()) return;
 
         // 기존 변경 먼저 DB 반영
         entityManager.flush();
 
-        // 벌크 연산 (DB 직접 업데이트)
-        queryFactory
-                .update(DIARY_LIKE)
+        // soft delete (탈퇴한 회원이 누른 일기 좋아요 + 탈퇴한 회원의 일기가 받은 좋아요)
+        queryFactory.update(DIARY_LIKE)
                 .set(DIARY_LIKE.deletedAt, localDateTime)
-                .where(DIARY_LIKE.member.id.eq(memberId))
+                .where(
+                        DIARY_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 좋아요
+                                .or(DIARY_LIKE.diary.id.in(writtenDiaryIds)) // 탈퇴한 회원의 일기가 받은 좋아요
+                )
                 .execute();
 
+        // 캐시 비우기
         entityManager.clear();
+
+        // 일기 엔티티의 likeCount 업데이트
+        affectedDiaryIds.forEach(diaryId -> {
+            Long likeCount = Optional.ofNullable(queryFactory
+                    .select(Wildcard.count)
+                    .from(DIARY_LIKE)
+                    .where(DIARY_LIKE.diary.id.eq(diaryId)
+                            .and(DIARY_LIKE.deletedAt.isNull()))
+                    .fetchOne()).orElse(0L);
+
+            queryFactory.update(DIARY)
+                    .set(DIARY.likeCount, likeCount.intValue())
+                    .where(DIARY.id.eq(diaryId))
+                    .execute();
+        });
+
     }
 
 }
