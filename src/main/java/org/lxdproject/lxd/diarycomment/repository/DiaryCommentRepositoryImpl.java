@@ -5,12 +5,10 @@ import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.authz.predicate.DiaryPredicates;
 import org.lxdproject.lxd.authz.predicate.MemberPredicates;
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
-import org.lxdproject.lxd.diarycommentlike.entity.QDiaryCommentLike;
 import org.lxdproject.lxd.member.entity.QMember;
 
 import java.time.LocalDateTime;
@@ -26,18 +24,18 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
     private final EntityManager entityManager;
 
     QDiary DIARY = QDiary.diary;
-    QDiaryComment comment = QDiaryComment.diaryComment;
-    QMember member = QMember.member;
+    QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
+    QMember MEMBER = QMember.member;
 
     @Override
     public List<DiaryComment> findParentComments(Long diaryId, int offset, int size) {
-        BooleanExpression condition = comment.diary.id.eq(diaryId)
-                .and(comment.parent.isNull())
-                .and(MemberPredicates.isNotDeleted(comment.member));
+        BooleanExpression condition = DIARY_COMMENT.diary.id.eq(diaryId)
+                .and(DIARY_COMMENT.parent.isNull())
+                .and(MemberPredicates.isNotDeleted(DIARY_COMMENT.member));
 
         return queryFactory
-                .selectFrom(comment)
-                .leftJoin(comment.member, member).fetchJoin()
+                .selectFrom(DIARY_COMMENT)
+                .leftJoin(DIARY_COMMENT.member, MEMBER).fetchJoin()
                 .where(condition)
                 .offset(offset)
                 .limit(size)
@@ -46,25 +44,25 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
     @Override
     public List<DiaryComment> findRepliesByParentIds(List<Long> parentIds) {
-        BooleanExpression condition = comment.parent.id.in(parentIds)
-                .and(MemberPredicates.isNotDeleted(member));
+        BooleanExpression condition = DIARY_COMMENT.parent.id.in(parentIds)
+                .and(MemberPredicates.isNotDeleted(MEMBER));
 
         return queryFactory
-                .selectFrom(comment)
-                .leftJoin(comment.member, member).fetchJoin()
-                .leftJoin(comment.parent).fetchJoin()
+                .selectFrom(DIARY_COMMENT)
+                .leftJoin(DIARY_COMMENT.member, MEMBER).fetchJoin()
+                .leftJoin(DIARY_COMMENT.parent).fetchJoin()
                 .where(condition)
-                .orderBy(comment.createdAt.asc())
+                .orderBy(DIARY_COMMENT.createdAt.asc())
                 .fetch();
     }
 
     @Override
     public Long countParentComments(Long diaryId) {
         return queryFactory
-                .select(comment.count())
-                .from(comment)
-                .where(comment.diary.id.eq(diaryId)
-                        .and(comment.parent.isNull()))
+                .select(DIARY_COMMENT.count())
+                .from(DIARY_COMMENT)
+                .where(DIARY_COMMENT.diary.id.eq(diaryId)
+                        .and(DIARY_COMMENT.parent.isNull()))
                 .fetchOne();
     }
 
@@ -80,9 +78,9 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
         // 탈퇴한 회원이 작성한 댓글의 일기 id 가져오기
         List<Long> ownCommentDiaryIds = queryFactory
-                .select(comment.diary.id)
-                .from(comment)
-                .where(comment.member.id.eq(memberId)) .distinct()
+                .select(DIARY_COMMENT.diary.id)
+                .from(DIARY_COMMENT)
+                .where(DIARY_COMMENT.member.id.eq(memberId)) .distinct()
                 .fetch();
 
         Set<Long> affectedDiaryIds = new HashSet<>();
@@ -97,10 +95,10 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
         entityManager.flush();
 
         // soft delete (회원이 쓴 댓글 + 회원의 일기에 달린 댓글)
-        queryFactory.update(comment)
-                .set(comment.deletedAt, deletedAt)
-                .where(comment.member.id.eq(memberId) // 탈퇴한 회원이 쓴 댓글 soft delete
-                        .or(comment.diary.member.id.eq(memberId)) ) // 탈퇴한 회원의 일기에 달린 댓글 soft delete
+        queryFactory.update(DIARY_COMMENT)
+                .set(DIARY_COMMENT.deletedAt, deletedAt)
+                .where(DIARY_COMMENT.member.id.eq(memberId) // 탈퇴한 회원이 쓴 댓글 soft delete
+                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)) ) // 탈퇴한 회원의 일기에 달린 댓글 soft delete
                 .execute();
 
         // 캐시 비우기
@@ -110,9 +108,9 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
         affectedDiaryIds.forEach(diaryId -> {
             Long commentCount = Optional.ofNullable(queryFactory
                     .select(Wildcard.count)
-                    .from(comment)
-                    .where(comment.diary.id.eq(diaryId)
-                            .and(comment.deletedAt.isNull()))
+                    .from(DIARY_COMMENT)
+                    .where(DIARY_COMMENT.diary.id.eq(diaryId)
+                            .and(DIARY_COMMENT.deletedAt.isNull()))
                     .fetchOne()).orElse(0L);
 
             queryFactory
@@ -127,20 +125,20 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
     public void hardDeleteWithdrawnMemberComments(LocalDateTime threshold) {
         // purge 안 된 탈퇴 회원 조회
         List<Long> withdrawnMemberIds = queryFactory
-                .select(member.id)
-                .from(member)
-                .where(member.deletedAt.isNotNull()
-                        .and(member.deletedAt.loe(threshold))
-                        .and(member.isPurged.isFalse()))
+                .select(MEMBER.id)
+                .from(MEMBER)
+                .where(MEMBER.deletedAt.isNotNull()
+                        .and(MEMBER.deletedAt.loe(threshold))
+                        .and(MEMBER.isPurged.isFalse()))
                 .fetch();
 
         if (withdrawnMemberIds.isEmpty()) return;
 
         // 탈퇴 회원이 작성한 댓글 + 탈퇴 회원의 일기에 달린 모든 댓글 삭제
-        queryFactory.delete(comment)
+        queryFactory.delete(DIARY_COMMENT)
                 .where(
-                        comment.member.id.in(withdrawnMemberIds)
-                                .or(comment.diary.member.id.in(withdrawnMemberIds))
+                        DIARY_COMMENT.member.id.in(withdrawnMemberIds)
+                                .or(DIARY_COMMENT.diary.member.id.in(withdrawnMemberIds))
                 )
                 .execute();
     }

@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.diary.entity.QDiary;
-import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
 import org.lxdproject.lxd.member.entity.QMember;
 
@@ -24,7 +23,7 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
 
     private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
-    private static final QMember member = QMember.member;
+    private static final QMember MEMBER = QMember.member;
 
     @Override
     public Set<Long> findLikedDiaryIdSet(Long memberId) {
@@ -109,11 +108,11 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
 
         // purge 안 된 탈퇴 회원 조회
         List<Long> withdrawnMemberIds = queryFactory
-                .select(member.id)
-                .from(member)
-                .where(member.deletedAt.isNotNull()
-                        .and(member.deletedAt.loe(threshold))
-                        .and(member.isPurged.isFalse()))
+                .select(MEMBER.id)
+                .from(MEMBER)
+                .where(MEMBER.deletedAt.isNotNull()
+                        .and(MEMBER.deletedAt.loe(threshold))
+                        .and(MEMBER.isPurged.isFalse()))
                 .fetch();
 
         if (withdrawnMemberIds.isEmpty()) return;

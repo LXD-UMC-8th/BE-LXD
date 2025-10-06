@@ -4,10 +4,8 @@ import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.diarycommentlike.entity.QDiaryCommentLike;
-import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
 import org.lxdproject.lxd.member.entity.QMember;
 
 import java.time.LocalDateTime;
@@ -22,11 +20,9 @@ public class DiaryCommentLikeRepositoryImpl implements DiaryCommentLikeRepositor
     private final JPAQueryFactory queryFactory;
     private final EntityManager entityManager;
 
-    private static final QDiary DIARY = QDiary.diary;
-    private static final QDiaryComment COMMENT = QDiaryComment.diaryComment;
     private static final QDiaryCommentLike DIARY_COMMENT_LIKE = QDiaryCommentLike.diaryCommentLike;
     private static final QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
-    private static final QMember member = QMember.member;
+    private static final QMember MEMBER = QMember.member;
 
     // 규모 커지면 루프 기반 update 에서 native 쿼리로 최적화 고려
     @Override
@@ -34,9 +30,9 @@ public class DiaryCommentLikeRepositoryImpl implements DiaryCommentLikeRepositor
 
         // 탈퇴한 회원이 작성한 일기 댓글 id 가져오기
         List<Long> writtenDiaryCommentIds = queryFactory
-                .select(COMMENT.id)
-                .from(COMMENT)
-                .where(COMMENT.member.id.eq(memberId))
+                .select(DIARY_COMMENT.id)
+                .from(DIARY_COMMENT)
+                .where(DIARY_COMMENT.member.id.eq(memberId))
                 .fetch();
 
         // 탈퇴한 회원이 좋아요를 누른 댓글 id 가져오기
@@ -90,11 +86,11 @@ public class DiaryCommentLikeRepositoryImpl implements DiaryCommentLikeRepositor
 
         // purge 안 된 탈퇴 회원 조회
         List<Long> withdrawnMemberIds = queryFactory
-                .select(member.id)
-                .from(member)
-                .where(member.deletedAt.isNotNull()
-                        .and(member.deletedAt.loe(threshold))
-                        .and(member.isPurged.isFalse()))
+                .select(MEMBER.id)
+                .from(MEMBER)
+                .where(MEMBER.deletedAt.isNotNull()
+                        .and(MEMBER.deletedAt.loe(threshold))
+                        .and(MEMBER.isPurged.isFalse()))
                 .fetch();
 
         if (withdrawnMemberIds.isEmpty()) return;
