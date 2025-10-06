@@ -207,6 +207,9 @@ public class MemberService {
     public void hardDeleteWithdrawnMembers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
+        // 탈퇴자의 댓글 좋아요 모두 hard delete
+        diaryCommentLikeRepository.hardDeleteDiaryCommentLikesOlderThanThreshold(threshold);
+
         // 탈퇴자의 댓글 모두 hard delete
         diaryCommentRepository.hardDeleteWithdrawnMemberComments(threshold);
 

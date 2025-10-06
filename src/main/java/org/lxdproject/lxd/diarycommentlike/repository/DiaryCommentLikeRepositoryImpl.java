@@ -8,6 +8,7 @@ import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.diarycommentlike.entity.QDiaryCommentLike;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
+import org.lxdproject.lxd.member.entity.QMember;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class DiaryCommentLikeRepositoryImpl implements DiaryCommentLikeRepositor
     private static final QDiaryComment COMMENT = QDiaryComment.diaryComment;
     private static final QDiaryCommentLike DIARY_COMMENT_LIKE = QDiaryCommentLike.diaryCommentLike;
     private static final QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
+    private static final QMember member = QMember.member;
 
     // 규모 커지면 루프 기반 update 에서 native 쿼리로 최적화 고려
     @Override
@@ -81,5 +83,33 @@ public class DiaryCommentLikeRepositoryImpl implements DiaryCommentLikeRepositor
                     .where(DIARY_COMMENT.id.eq(commentId))
                     .execute();
         });
+    }
+
+    @Override
+    public void hardDeleteDiaryCommentLikesOlderThanThreshold(LocalDateTime threshold) {
+
+        // purge 안 된 탈퇴 회원 조회
+        List<Long> withdrawnMemberIds = queryFactory
+                .select(member.id)
+                .from(member)
+                .where(member.deletedAt.isNotNull()
+                        .and(member.deletedAt.loe(threshold))
+                        .and(member.isPurged.isFalse()))
+                .fetch();
+
+        if (withdrawnMemberIds.isEmpty()) return;
+
+        entityManager.flush();
+
+        // 탈퇴한 회원이 누른 댓글 좋아요 + 탈퇴한 회원이 작성한 댓글에 눌린 댓글 좋아요
+        queryFactory.delete(DIARY_COMMENT_LIKE)
+                .where(
+                        DIARY_COMMENT_LIKE.member.id.in(withdrawnMemberIds)
+                                .or(DIARY_COMMENT_LIKE.comment.member.id.in(withdrawnMemberIds))
+                )
+                .execute();
+
+        entityManager.clear();
+
     }
 }
