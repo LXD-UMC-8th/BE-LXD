@@ -79,7 +79,7 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
                 .set(DIARY_LIKE.deletedAt, localDateTime)
                 .where(
                         DIARY_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 좋아요
-                                .or(DIARY_LIKE.diary.id.in(writtenDiaryIds)) // 탈퇴한 회원의 일기가 받은 좋아요
+                                .or(DIARY_LIKE.diary.member.id.eq(memberId)) // 탈퇴한 회원의 일기가 받은 좋아요
                 )
                 .execute();
 
@@ -128,6 +128,59 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
                 .execute();
 
         entityManager.clear();
+
+    }
+
+    @Override
+    public void recoverDiaryLikesByMemberIdAndDeletedAt(Long memberId, LocalDateTime deletedAt) {
+
+        // 기존 변경 먼저 DB 반영
+        entityManager.flush();
+
+        // 일기 좋아요 복구 (회원이 누른 일기 좋아요 + 회원의 일기가 받은 좋아요)
+        queryFactory.update(DIARY_LIKE)
+                .set(DIARY_LIKE.deletedAt, (LocalDateTime)null)
+                .where(
+                        DIARY_LIKE.deletedAt.eq(deletedAt)
+                                        .and(
+                                            DIARY_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 좋아요
+                                                .or(DIARY_LIKE.diary.member.id.eq(memberId)) // 탈퇴한 회원의 일기가 받은 좋아요
+                ))
+
+                .execute();
+
+        // 캐시 비우기
+        entityManager.clear();
+
+        // 복구 후 일기 목록 반환
+        List<Long> affectedDiaryIds = queryFactory
+                .select(DIARY_LIKE.diary.id)
+                .from(DIARY_LIKE)
+                .where(
+                        DIARY_LIKE.deletedAt.isNull()
+                                .and(
+                                        DIARY_LIKE.member.id.eq(memberId)
+                                                .or(DIARY_LIKE.diary.member.id.eq(memberId))
+                                )
+                )
+                .distinct()
+                .fetch();
+
+
+        // 일기 엔티티의 likeCount 업데이트
+        affectedDiaryIds.forEach(diaryId -> {
+            Long likeCount = Optional.ofNullable(queryFactory
+                    .select(Wildcard.count)
+                    .from(DIARY_LIKE)
+                    .where(DIARY_LIKE.diary.id.eq(diaryId)
+                            .and(DIARY_LIKE.deletedAt.isNull()))
+                    .fetchOne()).orElse(0L);
+
+            queryFactory.update(DIARY)
+                    .set(DIARY.likeCount, likeCount.intValue())
+                    .where(DIARY.id.eq(diaryId))
+                    .execute();
+        });
 
     }
 

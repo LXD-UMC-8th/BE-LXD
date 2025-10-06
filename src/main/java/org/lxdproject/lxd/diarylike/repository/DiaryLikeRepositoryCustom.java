@@ -10,4 +10,6 @@ public interface DiaryLikeRepositoryCustom {
     void softDeleteDiaryLikes(Long memberId, LocalDateTime localDateTime);
 
     void hardDeleteDiaryLikesOlderThanThreshold(LocalDateTime threshold);
+
+    void recoverDiaryLikesByMemberIdAndDeletedAt(Long memberId, LocalDateTime deletedAt);
 }
