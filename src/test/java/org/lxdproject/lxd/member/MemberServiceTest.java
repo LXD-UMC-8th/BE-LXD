@@ -40,6 +40,83 @@ public class MemberServiceTest {
     @Autowired private MemberService memberService;
 
     @Test
+    @DisplayName("회원 탈퇴 시 사용자, 사용자가 작성한 일기/댓글, 사용자가 누른 일기 좋아요/댓글 좋아요 모두 soft delete 됩니다")
+    void deleteMember_shouldSoftDeleteAllEntities() {
+        // given
+        Member member = Member.builder()
+                .username("softuser")
+                .password("pw")
+                .email("jun@test.com")
+                .nickname("jun")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(member);
+
+        // 일기
+        Diary diary = Diary.builder()
+                .member(member)
+                .title("일기 제목")
+                .content("내용")
+                .style(Style.FREE)
+                .visibility(Visibility.PUBLIC)
+                .commentPermission(CommentPermission.ALL)
+                .language(Language.KO)
+                .build();
+        diaryRepository.save(diary);
+
+        // 댓글
+        DiaryComment comment = DiaryComment.builder()
+                .member(member)
+                .diary(diary)
+                .commentText("댓글입니다")
+                .build();
+        diaryCommentRepository.save(comment);
+
+        // 일기 좋아요
+        DiaryLike diaryLike = DiaryLike.builder()
+                .member(member)
+                .diary(diary)
+                .build();
+        diaryLikeRepository.save(diaryLike);
+
+        // 댓글 좋아요
+        DiaryCommentLike commentLike = DiaryCommentLike.builder()
+                .member(member)
+                .comment(comment)
+                .build();
+        diaryCommentLikeRepository.save(commentLike);
+
+        // when
+        memberService.deleteMember(member.getId());
+
+        // then
+        Member deletedMember = memberRepository.findById(member.getId()).orElseThrow();
+        Diary deletedDiary = diaryRepository.findById(diary.getId()).orElseThrow();
+        DiaryComment deletedComment = diaryCommentRepository.findById(comment.getId()).orElseThrow();
+        DiaryLike deletedDiaryLike = diaryLikeRepository.findById(diaryLike.getId()).orElseThrow();
+        DiaryCommentLike deletedCommentLike = diaryCommentLikeRepository.findById(commentLike.getId()).orElseThrow();
+
+        // soft delete 확인
+        assertThat(deletedMember.getDeletedAt()).isNotNull();
+        assertThat(deletedDiary.getDeletedAt()).isNotNull();
+        assertThat(deletedComment.getDeletedAt()).isNotNull();
+        assertThat(deletedDiaryLike.getDeletedAt()).isNotNull();
+        assertThat(deletedCommentLike.getDeletedAt()).isNotNull();
+    }
+
+
+
+
+
+
+    /*@Test
     @DisplayName("탈퇴 후 30일 이전의 회원은 soft delete, 일기/댓글은 soft delete, 좋아요는 hard delete 됩니다")
     void deleteMember_shouldSoftDeleteMemberAndContents_andHardDeleteLikes() {
         // [given] Member + Diary + DiaryComment + DiaryLike + DiaryCommentLike
@@ -157,6 +234,6 @@ public class MemberServiceTest {
         assertThat(memberRepository.findById(member.getId())).isEmpty();
         assertThat(diaryRepository.findById(diary.getId())).isEmpty();
         assertThat(diaryCommentRepository.findById(comment.getId())).isEmpty();
-    }
+    }*/
 
 }
