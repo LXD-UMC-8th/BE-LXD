@@ -14,7 +14,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
     Long countByMemberIdAndDeletedAtIsNull(Long memberId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Diary d SET d.deletedAt = :deletedAt WHERE d.member.id = :memberId")
+    @Query("UPDATE Diary d SET d.deletedAt = :deletedAt WHERE d.member.id = :memberId AND d.deletedAt IS NULL")
     void softDeleteDiariesByMemberId(@Param("memberId") Long memberId, @Param("deletedAt") LocalDateTime deletedAt);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

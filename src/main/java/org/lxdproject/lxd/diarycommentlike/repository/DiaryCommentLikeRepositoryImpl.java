@@ -57,8 +57,11 @@ public class DiaryCommentLikeRepositoryImpl implements DiaryCommentLikeRepositor
         queryFactory.update(DIARY_COMMENT_LIKE)
                 .set(DIARY_COMMENT_LIKE.deletedAt, localDateTime)
                 .where(
-                        DIARY_COMMENT_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 댓글 좋아요
-                                .or(DIARY_COMMENT_LIKE.comment.member.id.eq(memberId)) // 탈퇴한 회원이 작성한 댓글의 좋아요
+                        DIARY_COMMENT_LIKE.deletedAt.isNull()
+                                        .and(
+                                                DIARY_COMMENT_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 댓글 좋아요
+                                                        .or(DIARY_COMMENT_LIKE.comment.member.id.eq(memberId)) // 탈퇴한 회원이 작성한 댓글의 좋아요
+                                        )
                 )
                 .execute();
 

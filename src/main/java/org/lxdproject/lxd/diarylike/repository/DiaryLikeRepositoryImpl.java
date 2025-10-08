@@ -78,8 +78,11 @@ public class DiaryLikeRepositoryImpl implements DiaryLikeRepositoryCustom {
         queryFactory.update(DIARY_LIKE)
                 .set(DIARY_LIKE.deletedAt, localDateTime)
                 .where(
-                        DIARY_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 좋아요
-                                .or(DIARY_LIKE.diary.member.id.eq(memberId)) // 탈퇴한 회원의 일기가 받은 좋아요
+                        DIARY_LIKE.deletedAt.isNull()
+                                        .and(
+                                                DIARY_LIKE.member.id.eq(memberId) // 탈퇴한 회원이 누른 좋아요
+                                                        .or(DIARY_LIKE.diary.member.id.eq(memberId)) // 탈퇴한 회원의 일기가 받은 좋아요
+                                        )
                 )
                 .execute();
 

@@ -98,8 +98,12 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
         // soft delete (회원이 쓴 댓글 + 회원의 일기에 달린 댓글)
         queryFactory.update(DIARY_COMMENT)
                 .set(DIARY_COMMENT.deletedAt, deletedAt)
-                .where(DIARY_COMMENT.member.id.eq(memberId) // 탈퇴한 회원이 쓴 댓글 soft delete
-                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)) ) // 탈퇴한 회원의 일기에 달린 댓글 soft delete
+                .where(
+                        DIARY_COMMENT.deletedAt.isNull()
+                                        .and(
+                                                DIARY_COMMENT.member.id.eq(memberId) // 탈퇴한 회원이 쓴 댓글 soft delete
+                                                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)) ) // 탈퇴한 회원의 일기에 달린 댓글 soft delete
+                                        )
                 .execute();
 
         // 캐시 비우기
