@@ -111,8 +111,118 @@ public class MemberServiceTest {
         assertThat(deletedCommentLike.getDeletedAt()).isNotNull();
     }
 
+    @Test
+    @DisplayName("회원 탈퇴 시, 탈퇴한 회원이 작성한 일기의 일기 좋아요 및 댓글과 탈퇴한 회원이 작성한 댓글의 댓글 좋아요가 soft delete 된다")
+    void deleteMember_shouldAlsoSoftDeleteRelatedEntities() {
+        // [given] 탈퇴할 회원 A, 다른 회원 B, C
+        Member memberA = Member.builder()
+                .username("memberA")
+                .password("pw")
+                .email("a@test.com")
+                .nickname("A")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberA);
+
+        Member memberB = Member.builder()
+                .username("memberB")
+                .password("pw")
+                .email("b@test.com")
+                .nickname("B")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberB);
+
+        Member memberC = Member.builder()
+                .username("memberC")
+                .password("pw")
+                .email("c@test.com")
+                .nickname("C")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberC);
+
+        // [A]가 작성한 일기
+        Diary diaryA1 = Diary.builder()
+                .member(memberA)
+                .title("A의 일기")
+                .content("A가 쓴 내용")
+                .style(Style.FREE)
+                .visibility(Visibility.PUBLIC)
+                .commentPermission(CommentPermission.ALL)
+                .language(Language.KO)
+                .build();
+        diaryRepository.save(diaryA1);
+
+        // [B]가 A의 일기에 단 댓글
+        DiaryComment commentB_on_diaryA1 = DiaryComment.builder()
+                .member(memberB)
+                .diary(diaryA1)
+                .commentText("B가 쓴 댓글")
+                .build();
+        diaryCommentRepository.save(commentB_on_diaryA1);
+
+        // [B]가 A의 일기에 누른 좋아요
+        DiaryLike diaryLikeB_on_diaryA1 = DiaryLike.builder()
+                .member(memberB)
+                .diary(diaryA1)
+                .build();
+        diaryLikeRepository.save(diaryLikeB_on_diaryA1);
+
+        // [A]가 작성한 댓글
+        DiaryComment commentA1 = DiaryComment.builder()
+                .member(memberA)
+                .diary(diaryA1)
+                .commentText("A의 댓글")
+                .build();
+        diaryCommentRepository.save(commentA1);
+
+        // [C]가 A의 댓글에 누른 좋아요
+        DiaryCommentLike commentLikeC_on_commentA1 = DiaryCommentLike.builder()
+                .member(memberC)
+                .comment(commentA1)
+                .build();
+        diaryCommentLikeRepository.save(commentLikeC_on_commentA1);
 
 
+        // [when] 탈퇴 실행
+        memberService.deleteMember(memberA.getId());
+
+        // [then] A의 리소스와 연관된 리소스들 soft delete 확인
+        DiaryComment deletedCommentB = diaryCommentRepository.findById(commentB_on_diaryA1.getId()).orElseThrow();
+        DiaryLike deletedDiaryLikeB = diaryLikeRepository.findById(diaryLikeB_on_diaryA1.getId()).orElseThrow();
+        DiaryCommentLike deletedCommentLikeC = diaryCommentLikeRepository.findById(commentLikeC_on_commentA1.getId()).orElseThrow();
+
+        // A의 일기에 달린 다른 사람 댓글 soft delete 확인
+        assertThat(deletedCommentB.getDeletedAt()).isNotNull();
+
+        // A의 일기에 달린 다른 사람의 좋아요 soft delete 확인
+        assertThat(deletedDiaryLikeB.getDeletedAt()).isNotNull();
+
+        // A가 쓴 댓글에 달린 다른 사람의 좋아요 soft delete 확인
+        assertThat(deletedCommentLikeC.getDeletedAt()).isNotNull();
+    }
 
 
 
