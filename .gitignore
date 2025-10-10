@@ -40,4 +40,4 @@ out/
 src/main/resources/application-local.yml
 
 ### pem ###
-lxd-key.pem
+lxd-key.pemsrc/main/resources/application-dev.yml
