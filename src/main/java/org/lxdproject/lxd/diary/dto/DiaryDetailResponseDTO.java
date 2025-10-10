@@ -18,7 +18,7 @@ public class DiaryDetailResponseDTO {
     private Long diaryId;
     private Visibility visibility;
     private String title;
-    private String content; // 마지막으로 수정된 일기 내용
+    private String content; // diff (<del>, <ins>) 포함된 최종 본문
     private Language language;
     private MemberProfileDTO memberProfile;
     private String createdAt;
@@ -36,7 +36,7 @@ public class DiaryDetailResponseDTO {
                 diary.getId(),
                 diary.getVisibility(),
                 diary.getTitle(),
-                diary.getModifiedContent(),
+                diary.getDiffContent(),
                 diary.getLanguage(),
                 MemberProfileDTO.from(member),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),

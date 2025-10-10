@@ -38,10 +38,16 @@ public class Diary extends BaseEntity {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
+    private String content; // 최초 작성 원문 내용
 
     @Column(columnDefinition = "TEXT")
-    private String modifiedContent;
+    private String diffContent; // diff (<del>, <ins>) 포함된 최종 본문
+
+    @Column(columnDefinition = "TEXT")
+    private String modifiedContent; // diff 없는 최종 본문
+
+    @Column(columnDefinition = "TEXT")
+    private String previewContent; // 일기 수정 후 요약 내용
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -79,9 +85,11 @@ public class Diary extends BaseEntity {
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryLike> likes = new ArrayList<>();
 
-    public void update(DiaryUpdateRequestDTO dto, String diffHtmlContent) {
+    public void update(DiaryUpdateRequestDTO dto, String diffContent, String modifiedContent, String previewContent) {
         this.title = dto.getTitle();
-        this.modifiedContent = diffHtmlContent;
+        this.diffContent = diffContent;
+        this.modifiedContent = modifiedContent;
+        this.previewContent = previewContent;
         this.visibility = dto.getVisibility();
         this.commentPermission = dto.getCommentPermission();
         this.language = dto.getLanguage();

@@ -61,6 +61,8 @@ public class DiaryService {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .modifiedContent(request.getContent())
+                .diffContent(request.getContent())
+                .previewContent(DiaryUtil.generateContentPreview(request.getContent()))
                 .style(request.getStyle())
                 .visibility(request.getVisibility())
                 .commentPermission(request.getCommentPermission())
@@ -135,7 +137,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
@@ -164,13 +166,17 @@ public class DiaryService {
             s3FileService.deleteImage(diary.getThumbImg());
         }
 
+        // 최초 작성 원문 내용
         String originalContent = diary.getContent();
 
-        // 원문 내용과 수정 내용의 diff 계산
-        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
+        // diff 포함된 최종 본문
+        String diffContent = generateDiffHtml(originalContent, request.getContent());
+
+        // diff 없는 최종 본문으로 수정 내용 추출
+        String previewContent = DiaryUtil.generateContentPreview(request.getContent());
 
         // DB에 새로운 내용 저장
-        diary.update(request, diffHtmlContent);
+        diary.update(request, diffContent, request.getContent(), previewContent);
         diaryRepository.save(diary);
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
@@ -229,7 +235,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
@@ -271,7 +277,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
@@ -307,7 +313,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
@@ -389,7 +395,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
