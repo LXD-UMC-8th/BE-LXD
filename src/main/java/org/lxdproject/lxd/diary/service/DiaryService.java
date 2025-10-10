@@ -100,7 +100,7 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        List<String> urls = extractImageUrls(diary.getContent());
+        List<String> urls = extractImageUrls(diary.getModifiedContent());
         List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
         s3FileService.deleteImages(keys);
 
