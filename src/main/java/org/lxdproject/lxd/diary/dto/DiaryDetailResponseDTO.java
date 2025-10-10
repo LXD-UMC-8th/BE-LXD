@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
@@ -18,10 +19,7 @@ public class DiaryDetailResponseDTO {
     private Visibility visibility;
     private String title;
     private Language language;
-    private Long writerId;
-    private String profileImg;
-    private String writerNickName;
-    private String writerUserName;
+    private MemberProfileDTO memberProfile;
     private String createdAt;
     private int commentCount;
     private int likeCount;
@@ -30,9 +28,9 @@ public class DiaryDetailResponseDTO {
     private String diffHtml;
     private CommentPermission commentPermission;
     private String thumbnail;
+    private Boolean isLiked;
 
-    // 일반 조회용
-    public static DiaryDetailResponseDTO from(Diary diary) {
+    public static DiaryDetailResponseDTO from(Diary diary, String diffHtml, boolean liked) {
         Member member = diary.getMember();
 
         return new DiaryDetailResponseDTO(
@@ -40,42 +38,16 @@ public class DiaryDetailResponseDTO {
                 diary.getVisibility(),
                 diary.getTitle(),
                 diary.getLanguage(),
-                member.getId(),
-                member.getProfileImg(),
-                member.getNickname(),
-                member.getUsername(),
+                MemberProfileDTO.from(member),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
-                diary.getCorrectionCount(),
-                diary.getContent(),
-                null, // diffHtml은 null 처리
-                diary.getCommentPermission(),
-                diary.getThumbImg()
-        );
-    }
-
-    // diff 결과를 포함한 응답 생성용
-    public static DiaryDetailResponseDTO fromWithDiff(Diary diary, String diffHtml) {
-        Member member = diary.getMember();
-
-        return new DiaryDetailResponseDTO(
-                diary.getId(),
-                diary.getVisibility(),
-                diary.getTitle(),
-                diary.getLanguage(),
-                member.getId(),
-                member.getProfileImg(),
-                member.getNickname(),
-                member.getUsername(),
-                DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
-                diary.getLikeCount(),
-                diary.getCorrectionCount(),
                 diary.getContent(),
-                diffHtml, // diff 결과 포함
+                diffHtml,
                 diary.getCommentPermission(),
-                diary.getThumbImg()
+                diary.getThumbImg(),
+                liked
         );
     }
 }

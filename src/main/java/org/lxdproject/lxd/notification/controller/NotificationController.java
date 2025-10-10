@@ -27,12 +27,12 @@ public class NotificationController implements NotificationApi {
 
     @Override
     public SseEmitter subscribe() {
-        return emitterService.connect();
+        return emitterService.subscribe();
     }
 
     @Override
     public ApiResponse<String> testSend(@Valid @RequestBody NotificationRequestDTO requestDTO) {
-        notificationService.saveAndPublishNotification(requestDTO);
+        notificationService.createAndPublish(requestDTO);
         return ApiResponse.onSuccess("테스트 알림 발행 성공");
     }
 
@@ -44,7 +44,7 @@ public class NotificationController implements NotificationApi {
 
     @Override
     public ApiResponse<ReadRedirectResponseDTO> readAndRedirect(@PathVariable("notificationId") Long notificationId) {
-        return ApiResponse.onSuccess(notificationService.markAsReadAndSendSse(notificationId));
+        return ApiResponse.onSuccess(notificationService.markAsRead(notificationId));
     }
 
     @Override

@@ -1,13 +1,13 @@
 package org.lxdproject.lxd.member.repository;
 
-import org.lxdproject.lxd.friend.dto.FriendSearchResponseDTO;
 import org.lxdproject.lxd.member.entity.Member;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
@@ -16,4 +16,17 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     Boolean existsByUsername(String username);
 
     Optional<Member> findByEmail(String email);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+    UPDATE Member m
+    SET m.isPurged = true,
+        m.nickname = CONCAT('deleted_', m.id),
+        m.email = CONCAT('deleted_', m.id, '@deleted.local')
+    WHERE m.deletedAt IS NOT NULL
+      AND m.deletedAt <= :threshold
+      AND m.isPurged = false
+    """)
+    void deleteMembersOlderThan30Days(@Param("threshold") LocalDateTime threshold);
+
 }

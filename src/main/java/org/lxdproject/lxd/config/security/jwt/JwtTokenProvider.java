@@ -8,8 +8,11 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.auth.dto.CustomUserDetails;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.config.properties.JwtProperties;
+import org.lxdproject.lxd.config.security.SecurityUtil;
+import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -25,6 +28,7 @@ import java.util.Collections;
 public class JwtTokenProvider {
 
     private final JwtProperties jwtProperties;
+    private final MemberRepository memberRepository;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
@@ -104,13 +108,17 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
 
-        Long userId = Long.valueOf(claims.getSubject());
-        String role = claims.get("role", String.class);
+        Long memberId = Long.valueOf(claims.getSubject());
 
         // principal에 userId만 담을 수도 있고, UserDetailsService와 연계할 수도 있음
-        User principal = new User(String.valueOf(userId), "", Collections.singleton(() -> role));
+        //User principal = new User(String.valueOf(userId), "", Collections.singleton(() -> role));
 
-        return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
+        CustomUserDetails customUserDetails = new CustomUserDetails(
+                memberRepository.findById(memberId)
+                        .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND))
+                );
+
+        return new UsernamePasswordAuthenticationToken(customUserDetails, token, customUserDetails.getAuthorities());
     }
 
     public static String resolveToken(HttpServletRequest request) {

@@ -1,11 +1,12 @@
 package org.lxdproject.lxd.correctioncomment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -17,9 +18,12 @@ import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentReposito
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,8 +40,9 @@ public class CorrectionCommentService {
     private final CorrectionCommentRepository commentRepository;
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
-
+    private final PermissionGuard permissionGuard;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public CorrectionCommentResponseDTO writeComment(Long correctionId, CorrectionCommentRequestDTO request) {
@@ -66,15 +71,12 @@ public class CorrectionCommentService {
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId() + "/comments/" + saved.getId())
                     .build();
 
-            notificationService.saveAndPublishNotification(dto);
+            notificationService.createAndPublish(dto);
         }
 
         return CorrectionCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberId(member.getId())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
-                .profileImage(member.getProfileImg())
+                .memberProfile(MemberProfileDTO.from(member))
                 .content(saved.getContent())
                 .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .build();
@@ -93,10 +95,7 @@ public class CorrectionCommentService {
         List<CorrectionCommentResponseDTO> content = commentPage.stream()
                 .map(comment -> CorrectionCommentResponseDTO.builder()
                         .commentId(comment.getId())
-                        .memberId(comment.getMember().getId())
-                        .username(comment.getMember().getUsername())
-                        .nickname(comment.getMember().getNickname())
-                        .profileImage(comment.getMember().getProfileImg())
+                        .memberProfile(MemberProfileDTO.from(comment.getMember()))
                         .content(comment.getDisplayContent())
                         .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
                         .build())
@@ -111,15 +110,16 @@ public class CorrectionCommentService {
         );
     }
 
-    //삭제
+
     @Transactional
     public CorrectionCommentDeleteResponseDTO deleteComment(Long commentId) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
+
         CorrectionComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().getId().equals(SecurityUtil.getCurrentMemberId())) {
-            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
-        }
+        // 삭제 권한 검증
+        permissionGuard.canDeleteCorrectionComment(requesterId, comment);
 
         comment.softDelete();
 

@@ -37,4 +37,15 @@ public class AsyncConfig implements AsyncConfigurer {
         };
     }
 
+    @Bean(name = "discordAlarmExecutor")
+    public Executor discordAlarmExecutor() {
+        ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
+        exec.setCorePoolSize(2);
+        exec.setMaxPoolSize(4);
+        exec.setQueueCapacity(100);
+        exec.setThreadNamePrefix("discord-");
+        exec.initialize();
+        return exec;
+    }
+
 }

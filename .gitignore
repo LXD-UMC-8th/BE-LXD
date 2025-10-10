@@ -42,4 +42,4 @@ src/main/resources/application-dev.yml
 src/main/resources/application-prod.yml
 
 ### pem ###
-lxd-key.pemsrc/main/resources/application-dev.yml
+lxd-key.pem

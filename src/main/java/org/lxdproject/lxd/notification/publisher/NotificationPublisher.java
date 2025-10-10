@@ -2,11 +2,13 @@ package org.lxdproject.lxd.notification.publisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.lxdproject.lxd.notification.dto.NotificationMessageContext;
+import org.lxdproject.lxd.notification.message.MessageContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Slf4j
 @Component
@@ -17,7 +19,20 @@ public class NotificationPublisher {
     private final RedisTemplate<String, Object> jsonRedisTemplate;
     private final ChannelTopic notificationTopic;
 
-    public void publish(NotificationMessageContext message) {
+    public void publishAfterCommit(MessageContext message) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    publish(message);
+                }
+            });
+        } else {
+            publish(message);
+        }
+    }
+
+    public void publish(MessageContext message) {
         String topic = notificationTopic.getTopic();
         log.info("[Redis Publish] 알림 발행 시작 - topic: {}, receiverId: {}, notificationId: {}",
                 topic, message.getReceiverId(), message.getNotificationId());
@@ -32,3 +47,4 @@ public class NotificationPublisher {
         }
     }
 }
+
