@@ -141,4 +141,12 @@ public class JwtTokenProvider {
         return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().get("tokenType", String.class);
     }
 
+    public Long getMemberIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return Long.valueOf(claims.getSubject());
+    }
 }

@@ -12,7 +12,6 @@ import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.util.DiaryUtil;
 import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.storage.S3FileService;
-import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -51,12 +50,10 @@ public class DiaryService {
     private final PermissionGuard permissionGuard;
 
     @Transactional
-    public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
-
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        Member member = memberRepository.findById(currentMemberId)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
+    public DiaryDetailResponseDTO createDiary(
+            Member member,
+            DiaryRequestDTO request
+    ) {
         Diary diary = Diary.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -70,30 +67,35 @@ public class DiaryService {
 
         diaryRepository.save(diary);
 
-        return DiaryDetailResponseDTO.from(diary,null,false);
+        return DiaryDetailResponseDTO.from(diary, null, false);
     }
 
     @Transactional(readOnly = true)
-    public DiaryDetailResponseDTO getDiaryDetail(Long id) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
+    public DiaryDetailResponseDTO getDiaryDetail(
+            Member currentMember,
+            Long id
+    ) {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        permissionGuard.canViewDiary(currentMemberId, diary);
+        // 권한 체크 (중복 호출 제거)
+        permissionGuard.canViewDiary(currentMember.getId(), diary);
 
-        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
+        // 좋아요 여부
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMember.getId());
 
         return DiaryDetailResponseDTO.from(diary, null, likedSet.contains(diary.getId()));
     }
 
     @Transactional
-    public void deleteDiary(Long diaryId) {
+    public void deleteDiary(
+            Member currentMember,
+            Long diaryId
+    ) {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        if (diary.getMember() == null || !diary.getMember().getId().equals(currentMemberId)) {
+        if (diary.getMember() == null || !diary.getMember().getId().equals(currentMember.getId())) {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
@@ -110,15 +112,19 @@ public class DiaryService {
         List<String> imageUrls = new ArrayList<>();
         Matcher matcher = IMG_URL_PATTERN.matcher(htmlContent);
         while (matcher.find()) {
-            imageUrls.add(matcher.group(1)); // src 값만 추출
+            imageUrls.add(matcher.group(1));
         }
         return imageUrls;
     }
 
-    public PageDTO<MyDiarySummaryResponseDTO> getMyDiaries(Boolean likedOnly, int page, int size) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public PageDTO<MyDiarySummaryResponseDTO> getMyDiaries(
+            Member currentMember,
+            Boolean likedOnly,
+            int page,
+            int size
+    ) {
+        Long memberId = currentMember.getId();
 
-        // 좋아요 누른 일기 ID
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
 
         Pageable pageable = PageRequest.of(page, size);
@@ -149,9 +155,12 @@ public class DiaryService {
         );
     }
 
-    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
-
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public DiaryDetailResponseDTO updateDiary(
+            Member currentMember,
+            Long id,
+            DiaryUpdateDTO request
+    ) {
+        Long memberId = currentMember.getId();
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
@@ -164,13 +173,11 @@ public class DiaryService {
             s3FileService.deleteImage(diary.getThumbImg());
         }
 
-        String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
+        String originalContent = diary.getContent();
 
-        // DB에 새로운 내용 저장
         diary.update(request);
         diaryRepository.save(diary);
 
-        // diff 계산
         String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
@@ -181,11 +188,9 @@ public class DiaryService {
     private String generateDiffHtml(String oldContent, String newContent) {
         diff_match_patch dmp = new diff_match_patch();
 
-        // 라이브러리 활용해서 content 간의 diff 계산
         LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main(oldContent, newContent);
         dmp.diff_cleanupSemantic(diffs);
 
-        // 라이브러리에서 삽입하는 스타일 태그 제거
         StringBuilder html = new StringBuilder();
         for (diff_match_patch.Diff diff : diffs) {
             String text = StringEscapeUtils.escapeHtml4(diff.text);
@@ -205,13 +210,20 @@ public class DiaryService {
         return html.toString();
     }
 
-    public List<DiaryStatsResponseDTO> getDiaryStats(int year, int month) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
-        return diaryRepository.findDiaryStatsByMonth(memberId, year, month);
+    public List<DiaryStatsResponseDTO> getDiaryStats(
+            Member currentMember,
+            int year,
+            int month
+    ) {
+        return diaryRepository.findDiaryStatsByMonth(currentMember.getId(), year, month);
     }
 
-    public PageDTO<DiarySummaryResponseDTO> getFriendDiaries(int page, int size) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public PageDTO<DiarySummaryResponseDTO> getFriendDiaries(
+            Member currentMember,
+            int page,
+            int size
+    ) {
+        Long memberId = currentMember.getId();
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
@@ -245,16 +257,18 @@ public class DiaryService {
         );
     }
 
-    public PageDTO<DiarySummaryResponseDTO> getLikedDiaries(int page, int size) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public PageDTO<DiarySummaryResponseDTO> getLikedDiaries(
+            Member currentMember,
+            int page,
+            int size
+    ) {
+        Long memberId = currentMember.getId();
 
-        // 좋아요 누른 일기 ID
         List<Long> likedDiaryIds = diaryLikeRepository.findLikedDiaryIdList(memberId);
         if (likedDiaryIds.isEmpty()) {
             return new PageDTO<>(null, List.of(), page + 1, size, false);
         }
 
-        // 성능 개선
         Set<Long> likedSet = new HashSet<>(likedDiaryIds);
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
 
@@ -288,8 +302,13 @@ public class DiaryService {
         );
     }
 
-    public PageDTO<DiarySummaryResponseDTO> getExploreDiaries(int page, int size, Language language) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public PageDTO<DiarySummaryResponseDTO> getExploreDiaries(
+            Member currentMember,
+            int page,
+            int size,
+            Language language
+    ) {
+        Long memberId = currentMember.getId();
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(memberId);
 
@@ -320,19 +339,21 @@ public class DiaryService {
                 size,
                 diaryPage.hasNext()
         );
-
     }
 
-    public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId, boolean includeStatus) {
+    public MemberDiarySummaryResponseDTO getDiarySummary(
+            Long targetMemberId,
+            Long currentMemberId,
+            boolean includeStatus
+    ) {
         Member member = memberRepository.findById(targetMemberId)
-                               .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (member.isDeleted()) {
             throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
 
         Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
-
         Long friendCount = friendRepository.countFriendsByMemberId(targetMemberId);
 
         RelationType relation;
@@ -344,9 +365,7 @@ public class DiaryService {
             relation = RelationType.NONE;
         }
 
-        // 추가된 FriendRequestStatus 조회 로직
         FriendRequestStatus status = null;
-
         if (includeStatus && !targetMemberId.equals(currentMemberId)) {
             status = friendRequestRepository.findByRequesterIdAndReceiverId(currentMemberId, targetMemberId)
                     .map(FriendRequest::getStatus)
@@ -360,11 +379,16 @@ public class DiaryService {
                 .diaryCount(diaryCount)
                 .friendCount(friendCount)
                 .relation(relation)
-                .status(status) // 필드 추가함
+                .status(status)
                 .build();
     }
 
-    public PageDTO<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
+    public PageDTO<MyDiarySummaryResponseDTO> getDiariesByMemberId(
+            Member viewer,
+            Long memberId,
+            int page,
+            int size
+    ) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
@@ -372,7 +396,9 @@ public class DiaryService {
             throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
         }
 
-        Long viewerId = SecurityUtil.getCurrentMemberId();
+        // SecurityUtil 제거 → 주입된 viewer 사용
+        Long viewerId = viewer.getId();
+
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(viewerId);
         Set<Long> friendIds = friendRepository.findFriendIdsByMemberId(viewerId);
 
@@ -403,5 +429,4 @@ public class DiaryService {
                 diaryPage.hasNext()
         );
     }
-
 }

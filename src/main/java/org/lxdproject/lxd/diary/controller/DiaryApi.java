@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import org.lxdproject.lxd.annotation.CurrentMember;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.common.dto.ImageDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
@@ -20,6 +21,7 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.lxdproject.lxd.member.entity.Member;
 import java.util.List;
 
 @Tag(name = "Diary API", description = "일기 관련 API 입니다.")
@@ -33,7 +35,10 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요 (JWT 누락 또는 만료)", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    ApiResponse<DiaryDetailResponseDTO> createDiary( @Valid @RequestBody DiaryRequestDTO request);
+    ApiResponse<DiaryDetailResponseDTO> createDiary(
+            @CurrentMember Member member,
+            @Valid @RequestBody DiaryRequestDTO request
+    );
 
     @GetMapping("/{diaryId}")
     @Operation(summary = "일기 상세 조회 API", description = "id에 해당하는 일기를 상세 조회하는 API입니다.")
@@ -46,15 +51,22 @@ public interface DiaryApi {
     @Parameters({
             @Parameter(name = "diaryId", description = "일기의 아이디, path variable 입니다!"),
     })
-    ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(@PathVariable Long diaryId);
+    ApiResponse<DiaryDetailResponseDTO> getDiaryDetail(
+            @CurrentMember Member member,
+            @PathVariable Long diaryId
+    );
 
     @DeleteMapping("/{diaryId}")
     @Operation(summary = "나의 일기 삭제 API", description = "id에 해당하는 일기를 삭제합니다. 해당하는 이미지 또한 S3 버킷에서 삭제합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "일기 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
-    ApiResponse<Boolean> deleteDiary(@PathVariable Long diaryId);
+    ApiResponse<Boolean> deleteDiary(
+            @CurrentMember Member member,
+            @PathVariable Long diaryId
+    );
 
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "일기 이미지 업로드 API", description = "이미지를 업로드하면 S3의 diary 폴더에 저장되고 해당 URL을 반환합니다.")
@@ -105,6 +117,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getMyDiaries(
+            @CurrentMember Member member,
             @RequestParam(defaultValue = "1") @PageValid int page,
             @RequestParam(defaultValue = "10") @PageSizeValid int size,
             @RequestParam(required = false) Boolean likedOnly
@@ -121,6 +134,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 리소스입니다.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<DiaryDetailResponseDTO> updateDiary(
+            @CurrentMember Member member,
             @PathVariable Long diaryId,
             @Valid @RequestBody DiaryUpdateDTO request
     );
@@ -136,6 +150,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<List<DiaryStatsResponseDTO>> getDiaryStats(
+            @CurrentMember Member member,
             @RequestParam @Min(1) int year,
             @RequestParam @Min(1) int month
     );
@@ -161,6 +176,7 @@ public interface DiaryApi {
             )
     })
     ApiResponse<PageDTO<DiarySummaryResponseDTO>> getFriendDiaries(
+            @CurrentMember Member member,
             @RequestParam(defaultValue = "1") @PageValid int page,
             @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
@@ -176,6 +192,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<PageDTO<DiarySummaryResponseDTO>> getLikedDiaries(
+            @CurrentMember Member member,
             @RequestParam(defaultValue = "1") @PageValid int page,
             @RequestParam(defaultValue = "10") @PageSizeValid int size
     );
@@ -192,6 +209,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 필요", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     ApiResponse<PageDTO<DiarySummaryResponseDTO>> getExploreDiaries(
+            @CurrentMember Member member,
             @RequestParam(defaultValue = "1") @PageValid  int page,
             @RequestParam(defaultValue = "10") @PageSizeValid int size,
             @RequestParam(required = false) Language language
@@ -203,7 +221,9 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "JWT 누락 또는 만료", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
     })
     @GetMapping("/my/diary-summary")
-    ApiResponse<MemberDiarySummaryResponseDTO> getMyDiarySummary();
+    ApiResponse<MemberDiarySummaryResponseDTO> getMyDiarySummary(
+            @CurrentMember Member member
+    );
 
     @Operation(summary = "특정 사용자 일기 정보 요약 API", description = "사용자 ID를 기반으로 다이어리 요약 정보를 조회합니다.")
     @ApiResponses({
@@ -212,7 +232,10 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자 ID에 해당하는 회원이 존재하지 않음", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     @GetMapping("/member/{memberId}/diary-summary")
-    ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(@PathVariable Long memberId);
+    ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(
+            @CurrentMember Member member,
+            @PathVariable Long memberId
+    );
 
     @GetMapping("/member/{memberId}")
     @Operation(summary = "특정 사용자 일기 목록 조회 API", description = "작성자의 일기 목록을 조회합니다.")
@@ -226,6 +249,7 @@ public interface DiaryApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getDiariesByMemberId(
+            @CurrentMember Member viewer,
             @PathVariable("memberId") Long memberId,
             @RequestParam(defaultValue = "1") @PageValid int page,
             @RequestParam(defaultValue = "10") @PageSizeValid int size
