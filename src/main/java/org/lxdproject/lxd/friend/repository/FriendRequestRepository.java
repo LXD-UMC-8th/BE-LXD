@@ -12,39 +12,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
+public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long>, FriendRequestRepositoryCustom {
     boolean existsByRequesterAndReceiverAndStatus(Member requester, Member receiver, FriendRequestStatus status);
     Optional<FriendRequest> findByRequesterIdAndReceiverId(Long requesterId, Long receiverId);
     Optional<FriendRequest> findByRequesterIdAndReceiverIdAndStatus(Long requesterId, Long receiverId, FriendRequestStatus status);
 
     int countByRequesterAndStatus(Member requester, FriendRequestStatus status);
     int countByReceiverAndStatus(Member receiver, FriendRequestStatus status);
-
-    @Query("""
-SELECT new org.lxdproject.lxd.friend.dto.FriendResponseDTO(
-    m.id,
-    m.username,
-    m.nickname,
-    m.profileImg
-)
-FROM FriendRequest fr
-JOIN fr.requester m
-WHERE fr.receiver = :receiver AND fr.status = :status
-ORDER BY fr.createdAt DESC
-""")
-    Page<FriendResponseDTO> findReceivedRequestDTOs(@Param("receiver") Member receiver, @Param("status") FriendRequestStatus status, Pageable pageable);
-    @Query("""
-SELECT new org.lxdproject.lxd.friend.dto.FriendResponseDTO(
-    m.id,
-    m.username,
-    m.nickname,
-    m.profileImg
-)
-FROM FriendRequest fr
-JOIN fr.receiver m
-WHERE fr.requester = :requester AND fr.status = :status
-ORDER BY fr.createdAt DESC
-""")
-    Page<FriendResponseDTO> findSentRequestDTOs(@Param("requester") Member requester, @Param("status") FriendRequestStatus status, Pageable pageable);
-
 }

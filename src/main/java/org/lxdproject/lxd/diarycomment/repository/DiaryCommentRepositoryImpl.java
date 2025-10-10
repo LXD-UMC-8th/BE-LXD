@@ -1,7 +1,11 @@
 package org.lxdproject.lxd.diarycomment.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.authz.predicate.DiaryPredicates;
+import org.lxdproject.lxd.authz.predicate.MemberPredicates;
+import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.diarycommentlike.entity.QDiaryCommentLike;
@@ -20,12 +24,14 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
     @Override
     public List<DiaryComment> findParentComments(Long diaryId, int offset, int size) {
+        BooleanExpression condition = comment.diary.id.eq(diaryId)
+                .and(comment.parent.isNull())
+                .and(MemberPredicates.isNotDeleted(comment.member));
+
         return queryFactory
                 .selectFrom(comment)
                 .leftJoin(comment.member, member).fetchJoin()
-                .where(comment.diary.id.eq(diaryId)
-                        .and(comment.parent.isNull()))
-                .orderBy(comment.createdAt.asc())
+                .where(condition)
                 .offset(offset)
                 .limit(size)
                 .fetch();
@@ -33,11 +39,14 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
     @Override
     public List<DiaryComment> findRepliesByParentIds(List<Long> parentIds) {
+        BooleanExpression condition = comment.parent.id.in(parentIds)
+                .and(MemberPredicates.isNotDeleted(member));
+
         return queryFactory
                 .selectFrom(comment)
                 .leftJoin(comment.member, member).fetchJoin()
                 .leftJoin(comment.parent).fetchJoin()
-                .where(comment.parent.id.in(parentIds))
+                .where(condition)
                 .orderBy(comment.createdAt.asc())
                 .fetch();
     }

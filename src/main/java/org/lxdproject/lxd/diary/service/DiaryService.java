@@ -5,7 +5,8 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.guard.DiaryGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -48,7 +49,8 @@ public class DiaryService {
     private final S3FileService s3FileService;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
-    private final PermissionGuard permissionGuard;
+    private final DiaryGuard diaryGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -80,7 +82,8 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        permissionGuard.canViewDiary(currentMemberId, diary);
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
+        diaryGuard.hasVisibilityPermission(currentMemberId, diary);
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
 

@@ -5,7 +5,8 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.guard.CommentGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
@@ -48,8 +49,8 @@ public class DiaryCommentService {
     private final DiaryCommentLikeRepository likeRepository;
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
-    private final ApplicationEventPublisher eventPublisher;
-    private final PermissionGuard permissionGuard;
+    private final CommentGuard commentGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public DiaryCommentResponseDTO writeComment(Long diaryId, DiaryCommentRequestDTO request) {
@@ -64,7 +65,7 @@ public class DiaryCommentService {
         boolean areFriends = friendRepository.areFriends(memberId, diaryOwner.getId());
 
         // 댓글 작성 권한 검증
-        permissionGuard.canCreateDiaryComment(memberId, diary, areFriends);
+        commentGuard.hasCommentPermission(memberId, diary, areFriends);
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
@@ -126,6 +127,11 @@ public class DiaryCommentService {
     @Transactional(readOnly = true)
     public PageDTO<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
+
         int offset = page * size;
 
         // 부모 댓글
@@ -183,9 +189,7 @@ public class DiaryCommentService {
                 .toList();
 
         // 전체 댓글 개수(부모 + 자식)
-        int totalElements = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND))
-                .getCommentCount();
+        int totalElements = diary.getCommentCount();
 
         // hasNext는 부모 댓글 수 기준
         boolean hasNext = diaryCommentRepository.countParentComments(diaryId) > offset + size;
@@ -209,7 +213,7 @@ public class DiaryCommentService {
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
         // 삭제 권한 검증
-        permissionGuard.canDeleteDiaryComment(requesterId, comment);
+        commentGuard.canDeleteDiaryComment(requesterId, comment);
 
         comment.softDelete();
         diary.decreaseCommentCount();

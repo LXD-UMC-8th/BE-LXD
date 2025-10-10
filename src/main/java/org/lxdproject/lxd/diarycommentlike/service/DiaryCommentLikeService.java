@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
 import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
@@ -24,6 +25,7 @@ public class DiaryCommentLikeService {
     private final MemberRepository memberRepository;
     private final DiaryCommentRepository commentRepository;
     private final DiaryCommentLikeRepository likeRepository;
+    private final MemberGuard memberGuard;
 
     public DiaryCommentLikeResponseDTO toggleLike(Long commentId) {
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -33,6 +35,7 @@ public class DiaryCommentLikeService {
 
         DiaryComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(comment.getMember());
 
         Optional<DiaryCommentLike> existing = likeRepository.findByMemberIdAndCommentId(memberId, commentId);
 

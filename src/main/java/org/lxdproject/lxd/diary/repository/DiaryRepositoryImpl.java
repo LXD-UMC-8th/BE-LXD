@@ -6,7 +6,8 @@ import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.authz.predicate.VisibilityPredicates;
+import org.lxdproject.lxd.authz.predicate.DiaryPredicates;
+import org.lxdproject.lxd.authz.predicate.MemberPredicates;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,18 +24,16 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 
 import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.diarylike.entity.QDiaryLike;
-import org.lxdproject.lxd.friend.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.QMember;
 
 @RequiredArgsConstructor
 public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-    private final VisibilityPredicates visibilityPredicates;
+    private final DiaryPredicates diaryPredicates;
 
     private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
-    private static final QFriendship FRIENDSHIP = QFriendship.friendship;
     private static final QMember MEMBER = QMember.member;
 
     @Override
@@ -84,10 +83,11 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public Page<Diary> findDiariesByMemberId(Long viewerId, Long ownerId, Set<Long> friendIds, Pageable pageable){
-        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(viewerId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(viewerId, DIARY, friendIds);
         BooleanExpression condition = DIARY.member.id.eq(ownerId)
                 .and(DIARY.deletedAt.isNull())
-                .and(visibility);
+                .and(visibility)
+                .and(MemberPredicates.isNotDeleted(DIARY.member));
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
@@ -101,6 +101,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         Long total = queryFactory
                 .select(Wildcard.count)
                 .from(DIARY)
+                .join(DIARY.member, MEMBER)
                 .where(condition)
                 .fetchOne();
 
@@ -139,11 +140,12 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     @Override
     public Page<Diary> findFriendDiaries(Long memberId, Set<Long> friendIds, Pageable pageable) {
-        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(memberId, DIARY, friendIds);
 
         BooleanExpression condition = DIARY.member.id.in(friendIds)
                 .and(DIARY.deletedAt.isNull())
-                .and(visibility);
+                .and(visibility)
+                .and(MemberPredicates.isNotDeleted(DIARY.member));
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
@@ -157,6 +159,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         Long total = queryFactory
                 .select(Wildcard.count)
                 .from(DIARY)
+                .join(DIARY.member, MEMBER)
                 .where(condition)
                 .fetchOne();
 
@@ -169,11 +172,12 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(memberId, DIARY, friendIds);
 
         BooleanExpression condition = DIARY.id.in(likedDiaryIds)
                 .and(DIARY.deletedAt.isNull())
-                .and(visibility);
+                .and(visibility)
+                .and(MemberPredicates.isNotDeleted(DIARY.member));
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
@@ -187,6 +191,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         Long total = queryFactory
                 .select(Wildcard.count)
                 .from(DIARY)
+                .join(DIARY.member, MEMBER)
                 .where(condition)
                 .fetchOne();
 
@@ -196,11 +201,12 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
     @Override
     public Page<Diary> findExploreDiaries(Long memberId, Language language, Set<Long> friendIds, Pageable pageable) {
 
-        BooleanExpression visibility = VisibilityPredicates.diaryVisibleToOthers(memberId, DIARY, friendIds);
+        BooleanExpression visibility = diaryPredicates.isVisibleToOthers(memberId, DIARY, friendIds);
 
         BooleanExpression condition = DIARY.deletedAt.isNull()
                 .and(DIARY.visibility.eq(Visibility.PUBLIC))
-                .and(visibility);
+                .and(visibility)
+                .and(MemberPredicates.isNotDeleted(DIARY.member));
 
         if (language != null) {
             condition = condition.and(DIARY.language.eq(language));
@@ -218,6 +224,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         Long total = queryFactory
                 .select(Wildcard.count)
                 .from(DIARY)
+                .join(DIARY.member, MEMBER)
                 .where(condition)
                 .fetchOne();
 

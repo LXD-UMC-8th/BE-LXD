@@ -1,15 +1,16 @@
 package org.lxdproject.lxd.authz.policy;
 
+import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.springframework.stereotype.Component;
 
+@RequiredArgsConstructor
 @Component
-public class DiaryVisibilityPolicy {
-    public Permit canView(Long viewerId, Diary diary, boolean areFriends) {
-        Long ownerId = diary.getMember().getId();
-        if (diary.getMember().isDeleted()) return Permit.WITHDRAWN;
+public class DiaryPolicy {
+    public Permit hasVisibilityPermission(Long viewerId, Diary diary, boolean areFriends) {
 
+        Long ownerId = diary.getMember().getId();
         if (viewerId != null && viewerId.equals(ownerId)) return Permit.ALLOW;
 
         return switch (diary.getVisibility()) {
@@ -18,4 +19,5 @@ public class DiaryVisibilityPolicy {
             case PRIVATE  -> Permit.DENY;
         };
     }
+
 }

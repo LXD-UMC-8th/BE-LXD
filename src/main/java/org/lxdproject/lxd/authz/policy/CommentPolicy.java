@@ -1,17 +1,20 @@
 package org.lxdproject.lxd.authz.policy;
 
+import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.correctioncomment.entity.CorrectionComment;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.springframework.stereotype.Component;
 
+@RequiredArgsConstructor
 @Component
-public class CommentPermissionPolicy {
-    public Permit canCreate(Long writerId, Diary diary, boolean areFriends) {
-        if (writerId == null) return Permit.DENY;
-        Long ownerId = diary.getMember().getId();
+public class CommentPolicy {
 
+    public Permit hasCommentPermission(Long writerId, Diary diary, boolean areFriends) {
+        if (writerId == null) return Permit.DENY;
+
+        Long ownerId = diary.getMember().getId();
         switch (diary.getCommentPermission()) {
             case NONE -> {
                 return writerId.equals(ownerId) ? Permit.ALLOW : Permit.DENY;

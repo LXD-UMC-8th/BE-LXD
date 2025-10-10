@@ -1,7 +1,5 @@
 package org.lxdproject.lxd.authz.policy;
 
-import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
-import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.authz.model.Permit;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
 import org.lxdproject.lxd.member.entity.Member;
@@ -16,48 +14,33 @@ public class FriendPolicy {
         this.friendRepository = friendRepository;
     }
 
-    // 동일 인물인지 확인
     public Permit validateSameMember(Member memberA, Member memberB) {
-        if (memberA == null || memberB == null)
-            throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        if (memberA == null || memberB == null) return Permit.DENY;
 
+        // 동일 인물인지 확인
         if(memberA.getId().equals(memberB.getId())) return Permit.DENY;
+
         return Permit.ALLOW;
     }
 
-    // 이미 친구인지 확인
-    public Permit validateFriends(Member memberA, Member memberB) {
-        if (memberA == null || memberB == null)
-            throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);
+    // 친구 관계가 존재하지 않아야 함 (요청 전 검사용)
+    public Permit validateNotFriends(Member memberA, Member memberB) {
+        if (memberA == null || memberB == null) return Permit.DENY;
 
+        // 두 사용자가 이미 친구라면 DENY, 아니라면 ALLOW
         boolean areFriends = friendRepository.areFriends(memberA.getId(), memberB.getId());
-
         if (areFriends) return Permit.DENY;
+
         return Permit.ALLOW;
     }
 
-    // 탈퇴한 유저인지 확인
-    public Permit validateDeletedMember(Member member){
-        if(member == null || member.isDeleted()){
-            return Permit.WITHDRAWN;
-        }
-        return Permit.ALLOW;
-    }
+    // 친구 관계가 반드시 존재해야 함 (취소,거절 등 관리 전 검사용)
+    public Permit validateExistingFriends(Member memberA, Member memberB) {
+        if (memberA == null || memberB == null) return Permit.DENY;
 
-
-
-    public Permit validateDeletedMember(Member memberA, Member memberB) {
-        if (memberA == null || memberB == null)
-            throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);
-
-        boolean isDeleted = false;
-
-        if(memberA.isDeleted() || memberB.isDeleted()) {
-            isDeleted = true;
-        }
-
-        if (isDeleted) return Permit.WITHDRAWN;
-        return Permit.ALLOW;
+        // 두 사용자가 이미 친구라면 ALLOW, 아니라면 DENY
+        boolean areFriends = friendRepository.areFriends(memberA.getId(), memberB.getId());
+        return areFriends ? Permit.ALLOW : Permit.DENY;
     }
 
 }
