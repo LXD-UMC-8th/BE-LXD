@@ -61,6 +61,7 @@ public class CorrectionCommentService {
                 .build();
 
         CorrectionComment saved = commentRepository.save(comment);
+        correction.increaseCommentCount();
 
         // 알림 전송 (댓글 작성자 != 교정 작성자)
         Member correctionAuthor = correction.getAuthor();
@@ -125,6 +126,7 @@ public class CorrectionCommentService {
         commentGuard.canDeleteCorrectionComment(requesterId, comment);
 
         comment.softDelete();
+        comment.getCorrection().decreaseCommentCount();
 
         return CorrectionCommentDeleteResponseDTO.builder()
                 .commentId(comment.getId())
