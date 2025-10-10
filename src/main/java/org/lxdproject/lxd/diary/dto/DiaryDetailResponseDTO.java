@@ -18,33 +18,31 @@ public class DiaryDetailResponseDTO {
     private Long diaryId;
     private Visibility visibility;
     private String title;
+    private String content; // diff (<del>, <ins>) 포함된 최종 본문
     private Language language;
     private MemberProfileDTO memberProfile;
     private String createdAt;
     private int commentCount;
     private int likeCount;
     private int correctCount;
-    private String content;
-    private String diffHtml;
     private CommentPermission commentPermission;
     private String thumbnail;
     private Boolean isLiked;
 
-    public static DiaryDetailResponseDTO from(Diary diary, String diffHtml, boolean liked) {
+    public static DiaryDetailResponseDTO from(Diary diary, boolean liked) {
         Member member = diary.getMember();
 
         return new DiaryDetailResponseDTO(
                 diary.getId(),
                 diary.getVisibility(),
                 diary.getTitle(),
+                diary.getDiffContent(),
                 diary.getLanguage(),
                 MemberProfileDTO.from(member),
                 DateFormatUtil.formatDate(diary.getCreatedAt()),
                 diary.getCommentCount(),
                 diary.getLikeCount(),
-                diary.getCommentCount(),
-                diary.getContent(),
-                diffHtml,
+                diary.getCorrectionCount(),
                 diary.getCommentPermission(),
                 diary.getThumbImg(),
                 liked

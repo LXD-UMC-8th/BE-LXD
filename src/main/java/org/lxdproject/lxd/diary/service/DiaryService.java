@@ -62,6 +62,9 @@ public class DiaryService {
         Diary diary = Diary.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
+                .modifiedContent(request.getContent())
+                .diffContent(request.getContent())
+                .previewContent(DiaryUtil.generateContentPreview(request.getContent()))
                 .style(request.getStyle())
                 .visibility(request.getVisibility())
                 .commentPermission(request.getCommentPermission())
@@ -72,7 +75,7 @@ public class DiaryService {
 
         diaryRepository.save(diary);
 
-        return DiaryDetailResponseDTO.from(diary,null,false);
+        return DiaryDetailResponseDTO.from(diary, false);
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +90,7 @@ public class DiaryService {
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
 
-        return DiaryDetailResponseDTO.from(diary, null, likedSet.contains(diary.getId()));
+        return DiaryDetailResponseDTO.from(diary, likedSet.contains(diary.getId()));
     }
 
     @Transactional
@@ -100,7 +103,7 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        List<String> urls = extractImageUrls(diary.getContent());
+        List<String> urls = extractImageUrls(diary.getModifiedContent());
         List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
         s3FileService.deleteImages(keys);
 
@@ -137,7 +140,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
@@ -152,8 +155,7 @@ public class DiaryService {
         );
     }
 
-    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
-
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateRequestDTO request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
@@ -167,18 +169,22 @@ public class DiaryService {
             s3FileService.deleteImage(diary.getThumbImg());
         }
 
-        String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
+        // 최초 작성 원문 내용
+        String originalContent = diary.getContent();
+
+        // diff 포함된 최종 본문
+        String diffContent = generateDiffHtml(originalContent, request.getContent());
+
+        // diff 없는 최종 본문으로 수정 내용 추출
+        String previewContent = DiaryUtil.generateContentPreview(request.getContent());
 
         // DB에 새로운 내용 저장
-        diary.update(request);
+        diary.update(request, diffContent, request.getContent(), previewContent);
         diaryRepository.save(diary);
-
-        // diff 계산
-        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
 
-        return DiaryDetailResponseDTO.from(diary, diffHtmlContent, likedSet.contains(diary.getId()));
+        return DiaryDetailResponseDTO.from(diary, likedSet.contains(diary.getId()));
     }
 
     private String generateDiffHtml(String oldContent, String newContent) {
@@ -232,7 +238,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
@@ -274,7 +280,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
@@ -310,7 +316,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
@@ -392,7 +398,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
