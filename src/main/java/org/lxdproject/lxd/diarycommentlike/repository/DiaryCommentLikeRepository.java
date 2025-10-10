@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface DiaryCommentLikeRepository extends JpaRepository<DiaryCommentLike, Long> {
+public interface DiaryCommentLikeRepository extends JpaRepository<DiaryCommentLike, Long>, DiaryCommentLikeRepositoryCustom {
     Optional<DiaryCommentLike> findByMemberIdAndCommentId(Long memberId, Long commentId);
 
     @Query("""
@@ -19,9 +19,4 @@ public interface DiaryCommentLikeRepository extends JpaRepository<DiaryCommentLi
     AND l.comment.id IN :commentIds
 """)
     List<Long> findLikedCommentIds(@Param("memberId") Long memberId, @Param("commentIds") List<Long> commentIds);
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(value = "DELETE FROM DiaryCommentLike WHERE member.id = :memberId")
-    void deleteAllByMemberId(@Param("memberId") Long memberId);
-
 }

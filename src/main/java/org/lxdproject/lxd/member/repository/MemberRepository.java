@@ -27,6 +27,6 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
       AND m.deletedAt <= :threshold
       AND m.isPurged = false
     """)
-    void deleteMembersOlderThan30Days(@Param("threshold") LocalDateTime threshold);
+    void hardDeleteMembersOlderThanThreshold(@Param("threshold") LocalDateTime threshold);
 
 }

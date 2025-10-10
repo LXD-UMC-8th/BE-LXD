@@ -10,5 +10,7 @@ public interface DiaryCommentRepositoryCustom {
     List<DiaryComment> findRepliesByParentIds(List<Long> parentIds);
     Long countParentComments(Long diaryId);
     void softDeleteMemberComments(Long memberId, LocalDateTime deletedAt);
-    void hardDeleteWithdrawnMemberComments(LocalDateTime threshold);
+    void hardDeleteDiaryCommentsOlderThanThreshold(LocalDateTime threshold);
+
+    void recoverDiaryCommentsByMemberIdAndDeletedAt(Long memberId, LocalDateTime deletedAt);
 }

@@ -15,11 +15,13 @@ import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DiaryCommentLikeService {
 
     private final MemberRepository memberRepository;
@@ -35,7 +37,9 @@ public class DiaryCommentLikeService {
 
         DiaryComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
+
         memberGuard.checkOwnerIsNotDeleted(comment.getMember());
+        memberGuard.checkOwnerIsNotDeleted(comment.getDiary().getMember());
 
         Optional<DiaryCommentLike> existing = likeRepository.findByMemberIdAndCommentId(memberId, commentId);
 

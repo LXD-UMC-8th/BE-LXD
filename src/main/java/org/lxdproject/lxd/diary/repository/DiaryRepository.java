@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom {
@@ -15,7 +14,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
     Long countByMemberIdAndDeletedAtIsNull(Long memberId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Diary d SET d.deletedAt = :deletedAt WHERE d.member.id = :memberId")
+    @Query("UPDATE Diary d SET d.deletedAt = :deletedAt WHERE d.member.id = :memberId AND d.deletedAt IS NULL")
     void softDeleteDiariesByMemberId(@Param("memberId") Long memberId, @Param("deletedAt") LocalDateTime deletedAt);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -24,7 +23,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
     WHERE d.deletedAt IS NOT NULL 
       AND d.deletedAt <= :threshold
     """)
-    void deleteDiariesOlderThan30Days(@Param("threshold") LocalDateTime threshold);
+    void hardDeleteDiariesOlderThanThreshold(@Param("threshold") LocalDateTime threshold);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Diary d SET d.deletedAt = NULL WHERE d.member.id = :memberId AND d.deletedAt = :deletedAt")

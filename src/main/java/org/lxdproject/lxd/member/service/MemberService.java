@@ -193,29 +193,35 @@ public class MemberService {
         // 일기 soft delete
         diaryRepository.softDeleteDiariesByMemberId(memberId, deletedAt);
 
-        // 일기 댓글 soft delete
+        // 탈퇴자가 작성한 일기 댓글 및 탈퇴자가 작성한 일기에 달린 댓글 soft delete
         diaryCommentRepository.softDeleteMemberComments(memberId, deletedAt);
 
-        // 해당 일기 좋아요는 hard delete
-        diaryLikeRepository.deleteAllByMemberId(memberId);
+        // 탈퇴자가 누른 일기 좋아요 및 탈퇴자가 작성한 일기가 받은 좋아요 soft delete
+        diaryLikeRepository.softDeleteDiaryLikes(memberId, deletedAt);
 
-        // 해당 일기 댓글 좋아요는 hard delete
-        diaryCommentLikeRepository.deleteAllByMemberId(memberId);
+        // 탈퇴자가 누른 일기 댓글 좋아요 및 탈퇴자가 작성한 댓글이 받은 좋아요 soft delete
+        diaryCommentLikeRepository.softDeleteDiaryCommentLikes(memberId, deletedAt);
     }
 
     @Transactional
     public void hardDeleteWithdrawnMembers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
+        // 탈퇴자의 댓글 좋아요 모두 hard delete
+        diaryCommentLikeRepository.hardDeleteDiaryCommentLikesOlderThanThreshold(threshold);
+
+        // 탈퇴자의 일기 좋아요 모두 hard delete
+        diaryLikeRepository.hardDeleteDiaryLikesOlderThanThreshold(threshold);
+
         // 탈퇴자의 댓글 모두 hard delete
-        diaryCommentRepository.hardDeleteWithdrawnMemberComments(threshold);
+        diaryCommentRepository.hardDeleteDiaryCommentsOlderThanThreshold(threshold);
 
         // 탈퇴자의 일기 모두 hard delete
-        diaryRepository.deleteDiariesOlderThan30Days(threshold);
+        diaryRepository.hardDeleteDiariesOlderThanThreshold(threshold);
 
         // 30일이 지난 회원의 isPurged 값을 true로 만들고
         // 새로운 유저의 nickname/email의 unique 조건을 피하기 위해 대체값으로 치환
-        memberRepository.deleteMembersOlderThan30Days(threshold);
+        memberRepository.hardDeleteMembersOlderThanThreshold(threshold);
     }
 
 }

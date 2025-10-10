@@ -19,6 +19,8 @@ import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
+import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
+import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
@@ -58,6 +60,8 @@ public class AuthService {
     private final UrlProperties urlProperties;
     private final DiaryRepository diaryRepository;
     private final DiaryCommentRepository diaryCommentRepository;
+    private final DiaryLikeRepository diaryLikeRepository;
+    private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
     @Transactional
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
@@ -367,9 +371,13 @@ public class AuthService {
         member.restore();
         // 멤버 탈퇴 날짜와 일기 삭제 날짜가 같은 일기만 복구
         diaryRepository.recoverDiariesByMemberIdAndDeletedAt(memberId, deletedAt);
-        // 멤버 탈퇴 날짜와 일기 댓글 삭제 날짜가 같은 댓글만 복구
+        // 멤버 탈퇴 날짜와 일기 댓글 삭제 날짜가 같은 댓글만 복구 + 일기의 commentCount 재계산
         diaryCommentRepository.recoverDiaryCommentsByMemberIdAndDeletedAt(memberId, deletedAt);
 
+        // 멤버 탈퇴 날짜와 일기 좋아요 삭제 날짜가 같은 일기 좋아요만 복구 + 일기의 likeCount 재계산
+        diaryLikeRepository.recoverDiaryLikesByMemberIdAndDeletedAt(memberId, deletedAt);
+        // 멤버 탈퇴 날짜와 일기 댓글 좋아요 삭제 날짜가 같은 일기 댓글 좋요만 복구 + 댓글의 likeCount 재계산
+        diaryCommentLikeRepository.recoverDiaryCommentLikesByMemberIdAndDeletedAt(memberId, deletedAt);
 
     }
 }

@@ -15,9 +15,4 @@ import java.util.Optional;
 public interface DiaryLikeRepository extends JpaRepository<DiaryLike, Long>, DiaryLikeRepositoryCustom {
     Optional<DiaryLike> findByMemberAndDiary(Member member, Diary diary);
     List<DiaryLike> findAllByMemberId(Long memberId);
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(value = "DELETE FROM DiaryLike WHERE member.id = :memberId")
-    void deleteAllByMemberId(@Param("memberId") Long memberId);
-
 }

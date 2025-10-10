@@ -1,8 +1,9 @@
-package org.lxdproject.lxd.member;
-
+package org.lxdproject.lxd.auth;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.lxdproject.lxd.auth.dto.CustomUserDetails;
+import org.lxdproject.lxd.auth.service.AuthService;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.diary.entity.enums.CommentPermission;
 import org.lxdproject.lxd.diary.entity.enums.Language;
@@ -25,14 +26,16 @@ import org.lxdproject.lxd.member.service.MemberService;
 import org.lxdproject.lxd.schedular.MemberCleanupSchedular;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 @SpringBootTest
 @Transactional
-public class MemberServiceTest {
+public class AuthServiceTest {
 
     @Autowired private MemberRepository memberRepository;
     @Autowired private DiaryRepository diaryRepository;
@@ -40,15 +43,16 @@ public class MemberServiceTest {
     @Autowired private DiaryLikeRepository diaryLikeRepository;
     @Autowired private DiaryCommentLikeRepository diaryCommentLikeRepository;
     @Autowired private MemberService memberService;
+    @Autowired private AuthService authService;
 
     @Test
-    @DisplayName("회원 탈퇴 시 사용자, 사용자가 작성한 일기/댓글, 사용자가 누른 일기 좋아요/댓글 좋아요 모두 soft delete 됩니다")
-    void deleteMember_shouldSoftDeleteAllEntities() {
-        // given
+    @DisplayName("회원 복구 시, member가 작성한 일기/댓글/일기좋아요/댓글좋아요가 모두 복구된다")
+    void recoverMember_shouldRestoreAllOwnedEntities() {
+        // [given] member가 일기, 댓글, 일기 좋아요, 일기 댓글 좋아요 작성
         Member member = Member.builder()
-                .username("softuser")
+                .username("restoreUser")
                 .password("pw")
-                .email("jun@test.com")
+                .email("restore@test.com")
                 .nickname("jun")
                 .role(Role.USER)
                 .loginType(LoginType.LOCAL)
@@ -61,10 +65,9 @@ public class MemberServiceTest {
                 .build();
         memberRepository.save(member);
 
-        // 일기
         Diary diary = Diary.builder()
                 .member(member)
-                .title("일기 제목")
+                .title("복구 일기")
                 .content("내용")
                 .style(Style.FREE)
                 .visibility(Visibility.PUBLIC)
@@ -73,52 +76,64 @@ public class MemberServiceTest {
                 .build();
         diaryRepository.save(diary);
 
-        // 댓글
         DiaryComment comment = DiaryComment.builder()
                 .member(member)
                 .diary(diary)
-                .commentText("댓글입니다")
+                .commentText("복구 댓글")
                 .build();
         diaryCommentRepository.save(comment);
 
-        // 일기 좋아요
         DiaryLike diaryLike = DiaryLike.builder()
                 .member(member)
                 .diary(diary)
                 .build();
         diaryLikeRepository.save(diaryLike);
 
-        // 댓글 좋아요
         DiaryCommentLike commentLike = DiaryCommentLike.builder()
                 .member(member)
                 .comment(comment)
                 .build();
         diaryCommentLikeRepository.save(commentLike);
 
-        // when
+        // soft delete (회원 탈퇴)
         memberService.deleteMember(member.getId());
 
-        // then
-        Member deletedMember = memberRepository.findById(member.getId()).orElseThrow();
-        Diary deletedDiary = diaryRepository.findById(diary.getId()).orElseThrow();
-        DiaryComment deletedComment = diaryCommentRepository.findById(comment.getId()).orElseThrow();
-        DiaryLike deletedDiaryLike = diaryLikeRepository.findById(diaryLike.getId()).orElseThrow();
-        DiaryCommentLike deletedCommentLike = diaryCommentLikeRepository.findById(commentLike.getId()).orElseThrow();
 
-        // soft delete 확인
-        assertThat(deletedMember.getDeletedAt()).isNotNull();
-        assertThat(deletedDiary.getDeletedAt()).isNotNull();
-        assertThat(deletedComment.getDeletedAt()).isNotNull();
-        assertThat(deletedDiaryLike.getDeletedAt()).isNotNull();
-        assertThat(deletedCommentLike.getDeletedAt()).isNotNull();
+        // [when] 회원 복구
+        // CustomUserDetails 객체 생성
+        CustomUserDetails customUserDetails = new CustomUserDetails(member);
+
+        // SecurityContext에 CustomUserDetails 주입
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        authService.recover();
+
+
+        // [then]
+        Member restoredMember = memberRepository.findById(member.getId()).orElseThrow();
+        Diary restoredDiary = diaryRepository.findById(diary.getId()).orElseThrow();
+        DiaryComment restoredComment = diaryCommentRepository.findById(comment.getId()).orElseThrow();
+        DiaryLike restoredDiaryLike = diaryLikeRepository.findById(diaryLike.getId()).orElseThrow();
+        DiaryCommentLike restoredCommentLike = diaryCommentLikeRepository.findById(commentLike.getId()).orElseThrow();
+
+        assertThat(restoredMember.getDeletedAt()).isNull();
+        assertThat(restoredDiary.getDeletedAt()).isNull();
+        assertThat(restoredComment.getDeletedAt()).isNull();
+        assertThat(restoredDiaryLike.getDeletedAt()).isNull();
+        assertThat(restoredCommentLike.getDeletedAt()).isNull();
+
+        // test 끝나면 context 초기화
+        SecurityContextHolder.clearContext();
     }
 
     @Test
-    @DisplayName("회원 탈퇴 시, 탈퇴한 회원이 작성한 일기의 일기 좋아요 및 댓글과 탈퇴한 회원이 작성한 댓글의 댓글 좋아요가 soft delete 된다")
-    void deleteMember_shouldAlsoSoftDeleteRelatedEntities() {
-        // [given] 탈퇴할 회원 A, 다른 회원 B, C
+    @DisplayName("회원 복구 시, 해당 회원이 작성한 일기에 달린 댓글/좋아요, 작성한 댓글에 달린 좋아요도 복구된다")
+    void recoverMember_shouldRestoreRelatedEntities() {
+        // [given] 탈퇴할 회원 A, 연관 회원 B, C
         Member memberA = Member.builder()
-                .username("memberA")
+                .username("memberA_recover")
                 .password("pw")
                 .email("a@test.com")
                 .nickname("A")
@@ -134,7 +149,7 @@ public class MemberServiceTest {
         memberRepository.save(memberA);
 
         Member memberB = Member.builder()
-                .username("memberB")
+                .username("memberB_recover")
                 .password("pw")
                 .email("b@test.com")
                 .nickname("B")
@@ -150,7 +165,7 @@ public class MemberServiceTest {
         memberRepository.save(memberB);
 
         Member memberC = Member.builder()
-                .username("memberC")
+                .username("memberC_recover")
                 .password("pw")
                 .email("c@test.com")
                 .nickname("C")
@@ -165,70 +180,75 @@ public class MemberServiceTest {
                 .build();
         memberRepository.save(memberC);
 
-        // [A]가 작성한 일기
-        Diary diaryA1 = Diary.builder()
+        Diary diaryA = Diary.builder()
                 .member(memberA)
-                .title("A의 일기")
-                .content("A가 쓴 내용")
+                .title("A의 일기 복구")
+                .content("A의 내용")
                 .style(Style.FREE)
                 .visibility(Visibility.PUBLIC)
                 .commentPermission(CommentPermission.ALL)
                 .language(Language.KO)
                 .build();
-        diaryRepository.save(diaryA1);
+        diaryRepository.save(diaryA);
 
-        // [B]가 A의 일기에 단 댓글
-        DiaryComment commentB_on_diaryA1 = DiaryComment.builder()
+        // B가 A의 일기에 댓글, 좋아요
+        DiaryComment commentB_on_A = DiaryComment.builder()
                 .member(memberB)
-                .diary(diaryA1)
-                .commentText("B가 쓴 댓글")
+                .diary(diaryA)
+                .commentText("B의 댓글")
                 .build();
-        diaryCommentRepository.save(commentB_on_diaryA1);
-
-        // [B]가 A의 일기에 누른 좋아요
-        DiaryLike diaryLikeB_on_diaryA1 = DiaryLike.builder()
+        diaryCommentRepository.save(commentB_on_A);
+        DiaryLike likeB_on_A = DiaryLike.builder()
                 .member(memberB)
-                .diary(diaryA1)
+                .diary(diaryA)
                 .build();
-        diaryLikeRepository.save(diaryLikeB_on_diaryA1);
+        diaryLikeRepository.save(likeB_on_A);
 
-        // [A]가 작성한 댓글
-        DiaryComment commentA1 = DiaryComment.builder()
+        // A가 댓글 작성
+        DiaryComment commentA = DiaryComment.builder()
                 .member(memberA)
-                .diary(diaryA1)
+                .diary(diaryA)
                 .commentText("A의 댓글")
                 .build();
-        diaryCommentRepository.save(commentA1);
+        diaryCommentRepository.save(commentA);
 
-        // [C]가 A의 댓글에 누른 좋아요
-        DiaryCommentLike commentLikeC_on_commentA1 = DiaryCommentLike.builder()
+        // C가 A의 댓글에 좋아요
+        DiaryCommentLike likeC_on_commentA = DiaryCommentLike.builder()
                 .member(memberC)
-                .comment(commentA1)
+                .comment(commentA)
                 .build();
-        diaryCommentLikeRepository.save(commentLikeC_on_commentA1);
+        diaryCommentLikeRepository.save(likeC_on_commentA);
 
-
-        // [when] 탈퇴 실행
+        // A 탈퇴
         memberService.deleteMember(memberA.getId());
 
-        // [then] A의 리소스와 연관된 리소스들 soft delete 확인
-        DiaryComment deletedCommentB = diaryCommentRepository.findById(commentB_on_diaryA1.getId()).orElseThrow();
-        DiaryLike deletedDiaryLikeB = diaryLikeRepository.findById(diaryLikeB_on_diaryA1.getId()).orElseThrow();
-        DiaryCommentLike deletedCommentLikeC = diaryCommentLikeRepository.findById(commentLikeC_on_commentA1.getId()).orElseThrow();
+        // [when]
+        // CustomUserDetails 객체 생성
+        CustomUserDetails customUserDetails = new CustomUserDetails(memberA);
 
-        // A의 일기에 달린 다른 사람 댓글 soft delete 확인
-        assertThat(deletedCommentB.getDeletedAt()).isNotNull();
+        // SecurityContext에 CustomUserDetails 주입
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // A의 일기에 달린 다른 사람의 좋아요 soft delete 확인
-        assertThat(deletedDiaryLikeB.getDeletedAt()).isNotNull();
+        authService.recover();
 
-        // A가 쓴 댓글에 달린 다른 사람의 좋아요 soft delete 확인
-        assertThat(deletedCommentLikeC.getDeletedAt()).isNotNull();
+        // then (A의 일기에 달린 댓글/좋아요, A의 댓글에 달린 좋아요도 복구됨)
+        DiaryComment restoredCommentB = diaryCommentRepository.findById(commentB_on_A.getId()).orElseThrow();
+        DiaryLike restoredLikeB = diaryLikeRepository.findById(likeB_on_A.getId()).orElseThrow();
+        DiaryCommentLike restoredLikeC = diaryCommentLikeRepository.findById(likeC_on_commentA.getId()).orElseThrow();
+
+        assertThat(restoredCommentB.getDeletedAt()).isNull();
+        assertThat(restoredLikeB.getDeletedAt()).isNull();
+        assertThat(restoredLikeC.getDeletedAt()).isNull();
+
+        // test 끝나면 context 초기화
+        SecurityContextHolder.clearContext();
     }
 
     @Test
-    @DisplayName("회원 B, C가 탈퇴하면 A의 일기 commentCount, likeCount, 댓글의 likeCount도 감소한다")
-    void deleteMembers_shouldUpdateDiaryAndCommentCounts() {
+    @DisplayName("회원 B, C가 복구하면 A의 일기 commentCount, likeCount, 댓글의 likeCount도 증가한다")
+    void recoverMembers_shouldUpdateDiaryAndCommentCounts() {
         // [given] A(작성자), B(일기 댓글+좋아요), C(댓글 좋아요)
         Member memberA = Member.builder()
                 .username("memberA")
@@ -323,104 +343,52 @@ public class MemberServiceTest {
         diaryCommentLikeRepository.save(likeC_on_commentA1);
 
 
-
-
-        // [when] B 탈퇴 → A의 일기 관련 데이터 soft delete 및 commentCount 및 likeCount 감소
+        // B 탈퇴 → A의 일기 관련 데이터 soft delete 및 commentCount 및 likeCount 감소
         memberService.deleteMember(memberB.getId());
-
-        // [then] 일기 상태 재조회
-        Diary afterBDeletedDiary = diaryRepository.findById(diaryA1.getId()).orElseThrow();
-        DiaryComment afterBDeletedComment = diaryCommentRepository.findById(commentA1.getId()).orElseThrow();
-
-        // A의 일기 commentCount / likeCount가 감소했는지 확인
-        assertThat(afterBDeletedDiary.getCommentCount()).isEqualTo(1);
-        assertThat(afterBDeletedDiary.getLikeCount()).isEqualTo(0);
-
-
-
-
-
-        // [when] C 탈퇴 → A의 댓글 관련 데이터 soft delete 및 likeCount 감소
+        // C 탈퇴 → A의 댓글 관련 데이터 soft delete 및 likeCount 감소
         memberService.deleteMember(memberC.getId());
 
-        // [then] A의 댓글 재조회
-        DiaryComment afterCDeletedComment = diaryCommentRepository.findById(commentA1.getId()).orElseThrow();
-        DiaryCommentLike deletedLikeC = diaryCommentLikeRepository.findById(likeC_on_commentA1.getId()).orElseThrow();
+        // [when]
+        // CustomUserDetails 객체 생성
+        CustomUserDetails customUserDetails = new CustomUserDetails(memberB);
 
-        // A의 댓글 likeCount가 감소했는지 확인
-        assertThat(afterCDeletedComment.getLikeCount()).isEqualTo(0);
-    }
+        // SecurityContext에 CustomUserDetails 주입
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // B 복구
+        authService.recover();
 
-    @Test
-    @DisplayName("탈퇴 후 30일 지난 회원, 일기, 댓글이 hard delete 됩니다")
-    void hardDeleteWithdrawnMembers_shouldRemoveOldData() {
-        // [given] Member + Diary + DiaryComment
-        Member member = Member.builder()
-                .username("test_user")
-                .password("encodedPw")
-                .email("test@test.com")
-                .nickname("테스터")
-                .role(Role.USER)
-                .loginType(LoginType.LOCAL)
-                .nativeLanguage(Language.KO)
-                .language(Language.ENG)
-                .systemLanguage(Language.KO)
-                .isPrivacyAgreed(true)
-                .isAlarmAgreed(false)
-                .status(Status.ACTIVE)
-                .build();
-        memberRepository.save(member);
+        // context 초기화
+        SecurityContextHolder.clearContext();
 
-        Diary diary = Diary.builder()
-                .member(member)
-                .title("테스트 일기")
-                .content("내용입니다")
-                .style(Style.FREE)
-                .visibility(Visibility.PUBLIC)
-                .commentPermission(CommentPermission.ALL)
-                .language(Language.KO)
-                .build();
-        diaryRepository.save(diary);
+        // CustomUserDetails 객체 생성
+        customUserDetails = new CustomUserDetails(memberC);
+        // SecurityContext에 CustomUserDetails 주입
+        authentication = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
 
-        DiaryComment comment = DiaryComment.builder()
-                .member(member)
-                .diary(diary)
-                .commentText("댓글입니다")
-                .build();
-        diaryCommentRepository.save(comment);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        DiaryLike diaryLike = DiaryLike.builder()
-                .member(member)
-                .diary(diary)
-                .build();
-        diaryLikeRepository.save(diaryLike);
-
-        DiaryCommentLike diaryCommentLike = DiaryCommentLike.builder()
-                .member(member)
-                .comment(comment)
-                .build();
-        diaryCommentLikeRepository.save(diaryCommentLike);
+        // C 복구
+        authService.recover();
 
 
-        // soft delete 시점을 31일 전 수정
-        LocalDateTime deletedAt = LocalDateTime.now().minusDays(31);
-        member.softDelete(deletedAt);
-        diaryCommentLike.softDelete(deletedAt);
-        diaryLike.softDelete(deletedAt);
-        comment.softDelete(deletedAt);
-        diary.softDelete(deletedAt);
+        // [then] 일기 상태 재조회
+        Diary afterBRecoveryDiary = diaryRepository.findById(diaryA1.getId()).orElseThrow();
+        DiaryComment afterBRecoveryComment = diaryCommentRepository.findById(commentA1.getId()).orElseThrow();
 
+        // A의 일기 commentCount / likeCount가 복구됐는지 확인
+        assertThat(afterBRecoveryDiary.getCommentCount()).isEqualTo(2);
+        assertThat(afterBRecoveryDiary.getLikeCount()).isEqualTo(1);
 
-        // [when] 스케쥴러를 통해 일기/댓글/좋아요 hard delete 실행
-        memberService.hardDeleteWithdrawnMembers();
+        // [then] 댓글 상태 재조회
+        DiaryComment afterCRecoveryComment = diaryCommentRepository.findById(commentA1.getId()).orElseThrow();
+        DiaryCommentLike afterCRecoveryLikeC = diaryCommentLikeRepository.findById(likeC_on_commentA1.getId()).orElseThrow();
 
-        // [then] 데이터가 완전히 삭제되었는지 검증
-        assertThat(memberRepository.findById(member.getId())).isEmpty();
-        assertThat(diaryRepository.findById(diary.getId())).isEmpty();
-        assertThat(diaryCommentRepository.findById(comment.getId())).isEmpty();
-        assertThat(diaryLikeRepository.findById(diaryLike.getId())).isEmpty();
-        assertThat(diaryCommentLikeRepository.findById(diaryCommentLike.getId())).isEmpty();
+        // A의 댓글 likeCount가 복구됐는지 확인
+        assertThat(afterCRecoveryComment.getLikeCount()).isEqualTo(1);
+
     }
 
 }
