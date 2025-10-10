@@ -137,7 +137,7 @@ public class DiaryController implements DiaryApi{
     @Override
     public ApiResponse<MemberDiarySummaryResponseDTO> getUserDiarySummary(
             @CurrentMember Member member,
-            Long memberId
+            @PathVariable("memberId") Long memberId
     ) {
         MemberDiarySummaryResponseDTO response =
                 diaryService.getDiarySummary(memberId, member.getId(), true);
@@ -147,7 +147,8 @@ public class DiaryController implements DiaryApi{
     @Override
     public ApiResponse<PageDTO<MyDiarySummaryResponseDTO>> getDiariesByMemberId(
             @CurrentMember Member viewer,
-            Long memberId, int page, int size
+            @PathVariable("memberId") Long memberId,
+            int page, int size
     ) {
         PageDTO<MyDiarySummaryResponseDTO> result =
                 diaryService.getDiariesByMemberId(viewer, memberId, page - 1, size);
