@@ -162,7 +162,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        if (diary.getMember() == null || !diary.getMember().getId().equals(memberId)) {
+        if (!diary.getMember().getId().equals(memberId)) {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
