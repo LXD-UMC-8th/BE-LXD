@@ -22,6 +22,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager entityManager;
+    private final MemberPredicates memberPredicates;
 
     private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
@@ -31,7 +32,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
     public List<DiaryComment> findParentComments(Long diaryId, int offset, int size) {
         BooleanExpression condition = DIARY_COMMENT.diary.id.eq(diaryId)
                 .and(DIARY_COMMENT.parent.isNull())
-                .and(MemberPredicates.isNotDeleted(DIARY_COMMENT.member));
+                .and(memberPredicates.isNotDeleted(DIARY_COMMENT.member));
 
         return queryFactory
                 .selectFrom(DIARY_COMMENT)
@@ -46,7 +47,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
     @Override
     public List<DiaryComment> findRepliesByParentIds(List<Long> parentIds) {
         BooleanExpression condition = DIARY_COMMENT.parent.id.in(parentIds)
-                .and(MemberPredicates.isNotDeleted(MEMBER));
+                .and(memberPredicates.isNotDeleted(MEMBER));
 
         return queryFactory
                 .selectFrom(DIARY_COMMENT)
@@ -65,7 +66,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                 .where(DIARY_COMMENT.diary.id.eq(diaryId)
                         .and(DIARY_COMMENT.parent.isNull())
                         .and(DIARY_COMMENT.deletedAt.isNull()) // 삭제된 댓글은 count 에서 제외
-                        .and(MemberPredicates.isNotDeleted(DIARY_COMMENT.member))) // 부모 댓글의 주인이 탈퇴했다면 count 에서 제외
+                        .and(memberPredicates.isNotDeleted(DIARY_COMMENT.member))) // 부모 댓글의 주인이 탈퇴했다면 count 에서 제외
                 .fetchOne();
     }
 

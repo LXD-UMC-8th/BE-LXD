@@ -21,6 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FriendRequestRepositoryImpl implements FriendRequestRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+    private final MemberPredicates memberPredicates;
 
     private static final QFriendRequest FR = QFriendRequest.friendRequest;
     private static final QMember M = QMember.member;
@@ -29,7 +30,7 @@ public class FriendRequestRepositoryImpl implements FriendRequestRepositoryCusto
     public Page<FriendResponseDTO> findReceivedRequestDTOs(Member receiver, FriendRequestStatus status, Pageable pageable) {
         BooleanExpression condition = FR.receiver.eq(receiver)
                 .and(FR.status.eq(status))
-                .and(MemberPredicates.isNotDeleted(M));
+                .and(memberPredicates.isNotDeleted(M));
 
         List<FriendResponseDTO> content = queryFactory
                 .select(Projections.constructor(FriendResponseDTO.class,
@@ -56,7 +57,7 @@ public class FriendRequestRepositoryImpl implements FriendRequestRepositoryCusto
     public Page<FriendResponseDTO> findSentRequestDTOs(Member requester, FriendRequestStatus status, Pageable pageable) {
         BooleanExpression condition = FR.requester.eq(requester)
                 .and(FR.status.eq(status))
-                .and(MemberPredicates.isNotDeleted(M));
+                .and(memberPredicates.isNotDeleted(M));
 
         List<FriendResponseDTO> content = queryFactory
                 .select(Projections.constructor(FriendResponseDTO.class,

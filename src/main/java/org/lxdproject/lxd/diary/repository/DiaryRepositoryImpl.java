@@ -31,6 +31,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private final DiaryPredicates diaryPredicates;
+    private final MemberPredicates memberPredicates;
 
     private static final QDiary DIARY = QDiary.diary;
     private static final QDiaryLike DIARY_LIKE = QDiaryLike.diaryLike;
@@ -87,7 +88,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         BooleanExpression condition = DIARY.member.id.eq(ownerId)
                 .and(DIARY.deletedAt.isNull())
                 .and(visibility)
-                .and(MemberPredicates.isNotDeleted(DIARY.member));
+                .and(memberPredicates.isNotDeleted(DIARY.member));
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
@@ -145,7 +146,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         BooleanExpression condition = DIARY.member.id.in(friendIds)
                 .and(DIARY.deletedAt.isNull())
                 .and(visibility)
-                .and(MemberPredicates.isNotDeleted(DIARY.member));
+                .and(memberPredicates.isNotDeleted(DIARY.member));
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
@@ -177,7 +178,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         BooleanExpression condition = DIARY.id.in(likedDiaryIds)
                 .and(DIARY.deletedAt.isNull())
                 .and(visibility)
-                .and(MemberPredicates.isNotDeleted(DIARY.member));
+                .and(memberPredicates.isNotDeleted(DIARY.member));
 
         List<Diary> diaries = queryFactory
                 .selectFrom(DIARY)
@@ -206,7 +207,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
         BooleanExpression condition = DIARY.deletedAt.isNull()
                 .and(DIARY.visibility.eq(Visibility.PUBLIC))
                 .and(visibility)
-                .and(MemberPredicates.isNotDeleted(DIARY.member));
+                .and(memberPredicates.isNotDeleted(DIARY.member));
 
         if (language != null) {
             condition = condition.and(DIARY.language.eq(language));

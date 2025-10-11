@@ -13,7 +13,6 @@ import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -23,6 +22,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
+    private MemberPredicates memberPredicates;
 
     private static final QFriendship friendship = QFriendship.friendship;
     private static final QMember MEMBER = QMember.member;
@@ -33,7 +33,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
         BooleanExpression condition = friendship.requester.id.eq(memberId)
                 .and(friendship.deletedAt.isNull())
-                .and(MemberPredicates.isNotDeleted(MEMBER));
+                .and(memberPredicates.isNotDeleted(MEMBER));
 
         List<Member> result = queryFactory
                 .select(friendship.receiver)
@@ -164,7 +164,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
                 .where(
                         friendship.requester.id.eq(memberId),
                         friendship.deletedAt.isNull(),
-                        MemberPredicates.isNotDeleted(MEMBER)
+                        memberPredicates.isNotDeleted(MEMBER)
                 )
                 .fetchOne()).orElse(0L);
     }

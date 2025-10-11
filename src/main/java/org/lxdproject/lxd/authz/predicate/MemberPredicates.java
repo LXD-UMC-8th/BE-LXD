@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class MemberPredicates {
 
-    public static BooleanExpression isNotDeleted(QMember member) {
+    public BooleanExpression isNotDeleted(QMember member) {
         return member.isNotNull().and(member.deletedAt.isNull());
     }
 
-    public static BooleanExpression isDeleted(QMember member) {
+    public BooleanExpression isDeleted(QMember member) {
         return member.deletedAt.isNotNull();
     }
 }
