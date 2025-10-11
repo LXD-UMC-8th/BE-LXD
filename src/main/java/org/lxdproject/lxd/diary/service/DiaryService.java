@@ -155,6 +155,7 @@ public class DiaryService {
         );
     }
 
+    @Transactional
     public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateRequestDTO request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
