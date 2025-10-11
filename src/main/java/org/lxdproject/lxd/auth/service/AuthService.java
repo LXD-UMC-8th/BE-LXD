@@ -50,7 +50,6 @@ import java.util.*;
 public class AuthService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
@@ -63,7 +62,6 @@ public class AuthService {
     private final DiaryLikeRepository diaryLikeRepository;
     private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
-    @Transactional
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
         // 일반 로그인인지 검사
@@ -333,8 +331,6 @@ public class AuthService {
 
         redisService.deleteRefreshToken(refreshToken);
 
-        // 현재 스레드에서 SecurityContext, Authentication, Principal 제거
-        SecurityContextHolder.clearContext();
     }
 
     @Transactional(readOnly = true)
