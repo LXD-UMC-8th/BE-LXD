@@ -125,8 +125,10 @@ public class CorrectionCommentService {
         // 삭제 권한 검증
         commentGuard.canDeleteCorrectionComment(requesterId, comment);
 
-        comment.softDelete();
-        comment.getCorrection().decreaseCommentCount();
+        if(!comment.isDeleted()) {
+            comment.softDelete();
+            comment.getCorrection().decreaseCommentCount();
+        }
 
         return CorrectionCommentDeleteResponseDTO.builder()
                 .commentId(comment.getId())
