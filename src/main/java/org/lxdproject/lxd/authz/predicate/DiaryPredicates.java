@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Component
 public class DiaryPredicates {
-    public static BooleanExpression isVisibleTo(Long viewerId, QDiary D, Set<Long> friendIds) {
+    public BooleanExpression isVisibleTo(Long viewerId, QDiary D, Set<Long> friendIds) {
         BooleanExpression isPublic = D.visibility.eq(Visibility.PUBLIC);
         BooleanExpression isMine   = viewerId == null ? Expressions.FALSE : D.member.id.eq(viewerId);
         BooleanExpression isFriends = (viewerId != null && friendIds != null && !friendIds.isEmpty())
