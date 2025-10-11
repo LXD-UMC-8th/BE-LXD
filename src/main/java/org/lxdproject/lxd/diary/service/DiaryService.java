@@ -181,7 +181,6 @@ public class DiaryService {
 
         // DB에 새로운 내용 저장
         diary.update(request, diffContent, request.getContent(), previewContent);
-        diaryRepository.save(diary);
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
 

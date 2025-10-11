@@ -22,12 +22,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class NotificationEventHandler {
 
-    private final NotificationRepository notificationRepository;
     private final NotificationPublisher notificationPublisher;
-
-    private final DiaryCommentRepository diaryCommentRepository;
-    private final CorrectionRepository correctionRepository;
-    private final CorrectionCommentRepository correctionCommentRepository;
 
     // 생성 이벤트 처리
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
