@@ -5,6 +5,8 @@ import org.lxdproject.lxd.friend.repository.FriendRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 public class FriendPolicy {
 
@@ -16,9 +18,10 @@ public class FriendPolicy {
 
     public Permit validateSameMember(Member memberA, Member memberB) {
         if (memberA == null || memberB == null) return Permit.DENY;
+        if (memberA.getId() == null || memberB.getId() == null) return Permit.DENY;
 
         // 동일 인물인지 확인
-        if(memberA.getId().equals(memberB.getId())) return Permit.DENY;
+        if (Objects.equals(memberA.getId(), memberB.getId())) return Permit.DENY;
 
         return Permit.ALLOW;
     }
@@ -26,6 +29,7 @@ public class FriendPolicy {
     // 친구 관계가 존재하지 않아야 함 (요청 전 검사용)
     public Permit validateNotFriends(Member memberA, Member memberB) {
         if (memberA == null || memberB == null) return Permit.DENY;
+        if (memberA.getId() == null || memberB.getId() == null) return Permit.DENY;
 
         // 두 사용자가 이미 친구라면 DENY, 아니라면 ALLOW
         boolean areFriends = friendRepository.areFriends(memberA.getId(), memberB.getId());
@@ -37,6 +41,7 @@ public class FriendPolicy {
     // 친구 관계가 반드시 존재해야 함 (취소,거절 등 관리 전 검사용)
     public Permit validateExistingFriends(Member memberA, Member memberB) {
         if (memberA == null || memberB == null) return Permit.DENY;
+        if (memberA.getId() == null || memberB.getId() == null) return Permit.DENY;
 
         // 두 사용자가 이미 친구라면 ALLOW, 아니라면 DENY
         boolean areFriends = friendRepository.areFriends(memberA.getId(), memberB.getId());
