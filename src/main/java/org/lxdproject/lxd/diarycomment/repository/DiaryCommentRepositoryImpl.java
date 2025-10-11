@@ -37,6 +37,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                 .selectFrom(DIARY_COMMENT)
                 .leftJoin(DIARY_COMMENT.member, MEMBER).fetchJoin()
                 .where(condition)
+                .orderBy(DIARY_COMMENT.createdAt.asc())
                 .offset(offset)
                 .limit(size)
                 .fetch();
@@ -62,7 +63,9 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                 .select(DIARY_COMMENT.count())
                 .from(DIARY_COMMENT)
                 .where(DIARY_COMMENT.diary.id.eq(diaryId)
-                        .and(DIARY_COMMENT.parent.isNull()))
+                        .and(DIARY_COMMENT.parent.isNull())
+                        .and(DIARY_COMMENT.deletedAt.isNull()) // 삭제된 댓글은 count 에서 제외
+                        .and(MemberPredicates.isNotDeleted(DIARY_COMMENT.member))) // 부모 댓글의 주인이 탈퇴했다면 count 에서 제외
                 .fetchOne();
     }
 
