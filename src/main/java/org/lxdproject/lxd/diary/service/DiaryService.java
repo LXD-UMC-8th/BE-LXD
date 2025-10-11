@@ -88,9 +88,9 @@ public class DiaryService {
         diaryGuard.hasVisibilityPermission(currentMemberId, diary);
         memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
-        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
+        boolean isLiked = diaryLikeRepository.existsByMemberIdAndDiaryId(currentMemberId, diary.getId());
 
-        return DiaryDetailResponseDTO.from(diary, likedSet.contains(diary.getId()));
+        return DiaryDetailResponseDTO.from(diary, isLiked);
     }
 
     @Transactional
