@@ -18,7 +18,7 @@ public class DiaryLikeResponseDTO {
         @Schema(description = "일기 ID")
         private Long diaryId;
 
-        @Schema(description = "좋아요를 누르거나 해제한 사용자 ID")
+        @Schema(description = "좋아요를 누르거나 해제한 사용자 프로필")
         private MemberProfileDTO memberProfile;
 
         @Schema(description = "좋아요 상태, 결과가 좋아요 해제되었으면 false / 결과가 좋아요가 생성되었으면 true ")
