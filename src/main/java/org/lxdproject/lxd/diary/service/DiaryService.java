@@ -103,9 +103,16 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        List<String> urls = extractImageUrls(diary.getModifiedContent());
-        List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
-        s3FileService.deleteImages(keys);
+        String modifiedContent = diary.getModifiedContent();
+        if(modifiedContent != null && !modifiedContent.isBlank()) {
+            List<String> urls = extractImageUrls(diary.getModifiedContent());
+
+            if(!urls.isEmpty()) {
+                List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
+                s3FileService.deleteImages(keys);
+            }
+
+        }
 
         diary.softDelete();
     }
