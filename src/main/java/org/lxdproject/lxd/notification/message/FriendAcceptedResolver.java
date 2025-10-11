@@ -2,10 +2,12 @@ package org.lxdproject.lxd.notification.message;
 
 import org.lxdproject.lxd.notification.dto.MessagePart;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Locale;
 
+@Component
 public class FriendAcceptedResolver implements MessageResolver {
     @Override
     public NotificationType getSupportedType() {
