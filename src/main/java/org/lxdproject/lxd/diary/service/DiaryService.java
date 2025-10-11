@@ -336,10 +336,7 @@ public class DiaryService {
     public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId, boolean includeStatus) {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-
-        if (member.isDeleted()) {
-            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
-        }
+        memberGuard.checkOwnerIsNotDeleted(member);
 
         Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
 
