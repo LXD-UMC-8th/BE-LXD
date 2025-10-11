@@ -24,7 +24,11 @@ public class SecurityUtil {
             throw new AuthHandler(ErrorStatus.AUTHENTICATION_INFO_NOT_FOUND);
         }
 
-        CustomUserDetails customUserDetails = authentication.getPrincipal() instanceof CustomUserDetails ? (CustomUserDetails) authentication.getPrincipal() : null;
+        if(!(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
+        }
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
         try {
             return customUserDetails.getMemberId();
