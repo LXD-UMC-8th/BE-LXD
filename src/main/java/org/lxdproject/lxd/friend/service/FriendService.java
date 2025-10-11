@@ -190,7 +190,7 @@ public class FriendService {
         memberGuard.checkOwnerIsNotDeleted(target);
 
         // 친구 삭제에 대한 인가 검사
-        friendGuard.validateBeforeManageAction(current, target);
+        friendGuard.validateBeforeManageAction(target, current);
 
         friendRepository.deleteFriendship(current, target);
     }
