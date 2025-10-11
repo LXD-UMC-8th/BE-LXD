@@ -179,7 +179,10 @@ public class FriendService {
         notificationService.createAndPublish(dto);
     }
 
-    public void deleteFriend(Long currentMemberId, Long friendId) {
+    @Transactional
+    public void deleteFriend(Long friendId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
         Member current = memberRepository.findById(currentMemberId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
         memberGuard.checkOwnerIsNotDeleted(current);

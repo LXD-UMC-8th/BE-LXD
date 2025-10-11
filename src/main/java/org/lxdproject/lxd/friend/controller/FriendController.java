@@ -45,8 +45,7 @@ public class FriendController implements FriendApi {
 
     @Override
     public ApiResponse<FriendMessageResponseDTO> deleteFriend(@PathVariable Long friendId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        friendService.deleteFriend(currentMemberId, friendId);
+        friendService.deleteFriend(friendId);
         return ApiResponse.onSuccess(new FriendMessageResponseDTO("친구가 삭제되었습니다."));
     }
 
