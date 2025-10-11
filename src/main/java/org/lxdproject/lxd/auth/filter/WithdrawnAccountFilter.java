@@ -28,7 +28,7 @@ public class WithdrawnAccountFilter extends OncePerRequestFilter {
             if (principal.isDeleted()) {
                 String requestURI = request.getRequestURI();
 
-                if (!requestURI.startsWith("/auth/recover")) {
+                if (!requestURI.startsWith(RECOVER_API)) {
                     throw new AuthHandler(ErrorStatus.SELF_WITHDRAWN_USER);
                 }
             }
