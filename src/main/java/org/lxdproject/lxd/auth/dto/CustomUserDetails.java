@@ -4,6 +4,7 @@ import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.enums.Role;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -45,18 +46,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new ArrayList<>();
 
-        collection.add(new GrantedAuthority() {
-
-            @Override
-            public String getAuthority() {
-
-                return member.getRole().toString();
-            }
-        });
-
-        return collection;
+        List<GrantedAuthority> authorities = new ArrayList<>(1);
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + member.getRole().name()));
+        return authorities;
     }
 
     @Override
