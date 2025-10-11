@@ -90,7 +90,7 @@ public interface AuthApi {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "계정 복구 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "사용자 정보 요청 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "계정 복구 처리 실패"),
     })
     ApiResponse<String> recover();
 }
