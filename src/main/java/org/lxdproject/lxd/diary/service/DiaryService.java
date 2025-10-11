@@ -85,8 +85,8 @@ public class DiaryService {
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
         diaryGuard.hasVisibilityPermission(currentMemberId, diary);
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(currentMemberId);
 
