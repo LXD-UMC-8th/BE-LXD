@@ -180,9 +180,7 @@ public class FriendService {
     }
 
     @Transactional
-    public void deleteFriend(Long friendId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
+    public void deleteFriend(Long currentMemberId, Long friendId) {
         Member current = memberRepository.findById(currentMemberId)
                 .orElseThrow(() -> new FriendHandler(ErrorStatus.MEMBER_NOT_FOUND));
         memberGuard.checkOwnerIsNotDeleted(current);
@@ -192,7 +190,7 @@ public class FriendService {
         memberGuard.checkOwnerIsNotDeleted(target);
 
         // 친구 삭제에 대한 인가 검사
-        friendGuard.validateBeforeManageAction(target, current);
+        friendGuard.validateBeforeManageAction(current, target);
 
         friendRepository.deleteFriendship(current, target);
     }
