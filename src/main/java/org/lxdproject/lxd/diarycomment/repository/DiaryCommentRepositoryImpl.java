@@ -23,9 +23,9 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
     private final JPAQueryFactory queryFactory;
     private final EntityManager entityManager;
 
-    QDiary DIARY = QDiary.diary;
-    QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
-    QMember MEMBER = QMember.member;
+    private static final QDiary DIARY = QDiary.diary;
+    private static final QDiaryComment DIARY_COMMENT = QDiaryComment.diaryComment;
+    private static final QMember MEMBER = QMember.member;
 
     @Override
     public List<DiaryComment> findParentComments(Long diaryId, int offset, int size) {
