@@ -142,6 +142,8 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
         if (withdrawnMemberIds.isEmpty()) return;
 
+        entityManager.flush();
+
         // 탈퇴 회원이 작성한 댓글 + 탈퇴 회원의 일기에 달린 모든 댓글 삭제
         queryFactory.delete(DIARY_COMMENT)
                 .where(
@@ -149,6 +151,8 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                                 .or(DIARY_COMMENT.diary.member.id.in(withdrawnMemberIds))
                 )
                 .execute();
+
+        entityManager.clear();
     }
 
     // CaseBuilder로 최적화 하기
