@@ -16,9 +16,9 @@ public class MemberCleanupSchedular {
 
     // 매일 자정에 실행 (cron = "초 분 시 일 월 요일")
     @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Seoul")
-    @SchedulerLock(name = "cleanupWithdrawnMembers", lockAtMostFor = "1m")
+    @SchedulerLock(name = "cleanupWithdrawnMembers", lockAtMostFor = "PT10M", lockAtLeastFor = "PT1M")
     public void cleanupWithdrawnMembers() {
-        // 일기, 일기 댓글에 대해 hardDelete 수행
+        // 일기, 일기 댓글, 일기 좋아요, 댓글 좋아요에 대해 hardDelete 수행
         log.info("탈퇴한 지 30일이 지난 회원 스케쥴링 중 ...");
         memberService.hardDeleteWithdrawnMembers();
 

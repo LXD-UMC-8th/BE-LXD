@@ -12,7 +12,10 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
+@EnableSchedulerLock( // 전역적 설정
+        defaultLockAtLeastFor = "PT10S", // 최소 10초는 락 유지 (중복 실행 방지)
+        defaultLockAtMostFor = "PT30S" // 락은 최대 10분 유지 (예외로 작업이 오래 걸릴 경우 대비)
+)
 public class SchedulerConfig {
 
     @Bean
