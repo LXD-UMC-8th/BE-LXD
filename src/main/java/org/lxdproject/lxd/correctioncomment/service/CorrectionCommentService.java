@@ -19,12 +19,9 @@ import org.lxdproject.lxd.correctioncomment.repository.CorrectionCommentReposito
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
-import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
-import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
