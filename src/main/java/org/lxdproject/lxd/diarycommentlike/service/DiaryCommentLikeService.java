@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
@@ -13,16 +15,19 @@ import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DiaryCommentLikeService {
 
     private final MemberRepository memberRepository;
     private final DiaryCommentRepository commentRepository;
     private final DiaryCommentLikeRepository likeRepository;
+    private final MemberGuard memberGuard;
 
     public DiaryCommentLikeResponseDTO toggleLike(Long commentId) {
         Long memberId = SecurityUtil.getCurrentMemberId();
@@ -32,6 +37,9 @@ public class DiaryCommentLikeService {
 
         DiaryComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
+
+        memberGuard.checkOwnerIsNotDeleted(comment.getMember());
+        memberGuard.checkOwnerIsNotDeleted(comment.getDiary().getMember());
 
         Optional<DiaryCommentLike> existing = likeRepository.findByMemberIdAndCommentId(memberId, commentId);
 
@@ -56,7 +64,7 @@ public class DiaryCommentLikeService {
 
         return DiaryCommentLikeResponseDTO.builder()
                 .commentId(commentId)
-                .memberId(memberId)
+                .memberProfile(MemberProfileDTO.from(member))
                 .liked(liked)
                 .likeCount(comment.getLikeCount())
                 .build();

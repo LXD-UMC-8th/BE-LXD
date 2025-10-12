@@ -10,26 +10,38 @@ import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.auth.converter.AuthConverter;
 import org.lxdproject.lxd.auth.dto.AuthRequestDTO;
 import org.lxdproject.lxd.auth.dto.AuthResponseDTO;
+import org.lxdproject.lxd.auth.dto.CustomUserDetails;
 import org.lxdproject.lxd.auth.dto.oauth.OAuthUserInfo;
 import org.lxdproject.lxd.auth.enums.TokenType;
 import org.lxdproject.lxd.auth.enums.VerificationType;
 import org.lxdproject.lxd.config.properties.UrlProperties;
+import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.config.security.jwt.JwtTokenProvider;
+import org.lxdproject.lxd.diary.repository.DiaryRepository;
+import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
+import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
+import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
 import org.lxdproject.lxd.infra.mail.MailService;
 import org.lxdproject.lxd.infra.redis.RedisService;
 import org.lxdproject.lxd.member.entity.Member;
-import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -38,43 +50,56 @@ import java.util.*;
 public class AuthService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
 
     private final RedisService redisService;
     private final MailService mailService;
 
     private final UrlProperties urlProperties;
+    private final DiaryRepository diaryRepository;
+    private final DiaryCommentRepository diaryCommentRepository;
+    private final DiaryLikeRepository diaryLikeRepository;
+    private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
-        // 아이디 검사
-        Member member = memberRepository.findByEmail(loginRequestDTO.getEmail())
-                .orElseThrow(()-> new MemberHandler(ErrorStatus.INVALID_CREDENTIALS));
-
-        // 비밀번호 검사
-        if(!passwordEncoder.matches(loginRequestDTO.getPassword(), member.getPassword())) {
-            throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
-        }
-
         // 일반 로그인인지 검사
-        if(member.getLoginType() != LoginType.LOCAL) {
-            throw new MemberHandler(ErrorStatus.INVALID_CREDENTIALS);
-        }
+
+        // 아이디, 비밀번호 기반으로 UsernamePasswordAuthenticationToken 생성
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+
+        // 2. 실제 검증(비밀번호 비교)은 AuthenticationManager에게 위임
+        // 이 과정에서 CustomUserDetailsService가 호출됨
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // 인증 완료 후, 토큰 생성
-        String accessToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.ACCESS);
-        String refreshToken = jwtTokenProvider.generateToken(member.getId(), member.getEmail(), member.getRole().name(), TokenType.REFRESH);
+        String accessToken = jwtTokenProvider.generateToken(customUserDetails.getMemberId(), customUserDetails.getMemberEmail(), customUserDetails.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtTokenProvider.generateToken(customUserDetails.getMemberId(), customUserDetails.getMemberEmail(), customUserDetails.getRole().name(), TokenType.REFRESH);
 
-        redisService.setRefreshToken(refreshToken, member.getEmail(), Duration.ofDays(7L));
+        redisService.setRefreshToken(refreshToken, customUserDetails.getMemberEmail(), Duration.ofDays(7L));
+
+        Boolean isWithdrawn = false;
+
+
+        if(customUserDetails.getDeletedAt() != null &&
+                ChronoUnit.DAYS.between(customUserDetails.getDeletedAt(), LocalDateTime.now()) < 30) {
+
+            isWithdrawn = true;
+        }
 
         return AuthConverter.toLoginResponseDTO(
                 accessToken,
                 refreshToken,
-                member
+                customUserDetails.getMember(),
+                isWithdrawn
         );
     }
 
+    @Transactional(readOnly = true)
     public void validateSendVerificationRequestDTOOrThrow(AuthRequestDTO.sendVerificationRequestDTO sendVerificationRequestDTO) {
 
         VerificationType verificationType = sendVerificationRequestDTO.getVerificationType();
@@ -150,6 +175,7 @@ public class AuthService {
                 .encodeToString(UUID.randomUUID().toString().getBytes());
     }
 
+    @Transactional(readOnly = true)
     public void verifyEmailTokenAndRedirect(String token, HttpServletResponse response) {
         try {
             // 1. 리스트로 조회
@@ -166,7 +192,7 @@ public class AuthService {
             String type = values.get(0);   // email 또는 password
             String email = values.get(1);
 
-            String latestToken = redisService.getVerificationEmailToken(email);
+            String latestToken = redisService.getVerificationEmail(email);
 
             // 가장 최근에 요청한 인증이 아닐 시, 실패 페이지 리다이렉트
             if(!token.equals(latestToken)) {
@@ -187,7 +213,7 @@ public class AuthService {
             // 5. 타입에 따라 리다이렉트 분기
             String redirectUrl = UriComponentsBuilder
                     .fromHttpUrl(fe)
-                    .path(type.equals("email") ? "/home/signup" : "/home/signup/change-pw")
+                    .path(type.equals("email") ? "/home/signup" : "/editprofile/change-pw")
                     .queryParam("token", newToken)
                     .toUriString();
             System.out.println(redirectUrl);
@@ -201,7 +227,7 @@ public class AuthService {
 
     }
 
-
+    @Transactional
     public AuthResponseDTO.SocialLoginResponseDTO socialLogin(OAuthUserInfo oAuthUserInfo) {
 
 
@@ -215,6 +241,8 @@ public class AuthService {
             return AuthResponseDTO.SocialLoginResponseDTO.builder()
                     .isNewMember(Boolean.TRUE) // 새로운 유저
                     .accessToken(null)
+                    .refreshToken(null)
+                    .isWithdrawn(Boolean.FALSE)
                     .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                             .email(email)
                             .loginType(oAuthUserInfo.getLoginType()) // 로그인 방법도 response에 포함
@@ -229,10 +257,19 @@ public class AuthService {
         // redis에 refreshToken 저장
         redisService.setRefreshToken(refreshToken, member.getEmail(), Duration.ofDays(7L));
 
+        // 기존 회원인 경우, 탈퇴여부 확인
+        Boolean isWithdrawn = Boolean.FALSE;
+
+        if(member.getDeletedAt() != null &&
+                ChronoUnit.DAYS.between(member.getDeletedAt(), LocalDateTime.now()) < 30) {
+            isWithdrawn = Boolean.TRUE;
+        }
+
         return AuthResponseDTO.SocialLoginResponseDTO.builder()
                 .isNewMember(Boolean.FALSE) // 기존 유저
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .isWithdrawn(isWithdrawn) // 탈퇴 여부(30일 이내)
                 .member(AuthResponseDTO.SocialLoginResponseDTO.MemberDTO.builder()
                         .memberId(member.getId())
                         .email(member.getEmail())
@@ -247,6 +284,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public AuthResponseDTO.ReissueResponseDTO reissue(AuthRequestDTO.@Valid ReissueRequestDTO reissueRequestDTO) {
 
         String refreshToken = reissueRequestDTO.getRefreshToken();
@@ -277,6 +315,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public void logout(AuthRequestDTO.LogoutRequestDTO logoutRequestDTO) {
 
         String refreshToken = logoutRequestDTO.getRefreshToken();
@@ -291,10 +330,15 @@ public class AuthService {
         }
 
         redisService.deleteRefreshToken(refreshToken);
+
     }
 
+    @Transactional(readOnly = true)
     public AuthResponseDTO.GetEmailByTokenResponseDTO getEmailByToken(String token) {
 
+        if(redisService.getVerificationToken(token) == null){
+            throw new AuthHandler(ErrorStatus.INVALID_EMAIL_TOKEN);
+        }
         String email = redisService.getVerificationToken(token).get(1);
 
         if(email == null) {
@@ -304,5 +348,32 @@ public class AuthService {
         return AuthResponseDTO.GetEmailByTokenResponseDTO.builder()
                 .email(email)
                 .build();
+    }
+
+    @Transactional
+    public void recover() {
+
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if(member.getDeletedAt() == null){
+            throw new AuthHandler(ErrorStatus.NO_WITHDRAWN_USER);
+        }
+
+        LocalDateTime deletedAt = member.getDeletedAt();
+
+        member.restore();
+        // 멤버 탈퇴 날짜와 일기 삭제 날짜가 같은 일기만 복구
+        diaryRepository.recoverDiariesByMemberIdAndDeletedAt(memberId, deletedAt);
+        // 멤버 탈퇴 날짜와 일기 댓글 삭제 날짜가 같은 댓글만 복구 + 일기의 commentCount 재계산
+        diaryCommentRepository.recoverDiaryCommentsByMemberIdAndDeletedAt(memberId, deletedAt);
+
+        // 멤버 탈퇴 날짜와 일기 좋아요 삭제 날짜가 같은 일기 좋아요만 복구 + 일기의 likeCount 재계산
+        diaryLikeRepository.recoverDiaryLikesByMemberIdAndDeletedAt(memberId, deletedAt);
+        // 멤버 탈퇴 날짜와 일기 댓글 좋아요 삭제 날짜가 같은 일기 댓글 좋요만 복구 + 댓글의 likeCount 재계산
+        diaryCommentLikeRepository.recoverDiaryCommentLikesByMemberIdAndDeletedAt(memberId, deletedAt);
+
     }
 }

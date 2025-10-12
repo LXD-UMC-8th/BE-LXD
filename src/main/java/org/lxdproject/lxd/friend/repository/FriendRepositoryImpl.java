@@ -1,55 +1,55 @@
 package org.lxdproject.lxd.friend.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.authz.predicate.MemberPredicates;
 import org.lxdproject.lxd.friend.entity.Friendship;
 import org.lxdproject.lxd.friend.entity.QFriendship;
 import org.lxdproject.lxd.member.entity.Member;
+import org.lxdproject.lxd.member.entity.QMember;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
+    private MemberPredicates memberPredicates;
 
     private static final QFriendship friendship = QFriendship.friendship;
+    private static final QMember MEMBER = QMember.member;
 
     // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
     public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
-        List<Member> result = new ArrayList<>();
+        BooleanExpression condition = friendship.requester.id.eq(memberId)
+                .and(friendship.deletedAt.isNull())
+                .and(memberPredicates.isNotDeleted(MEMBER));
 
-        result.addAll(queryFactory
+        List<Member> result = queryFactory
                 .select(friendship.receiver)
                 .from(friendship)
-                .where(
-                        friendship.requester.id.eq(memberId),
-                        friendship.deletedAt.isNull()
-                )
+                .join(friendship.receiver, MEMBER)
+                .where(condition)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetch());
+                .fetch();
 
-        long total = queryFactory
-                .select(friendship.count())
+        Long total = Optional.ofNullable(queryFactory
+                .select(Wildcard.count)
                 .from(friendship)
-                .where(
-                        friendship.requester.id.eq(memberId),
-                        friendship.deletedAt.isNull()
-                )
-                .fetchOne();
+                .join(friendship.receiver, MEMBER)
+                .where(condition)
+                .fetchOne()).orElse(0L);
 
         return new PageImpl<>(result, pageable, total);
     }
@@ -157,14 +157,16 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     @Override
     @Transactional
     public long countFriendsByMemberId(Long memberId) {
-        return queryFactory
-                .select(friendship.count())
+        return Optional.ofNullable(queryFactory
+                .select(Wildcard.count)
                 .from(friendship)
+                .join(friendship.receiver, MEMBER)
                 .where(
                         friendship.requester.id.eq(memberId),
-                        friendship.deletedAt.isNull()
+                        friendship.deletedAt.isNull(),
+                        memberPredicates.isNotDeleted(MEMBER)
                 )
-                .fetchOne();
+                .fetchOne()).orElse(0L);
     }
 
 }

@@ -1,5 +1,8 @@
 package org.lxdproject.lxd.diarylike.service;
 
+import org.lxdproject.lxd.authz.guard.DiaryGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
@@ -23,6 +26,7 @@ public class DiaryLikeService {
     private final DiaryLikeRepository diaryLikeRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final MemberGuard memberGuard;
 
     public DiaryLikeResponseDTO.ToggleDiaryLikeResponseDTO toggleDiaryLike(Long diaryId) {
 
@@ -33,6 +37,7 @@ public class DiaryLikeService {
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() ->  new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
         DiaryLike diaryLike = diaryLikeRepository.findByMemberAndDiary(member, diary)
                 .orElse(null);
@@ -61,7 +66,7 @@ public class DiaryLikeService {
 
         return DiaryLikeResponseDTO.ToggleDiaryLikeResponseDTO.builder()
                 .diaryId(diaryId)
-                .memberId(memberId)
+                .memberProfile(MemberProfileDTO.from(member))
                 .liked(liked)
                 .likedCount(diary.getLikeCount())
                 .build();

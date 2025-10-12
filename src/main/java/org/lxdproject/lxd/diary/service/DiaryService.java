@@ -5,7 +5,9 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.guard.DiaryGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.diary.util.DiaryUtil;
@@ -47,7 +49,8 @@ public class DiaryService {
     private final S3FileService s3FileService;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
-    private final PermissionGuard permissionGuard;
+    private final DiaryGuard diaryGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public DiaryDetailResponseDTO createDiary(DiaryRequestDTO request) {
@@ -59,6 +62,9 @@ public class DiaryService {
         Diary diary = Diary.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
+                .modifiedContent(request.getContent())
+                .diffContent(request.getContent())
+                .previewContent(DiaryUtil.generateContentPreview(request.getContent()))
                 .style(request.getStyle())
                 .visibility(request.getVisibility())
                 .commentPermission(request.getCommentPermission())
@@ -69,18 +75,22 @@ public class DiaryService {
 
         diaryRepository.save(diary);
 
-        return DiaryDetailResponseDTO.from(diary);
+        return DiaryDetailResponseDTO.from(diary, false);
     }
 
     @Transactional(readOnly = true)
     public DiaryDetailResponseDTO getDiaryDetail(Long id) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        permissionGuard.canViewDiary(currentMemberId, diary);
+        diaryGuard.hasVisibilityPermission(currentMemberId, diary);
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
-        return DiaryDetailResponseDTO.from(diary);
+        boolean isLiked = diaryLikeRepository.existsByMemberIdAndDiaryId(currentMemberId, diary.getId());
+
+        return DiaryDetailResponseDTO.from(diary, isLiked);
     }
 
     @Transactional
@@ -93,9 +103,16 @@ public class DiaryService {
             throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
 
-        List<String> urls = extractImageUrls(diary.getContent());
-        List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
-        s3FileService.deleteImages(keys);
+        String modifiedContent = diary.getModifiedContent();
+        if(modifiedContent != null && !modifiedContent.isBlank()) {
+            List<String> urls = extractImageUrls(diary.getModifiedContent());
+
+            if(!urls.isEmpty()) {
+                List<String> keys = s3FileService.extractS3KeysFromUrls(urls);
+                s3FileService.deleteImages(keys);
+            }
+
+        }
 
         diary.softDelete();
     }
@@ -130,7 +147,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
@@ -145,8 +162,8 @@ public class DiaryService {
         );
     }
 
-    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateDTO request) {
-
+    @Transactional
+    public DiaryDetailResponseDTO updateDiary(Long id, DiaryUpdateRequestDTO request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(id)
@@ -160,16 +177,21 @@ public class DiaryService {
             s3FileService.deleteImage(diary.getThumbImg());
         }
 
-        String originalContent = diary.getContent(); // 기존 DB에 저장되어있던 일기 content
+        // 최초 작성 원문 내용
+        String originalContent = diary.getContent();
+
+        // diff 포함된 최종 본문
+        String diffContent = generateDiffHtml(originalContent, request.getContent());
+
+        // diff 없는 최종 본문으로 수정 내용 추출
+        String previewContent = DiaryUtil.generateContentPreview(request.getContent());
 
         // DB에 새로운 내용 저장
-        diary.update(request);
-        Diary updated = diaryRepository.save(diary);
+        diary.update(request, diffContent, request.getContent(), previewContent);
 
-        // diff 계산
-        String diffHtmlContent = generateDiffHtml(originalContent, request.getContent());
+        Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(memberId);
 
-        return DiaryDetailResponseDTO.fromWithDiff(updated, diffHtmlContent);
+        return DiaryDetailResponseDTO.from(diary, likedSet.contains(diary.getId()));
     }
 
     private String generateDiffHtml(String oldContent, String newContent) {
@@ -223,12 +245,9 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
                         .build())
                 .toList();
@@ -268,12 +287,9 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .liked(likedSet.contains(d.getId()))
                         .build()
                 )
@@ -298,10 +314,7 @@ public class DiaryService {
 
         List<DiarySummaryResponseDTO> dto = diaryPage.getContent().stream()
                 .map(d -> DiarySummaryResponseDTO.builder()
-                        .writerUsername(d.getMember().getUsername())
-                        .writerNickname(d.getMember().getNickname())
-                        .writerProfileImg(d.getMember().getProfileImg())
-                        .writerId(d.getMember().getId())
+                        .writerMemberProfile(MemberProfileDTO.from(d.getMember()))
                         .diaryId(d.getId())
                         .createdAt(DateFormatUtil.formatDate(d.getCreatedAt()))
                         .title(d.getTitle())
@@ -310,7 +323,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())
@@ -329,6 +342,7 @@ public class DiaryService {
     public MemberDiarySummaryResponseDTO getDiarySummary(Long targetMemberId, Long currentMemberId, boolean includeStatus) {
         Member member = memberRepository.findById(targetMemberId)
                                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(member);
 
         Long diaryCount = diaryRepository.countByMemberIdAndDeletedAtIsNull(targetMemberId);
 
@@ -353,9 +367,7 @@ public class DiaryService {
         }
 
         return MemberDiarySummaryResponseDTO.builder()
-                .profileImg(member.getProfileImg())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
+                .memberProfile(MemberProfileDTO.from(member))
                 .nativeLanguage(member.getNativeLanguage())
                 .language(member.getLanguage())
                 .diaryCount(diaryCount)
@@ -368,6 +380,10 @@ public class DiaryService {
     public PageDTO<MyDiarySummaryResponseDTO> getDiariesByMemberId(Long memberId, int page, int size) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if (member.isDeleted()) {
+            throw new MemberHandler(ErrorStatus.RESOURCE_OWNER_WITHDRAWN);
+        }
 
         Long viewerId = SecurityUtil.getCurrentMemberId();
         Set<Long> likedSet = diaryLikeRepository.findLikedDiaryIdSet(viewerId);
@@ -386,7 +402,7 @@ public class DiaryService {
                         .likeCount(d.getLikeCount())
                         .commentCount(d.getCommentCount())
                         .correctionCount(d.getCorrectionCount())
-                        .contentPreview(DiaryUtil.generateContentPreview(d.getContent()))
+                        .contentPreview(d.getPreviewContent())
                         .language(d.getLanguage())
                         .liked(likedSet.contains(d.getId()))
                         .build())

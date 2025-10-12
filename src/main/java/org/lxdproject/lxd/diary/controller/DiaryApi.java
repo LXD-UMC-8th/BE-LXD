@@ -122,7 +122,7 @@ public interface DiaryApi {
     })
     ApiResponse<DiaryDetailResponseDTO> updateDiary(
             @PathVariable Long diaryId,
-            @Valid @RequestBody DiaryUpdateDTO request
+            @Valid @RequestBody DiaryUpdateRequestDTO request
     );
 
     @GetMapping("/stats")

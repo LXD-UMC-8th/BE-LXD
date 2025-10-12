@@ -5,7 +5,9 @@ import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.authz.guard.PermissionGuard;
+import org.lxdproject.lxd.authz.guard.CommentGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -20,9 +22,12 @@ import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.lxdproject.lxd.friend.repository.FriendRepository;
@@ -44,7 +49,8 @@ public class DiaryCommentService {
     private final DiaryCommentLikeRepository likeRepository;
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
-    private final PermissionGuard permissionGuard;
+    private final CommentGuard commentGuard;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public DiaryCommentResponseDTO writeComment(Long diaryId, DiaryCommentRequestDTO request) {
@@ -59,7 +65,7 @@ public class DiaryCommentService {
         boolean areFriends = friendRepository.areFriends(memberId, diaryOwner.getId());
 
         // 댓글 작성 권한 검증
-        permissionGuard.canCreateDiaryComment(memberId, diary, areFriends);
+        commentGuard.hasCommentPermission(memberId, diary, areFriends);
 
         DiaryComment parent = null;
         if (request.getParentId() != null) {
@@ -101,16 +107,14 @@ public class DiaryCommentService {
                     .redirectUrl("/diaries/" + diary.getId() + "/comments/" + saved.getId())
                     .build();
 
-            notificationService.saveAndPublishNotification(dto);
+            notificationService.createAndPublish(dto);
         }
+
 
         return DiaryCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberId(commentOwner.getId())
-                .username(commentOwner.getUsername())
-                .nickname(commentOwner.getNickname())
+                .memberProfile(MemberProfileDTO.from(commentOwner))
                 .diaryId(diary.getId())
-                .profileImage(commentOwner.getProfileImg())
                 .commentText(saved.getCommentText())
                 .parentId(parent != null ? parent.getId() : null)
                 .replyCount(0)
@@ -123,6 +127,11 @@ public class DiaryCommentService {
     @Transactional(readOnly = true)
     public PageDTO<DiaryCommentResponseDTO.Comment> getComments(Long diaryId, int page, int size) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
+
         int offset = page * size;
 
         // 부모 댓글
@@ -155,10 +164,7 @@ public class DiaryCommentService {
                                     .map(reply -> DiaryCommentResponseDTO.Comment.builder()
                                             .commentId(reply.getId())
                                             .parentId(parent.getId())
-                                            .memberId(reply.getMember().getId())
-                                            .username(reply.getMember().getUsername())
-                                            .nickname(reply.getMember().getNickname())
-                                            .profileImage(reply.getMember().getProfileImg())
+                                            .memberProfile(MemberProfileDTO.from(reply.getMember()))
                                             .content(reply.getCommentText())
                                             .likeCount(reply.getLikeCount())
                                             .isLiked(likedCommentIds.contains(reply.getId()))
@@ -171,10 +177,7 @@ public class DiaryCommentService {
                     return DiaryCommentResponseDTO.Comment.builder()
                             .commentId(parent.getId())
                             .parentId(null)
-                            .memberId(parent.getMember().getId())
-                            .username(parent.getMember().getUsername())
-                            .nickname(parent.getMember().getNickname())
-                            .profileImage(parent.getMember().getProfileImg())
+                            .memberProfile(MemberProfileDTO.from(parent.getMember()))
                             .content(parent.getCommentText())
                             .likeCount(parent.getLikeCount())
                             .isLiked(likedCommentIds.contains(parent.getId()))
@@ -186,9 +189,7 @@ public class DiaryCommentService {
                 .toList();
 
         // 전체 댓글 개수(부모 + 자식)
-        int totalElements = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND))
-                .getCommentCount();
+        int totalElements = diary.getCommentCount();
 
         // hasNext는 부모 댓글 수 기준
         boolean hasNext = diaryCommentRepository.countParentComments(diaryId) > offset + size;
@@ -204,15 +205,18 @@ public class DiaryCommentService {
 
     @Transactional
     public DiaryCommentDeleteResponseDTO deleteComment(Long diaryId, Long commentId) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         DiaryComment comment = diaryCommentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
+        // 삭제 권한 검증
+        commentGuard.canDeleteDiaryComment(requesterId, comment);
+
         comment.softDelete();
         diary.decreaseCommentCount();
-
 
         return DiaryCommentDeleteResponseDTO.from(comment);
     }

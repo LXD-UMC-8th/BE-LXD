@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.lxdproject.lxd.common.entity.BaseEntity;
 import org.lxdproject.lxd.diary.entity.Diary;
 import org.lxdproject.lxd.member.entity.Member;
 
@@ -13,7 +14,7 @@ import org.lxdproject.lxd.member.entity.Member;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DiaryLike {
+public class DiaryLike extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

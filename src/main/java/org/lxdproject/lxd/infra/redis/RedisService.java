@@ -2,17 +2,12 @@ package org.lxdproject.lxd.infra.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.lxdproject.lxd.auth.enums.VerificationType;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -82,7 +77,7 @@ public class RedisService {
         stringRedisTemplate.opsForValue().set(key, token, ttl);
     }
 
-    public String getVerificationEmailToken(String email) {
+    public String getVerificationEmail(String email) {
         String key = RedisKeyPrefix.verificationEmailKey(email);
         return stringRedisTemplate.opsForValue().get(key);
     }

@@ -66,6 +66,19 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     }
 
     @Override
+    public Long findFriendRequestNotificationId(Long receiverId, Long requesterId) {
+        return queryFactory.select(notification.id)
+                .from(notification)
+                .where(
+                        notification.receiver.id.eq(receiverId),
+                        notification.notificationType.eq(NotificationType.FRIEND_REQUEST),
+                        notification.targetType.eq(TargetType.MEMBER),
+                        notification.targetId.eq(requesterId)
+                )
+                .fetchOne();
+    }
+
+    @Override
     public long deleteFriendRequestNotification(Long receiverId, Long requesterId) {
         return queryFactory.delete(notification)
                 .where(

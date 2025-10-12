@@ -3,6 +3,7 @@ package org.lxdproject.lxd.diary.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.RelationType;
 import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
@@ -10,9 +11,8 @@ import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
 @Getter
 @Builder
 public class MemberDiarySummaryResponseDTO {
-    private String profileImg;
-    private String username;
-    private String nickname;
+
+    private MemberProfileDTO memberProfile;
     private Long diaryCount;
     private Long friendCount;
     private RelationType relation;

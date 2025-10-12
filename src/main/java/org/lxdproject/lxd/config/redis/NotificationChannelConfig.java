@@ -9,6 +9,6 @@ public class NotificationChannelConfig {
 
     @Bean
     public ChannelTopic notificationTopic() {
-        return new ChannelTopic("notifications");
+        return new ChannelTopic("notification:event");
     }
 }

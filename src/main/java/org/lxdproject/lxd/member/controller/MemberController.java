@@ -82,4 +82,11 @@ public class MemberController implements MemberApi {
         memberService.deleteProfileImage();
         return ApiResponse.onSuccess("프로필 이미지가 삭제되었습니다.");
     }
+
+    @Override
+    public ApiResponse<String> deleteMember() {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        memberService.deleteMember(memberId);
+        return ApiResponse.onSuccess("회원이 탈퇴되었습니다.");
+    }
 }

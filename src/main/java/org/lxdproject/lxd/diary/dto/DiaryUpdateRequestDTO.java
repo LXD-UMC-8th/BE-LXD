@@ -10,7 +10,7 @@ import org.lxdproject.lxd.validation.annotation.MaxImageCount;
 
 @Getter
 @Setter
-public class DiaryUpdateDTO {
+public class DiaryUpdateRequestDTO {
     @NotBlank(message = "제목을 작성해주세요.")
     private String title;
     @NotBlank(message = "내용을 작성해주세요.")

@@ -1,17 +1,23 @@
 package org.lxdproject.lxd.apiPayload.code.exception;
 
+import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.ApiResponse;
 import org.lxdproject.lxd.apiPayload.code.dto.ErrorReasonDTO;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.discord.DiscordAlarmAsyncFacade;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -20,7 +26,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @Slf4j
 @RestControllerAdvice(annotations = {RestController.class})
+@RequiredArgsConstructor
 public class ExceptionAdvice extends ResponseEntityExceptionHandler {
+
+    private final DiscordAlarmAsyncFacade discord;
 
     // 공통 실패 처리 메서드
     private ResponseEntity<Object> handleFailure(Exception e, ErrorStatus status, String message, WebRequest request) {
@@ -80,10 +89,38 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         );
     }
 
+    //
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<Object> handleUnauthorizedException(AuthenticationException e, WebRequest request) {
+
+        ApiResponse<Object> body = ApiResponse.onFailure(
+                ErrorStatus.INVALID_CREDENTIALS.getCode(),
+                ErrorStatus.INVALID_CREDENTIALS.getMessage(),
+                null
+        );
+
+        return super.handleExceptionInternal(
+                e, body, HttpHeaders.EMPTY,
+                ErrorStatus.INVALID_CREDENTIALS.getHttpStatus(), request
+        );
+
+    }
+
     // 모든 기타 예외 처리 (예상치 못한 에러)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleAllExceptions(Exception e, WebRequest request) {
+    public ResponseEntity<Object> handleAllExceptions(Exception e, HttpServletRequest req, WebRequest request) {
         log.error("[UNCAUGHT_EXCEPTION]", e);  // 민감 정보는 로그로만
+        Sentry.captureException(e);
+        try {
+            discord.sendErrorAlertAsync(
+                    e,
+                    req.getMethod(),
+                    req.getRequestURI(),
+                    req.getQueryString() != null ? req.getQueryString() : ""
+            );
+        } catch (Exception ignore) {
+        }
 
         ApiResponse<Object> body = ApiResponse.onFailure(
                 ErrorStatus._INTERNAL_SERVER_ERROR.getCode(),

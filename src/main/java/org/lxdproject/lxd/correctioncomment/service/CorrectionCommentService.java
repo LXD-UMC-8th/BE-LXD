@@ -1,11 +1,13 @@
 package org.lxdproject.lxd.correctioncomment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CommentHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.authz.guard.CommentGuard;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.config.security.SecurityUtil;
@@ -36,8 +38,9 @@ public class CorrectionCommentService {
     private final CorrectionCommentRepository commentRepository;
     private final CorrectionRepository correctionRepository;
     private final MemberRepository memberRepository;
-
+    private final CommentGuard commentGuard;
     private final NotificationService notificationService;
+    private final MemberGuard memberGuard;
 
     @Transactional
     public CorrectionCommentResponseDTO writeComment(Long correctionId, CorrectionCommentRequestDTO request) {
@@ -46,6 +49,7 @@ public class CorrectionCommentService {
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
         Correction correction = correctionRepository.findById(correctionId)
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(correction.getDiary().getMember());
 
         CorrectionComment comment = CorrectionComment.builder()
                 .member(member)
@@ -54,6 +58,7 @@ public class CorrectionCommentService {
                 .build();
 
         CorrectionComment saved = commentRepository.save(comment);
+        correction.increaseCommentCount();
 
         // 알림 전송 (댓글 작성자 != 교정 작성자)
         Member correctionAuthor = correction.getAuthor();
@@ -66,15 +71,12 @@ public class CorrectionCommentService {
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId() + "/comments/" + saved.getId())
                     .build();
 
-            notificationService.saveAndPublishNotification(dto);
+            notificationService.createAndPublish(dto);
         }
 
         return CorrectionCommentResponseDTO.builder()
                 .commentId(saved.getId())
-                .memberId(member.getId())
-                .username(member.getUsername())
-                .nickname(member.getNickname())
-                .profileImage(member.getProfileImg())
+                .memberProfile(MemberProfileDTO.from(member))
                 .content(saved.getContent())
                 .createdAt(DateFormatUtil.formatDate(saved.getCreatedAt()))
                 .build();
@@ -85,6 +87,7 @@ public class CorrectionCommentService {
     public PageDTO<CorrectionCommentResponseDTO> getComments(Long correctionId, int page, int size) {
         Correction correction = correctionRepository.findById(correctionId)
                 .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(correction.getDiary().getMember());
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createdAt"));
 
@@ -93,10 +96,7 @@ public class CorrectionCommentService {
         List<CorrectionCommentResponseDTO> content = commentPage.stream()
                 .map(comment -> CorrectionCommentResponseDTO.builder()
                         .commentId(comment.getId())
-                        .memberId(comment.getMember().getId())
-                        .username(comment.getMember().getUsername())
-                        .nickname(comment.getMember().getNickname())
-                        .profileImage(comment.getMember().getProfileImg())
+                        .memberProfile(MemberProfileDTO.from(comment.getMember()))
                         .content(comment.getDisplayContent())
                         .createdAt(DateFormatUtil.formatDate(comment.getCreatedAt()))
                         .build())
@@ -111,17 +111,21 @@ public class CorrectionCommentService {
         );
     }
 
-    //삭제
+
     @Transactional
     public CorrectionCommentDeleteResponseDTO deleteComment(Long commentId) {
+        Long requesterId = SecurityUtil.getCurrentMemberId();
+
         CorrectionComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentHandler(ErrorStatus.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().getId().equals(SecurityUtil.getCurrentMemberId())) {
-            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
-        }
+        // 삭제 권한 검증
+        commentGuard.canDeleteCorrectionComment(requesterId, comment);
 
-        comment.softDelete();
+        if(!comment.isDeleted()) {
+            comment.softDelete();
+            comment.getCorrection().decreaseCommentCount();
+        }
 
         return CorrectionCommentDeleteResponseDTO.builder()
                 .commentId(comment.getId())

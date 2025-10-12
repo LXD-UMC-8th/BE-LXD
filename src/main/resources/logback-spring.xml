@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- WARN level 이상 처리 -->
+    <appender name="Sentry" class="io.sentry.logback.SentryAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 개발(로컬) 환경 - 테스트 후 Sentry 삭제 -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="Console"/>
+        </root>
+    </springProfile>
+
+    <!-- 운영 환경 -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="Sentry"/>
+        </root>
+    </springProfile>
+</configuration>

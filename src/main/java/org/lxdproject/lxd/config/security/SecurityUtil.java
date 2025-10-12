@@ -2,6 +2,7 @@ package org.lxdproject.lxd.config.security;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
+import org.lxdproject.lxd.auth.dto.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -23,9 +24,14 @@ public class SecurityUtil {
             throw new AuthHandler(ErrorStatus.AUTHENTICATION_INFO_NOT_FOUND);
         }
 
+        if(!(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
+        }
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
         try {
-            String principalStr = authentication.getName();
-            return Long.valueOf(principalStr);
+            return customUserDetails.getMemberId();
         } catch (Exception e) {
             throw new AuthHandler(ErrorStatus.INVALID_ACCESS_TOKEN);
         }

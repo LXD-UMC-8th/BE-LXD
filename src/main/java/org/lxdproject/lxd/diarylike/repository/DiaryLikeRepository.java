@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface DiaryLikeRepository extends JpaRepository<DiaryLike, Long>, DiaryLikeRepositoryCustom {
     Optional<DiaryLike> findByMemberAndDiary(Member member, Diary diary);
+    boolean existsByMemberIdAndDiaryId(Long memberId, Long diaryId);
 }

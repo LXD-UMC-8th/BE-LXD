@@ -2,6 +2,8 @@ package org.lxdproject.lxd.correction.service;
 
 import org.lxdproject.lxd.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
+import org.lxdproject.lxd.authz.guard.MemberGuard;
+import org.lxdproject.lxd.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.common.dto.PageDTO;
 import org.lxdproject.lxd.config.security.SecurityUtil;
 import org.lxdproject.lxd.correctionlike.entity.MemberSavedCorrection;
@@ -9,9 +11,12 @@ import org.lxdproject.lxd.correctionlike.repository.MemberSavedCorrectionReposit
 import org.lxdproject.lxd.common.util.DateFormatUtil;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.notification.dto.NotificationRequestDTO;
+import org.lxdproject.lxd.notification.entity.Notification;
 import org.lxdproject.lxd.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.event.NotificationCreatedEvent;
 import org.lxdproject.lxd.notification.service.NotificationService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +41,8 @@ public class CorrectionService {
     private final DiaryRepository diaryRepository;
     private final MemberSavedCorrectionRepository memberSavedCorrectionRepository;
     private final MemberRepository memberRepository;
-
     private final NotificationService notificationService;
+    private final MemberGuard memberGuard;
 
     @Transactional(readOnly = true)
     public CorrectionResponseDTO.DiaryCorrectionsResponseDTO getCorrectionsByDiaryId(Long diaryId, int page, int size) {
@@ -47,6 +52,7 @@ public class CorrectionService {
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(diaryId)
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
         Page<Correction> correctionPage = correctionRepository.findByDiaryId(diaryId, pageable);
@@ -64,7 +70,7 @@ public class CorrectionService {
                         .likeCount(correction.getLikeCount())
                         .commentCount(correction.getCommentCount())
                         .isLikedByMe(likedIds.contains(correction.getId()))
-                        .member(CorrectionResponseDTO.MemberInfo.from(correction.getAuthor()))
+                        .memberProfile(MemberProfileDTO.from(correction.getAuthor()))
                         .build())
                 .toList();
 
@@ -84,9 +90,7 @@ public class CorrectionService {
 
 
     @Transactional
-    public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(
-            Long correctionId
-    ) {
+    public CorrectionResponseDTO.CorrectionLikeResponseDTO toggleLikeCorrection(Long correctionId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Correction correction = correctionRepository.findByIdWithPessimisticLock(correctionId).orElseThrow(()
                 -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
@@ -128,6 +132,7 @@ public class CorrectionService {
 
         Diary diary = diaryRepository.findByIdAndDeletedAtIsNull(requestDto.getDiaryId())
                 .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
+        memberGuard.checkOwnerIsNotDeleted(diary.getMember());
 
         Correction correction = Correction.builder()
                 .diary(diary)
@@ -152,7 +157,7 @@ public class CorrectionService {
                     .redirectUrl("/diaries/" + correction.getDiary().getId() + "/corrections/" + correction.getId())
                     .build();
 
-            notificationService.saveAndPublishNotification(dto);
+            notificationService.createAndPublish(dto);
         }
 
         return CorrectionResponseDTO.CorrectionDetailDTO.builder()
@@ -165,11 +170,11 @@ public class CorrectionService {
                 .likeCount(saved.getLikeCount())
                 .commentCount(saved.getCommentCount())
                 .isLikedByMe(false)
-                .member(CorrectionResponseDTO.MemberInfo.builder()
-                        .memberId(member.getId())
+                .memberProfile(MemberProfileDTO.builder()
+                        .id(member.getId())
                         .username(member.getUsername())
                         .nickname(member.getNickname())
-                        .profileImageUrl(member.getProfileImg())
+                        .profileImage(member.getProfileImg())
                         .build())
                 .build();
     }
@@ -195,7 +200,7 @@ public class CorrectionService {
         );
 
         return CorrectionResponseDTO.ProvidedCorrectionsResponseDTO.builder()
-                .member(CorrectionResponseDTO.MemberInfo.from(member))
+                .memberProfile(MemberProfileDTO.from(member))
                 .corrections(pageDTO)
                 .build();
     }
