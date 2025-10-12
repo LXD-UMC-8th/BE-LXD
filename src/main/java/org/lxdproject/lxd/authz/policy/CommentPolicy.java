@@ -28,17 +28,26 @@ public class CommentPolicy {
         }
     }
 
-    private Permit canDeleteInternal(Long requesterId, Long writerId) {
+    private Permit canDeleteInternal(Long requesterId, Long writerId, Long ownerId) {
         if (requesterId == null) return Permit.DENY;
-        return requesterId.equals(writerId) ? Permit.ALLOW : Permit.DENY;
+
+        return (requesterId.equals(writerId) || requesterId.equals(ownerId))
+                ? Permit.ALLOW
+                : Permit.DENY;
     }
 
     public Permit canDelete(Long requesterId, DiaryComment comment) {
-        return canDeleteInternal(requesterId, comment.getMember().getId());
+        Long commentAuthorId = comment.getMember().getId();
+        Long diaryOwnerId = comment.getDiary().getMember().getId();
+
+        return canDeleteInternal(requesterId, commentAuthorId, diaryOwnerId);
     }
 
     public Permit canDelete(Long requesterId, CorrectionComment comment) {
-        return canDeleteInternal(requesterId, comment.getMember().getId());
+        Long commentAuthorId = comment.getMember().getId();
+        Long correctionOwnerId = comment.getCorrection().getAuthor().getId();
+
+        return canDeleteInternal(requesterId, commentAuthorId, correctionOwnerId);
     }
 
 }
