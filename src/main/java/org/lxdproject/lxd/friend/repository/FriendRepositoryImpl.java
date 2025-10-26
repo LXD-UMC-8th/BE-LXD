@@ -22,7 +22,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
-    private MemberPredicates memberPredicates;
+    private final MemberPredicates memberPredicates;
 
     private static final QFriendship friendship = QFriendship.friendship;
     private static final QMember MEMBER = QMember.member;
