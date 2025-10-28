@@ -59,6 +59,24 @@ class CustomUserDetailsServiceTest {
 
         }
 
+        @Test
+        @DisplayName("회원이 존재하면 CustomUserDetails 반환")
+        void loadUserByUsername_returnsCustomUserDetails() {
+            // given
+            when(memberRepository.findByEmail(member.getEmail()))
+                    .thenReturn(Optional.of(member));
+
+            // when
+            UserDetails result = customUserDetailsService.loadUserByUsername(member.getEmail());
+
+            // then
+            assertThat(result).isInstanceOf(CustomUserDetails.class);
+            CustomUserDetails details = (CustomUserDetails) result;
+            assertThat(details.getMemberEmail()).isEqualTo(member.getEmail());
+            assertThat(details.getMemberId()).isEqualTo(member.getId());
+        }
+
+
     }
 
 }
