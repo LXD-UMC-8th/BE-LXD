@@ -24,9 +24,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class CustomUserDetailsServiceTest {
 
+    @Mock
+    private MemberRepository memberRepository;
 
+    @InjectMocks
+    private CustomUserDetailsService customUserDetailsService;
+
+    @Nested
+    @DisplayName("loadUserByUsername 테스트")
+    class LoadUserByUsername {
+
+        Member member;
+
+        @BeforeEach
+        void setUp() {
+
+            member = Member.builder()
+                    .id(1L)
+                    .email("user@test.com")
+                    .username("user")
+                    .password("1234")
+                    .role(Role.USER)
+                    .nativeLanguage(Language.KO)
+                    .language(Language.ENG)
+                    .systemLanguage(Language.KO)
+                    .isPrivacyAgreed(true)
+                    .isAlarmAgreed(true)
+                    .loginType(LoginType.LOCAL)
+                    .build();
+
+
+        }
+
+    }
 
 }
-
