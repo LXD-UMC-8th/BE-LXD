@@ -29,6 +29,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -118,6 +119,22 @@ class AuthServiceTest {
             verify(redisService).setRefreshToken(eq("refresh_token"), eq("test@naver.com"), eq(Duration.ofDays(7)));
 
         }
+
+        @Test
+        @DisplayName("탈퇴하지 한지 30일 이내일 경우 isWithdrawn = true 반환")
+        void login_whenNotWithdrawn_returnsFalse() {
+            // given
+            when(customUserDetails.getDeletedAt()).thenReturn(LocalDateTime.now().minusDays(10));
+
+            // when
+            AuthResponseDTO.LoginResponseDTO result = authService.login(loginRequest);
+
+            // then
+            assertThat(result.getIsWithdrawn())
+                    .as("탈퇴일이 30일 이내이면 true를 반환해야 함")
+                    .isTrue();
+        }
+
     }
 
 }
