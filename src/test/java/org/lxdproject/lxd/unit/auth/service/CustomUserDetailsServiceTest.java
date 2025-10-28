@@ -76,6 +76,22 @@ class CustomUserDetailsServiceTest {
             assertThat(details.getMemberId()).isEqualTo(member.getId());
         }
 
+        @Test
+        @DisplayName("회원이 존재하지 않으면 UsernameNotFoundException 발생")
+        void loadUserByUsername_returnsUsernameNotFoundException() {
+
+            // given
+            when(memberRepository.findByEmail("unknown@naver.com"))
+                    .thenReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() ->
+                    customUserDetailsService.loadUserByUsername("unknown@naver.com"))
+                    .isInstanceOf(UsernameNotFoundException.class)
+                    .hasMessageContaining("해당하는 유저를 찾을 수 없습니다.");
+
+        }
+
 
     }
 
