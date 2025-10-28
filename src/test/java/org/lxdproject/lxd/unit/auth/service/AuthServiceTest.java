@@ -135,6 +135,25 @@ class AuthServiceTest {
                     .isTrue();
         }
 
+        @Test
+        @DisplayName("로그인 성공 시 response 검사")
+        void login_success_response() {
+            // given
+            when(customUserDetails.getDeletedAt()).thenReturn(null);
+
+            // when
+            AuthResponseDTO.LoginResponseDTO result = authService.login(loginRequest);
+
+            // then
+            assertThat(result.getAccessToken()).isEqualTo("access_token");
+            assertThat(result.getRefreshToken()).isEqualTo("refresh_token");
+            assertThat(result.getIsWithdrawn())
+                    .as("탈퇴 하지 않았으면 false 반환해야 함")
+                    .isFalse();
+            assertThat(result.getMember().getMemberId()).isEqualTo(1L);
+            assertThat(result.getMember().getEmail()).isEqualTo("test@naver.com");
+        }
+
     }
 
 }
