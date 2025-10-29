@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.member.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
@@ -15,6 +16,7 @@ import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.member.strategy.softDelete.SoftDeleteStrategy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -36,6 +40,8 @@ public class MemberService {
     private final DiaryCommentRepository diaryCommentRepository;
     private final DiaryLikeRepository diaryLikeRepository;
     private final DiaryCommentLikeRepository diaryCommentLikeRepository;
+
+    private final List<SoftDeleteStrategy> softDeleteStrategies;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -185,22 +191,13 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         LocalDateTime deletedAt = LocalDateTime.now();
 
-        // 멤버 soft delete
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        member.softDelete(deletedAt);
-
-        // 일기 soft delete
-        diaryRepository.softDeleteDiariesByMemberId(memberId, deletedAt);
-
-        // 탈퇴자가 작성한 일기 댓글 및 탈퇴자가 작성한 일기에 달린 댓글 soft delete
-        diaryCommentRepository.softDeleteMemberComments(memberId, deletedAt);
-
-        // 탈퇴자가 누른 일기 좋아요 및 탈퇴자가 작성한 일기가 받은 좋아요 soft delete
-        diaryLikeRepository.softDeleteDiaryLikes(memberId, deletedAt);
-
-        // 탈퇴자가 누른 일기 댓글 좋아요 및 탈퇴자가 작성한 댓글이 받은 좋아요 soft delete
-        diaryCommentLikeRepository.softDeleteDiaryCommentLikes(memberId, deletedAt);
+        for (SoftDeleteStrategy strategy : softDeleteStrategies) {
+            try {
+                strategy.softDelete(memberId, deletedAt);
+            } catch (Exception e) {
+                log.error("[SoftDelete] {} failed for memberId={}", strategy.getClass().getSimpleName(), memberId, e);
+            }
+        }
     }
 
     @Transactional
