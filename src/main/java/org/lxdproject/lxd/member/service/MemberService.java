@@ -15,6 +15,7 @@ import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.member.service.strategy.SoftDeleteStrategy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,8 @@ public class MemberService {
     private final DiaryCommentRepository diaryCommentRepository;
     private final DiaryLikeRepository diaryLikeRepository;
     private final DiaryCommentLikeRepository diaryCommentLikeRepository;
+
+    private final List<SoftDeleteStrategy> softDeleteStrategies;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
