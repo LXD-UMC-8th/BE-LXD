@@ -16,6 +16,7 @@ import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.member.strategy.hardDelete.HardDeleteStrategy;
 import org.lxdproject.lxd.member.strategy.softDelete.SoftDeleteStrategy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,9 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
     private final S3FileService s3FileService;
-    private final DiaryRepository diaryRepository;
-    private final DiaryCommentRepository diaryCommentRepository;
-    private final DiaryLikeRepository diaryLikeRepository;
-    private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
     private final List<SoftDeleteStrategy> softDeleteStrategies;
+    private final List<HardDeleteStrategy> hardDeleteStrategies;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -205,21 +203,9 @@ public class MemberService {
     public void hardDeleteMembers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
-        // 탈퇴자의 댓글 좋아요 모두 hard delete
-        diaryCommentLikeRepository.hardDeleteDiaryCommentLikesOlderThanThreshold(threshold);
-
-        // 탈퇴자의 일기 좋아요 모두 hard delete
-        diaryLikeRepository.hardDeleteDiaryLikesOlderThanThreshold(threshold);
-
-        // 탈퇴자의 댓글 모두 hard delete
-        diaryCommentRepository.hardDeleteDiaryCommentsOlderThanThreshold(threshold);
-
-        // 탈퇴자의 일기 모두 hard delete
-        diaryRepository.hardDeleteDiariesOlderThanThreshold(threshold);
-
-        // 30일이 지난 회원의 isPurged 값을 true로 만들고
-        // 새로운 유저의 nickname/email의 unique 조건을 피하기 위해 대체값으로 치환
-        memberRepository.hardDeleteMembersOlderThanThreshold(threshold);
+        for (HardDeleteStrategy strategy : hardDeleteStrategies) {
+            strategy.hardDelete(threshold);
+        }
     }
 
 }
