@@ -121,7 +121,7 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("탈퇴하지 한지 30일 이내일 경우 isWithdrawn = true 반환")
+        @DisplayName("탈퇴한 지 30일 이내일 경우 isWithdrawn = true 반환")
         void login_whenNotWithdrawn_returnsFalse() {
             // given
             when(customUserDetails.getDeletedAt()).thenReturn(LocalDateTime.now().minusDays(10));
