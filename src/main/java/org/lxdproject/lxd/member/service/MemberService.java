@@ -189,22 +189,9 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         LocalDateTime deletedAt = LocalDateTime.now();
 
-        // 멤버 soft delete
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        member.softDelete(deletedAt);
-
-        // 일기 soft delete
-        diaryRepository.softDeleteDiariesByMemberId(memberId, deletedAt);
-
-        // 탈퇴자가 작성한 일기 댓글 및 탈퇴자가 작성한 일기에 달린 댓글 soft delete
-        diaryCommentRepository.softDeleteMemberComments(memberId, deletedAt);
-
-        // 탈퇴자가 누른 일기 좋아요 및 탈퇴자가 작성한 일기가 받은 좋아요 soft delete
-        diaryLikeRepository.softDeleteDiaryLikes(memberId, deletedAt);
-
-        // 탈퇴자가 누른 일기 댓글 좋아요 및 탈퇴자가 작성한 댓글이 받은 좋아요 soft delete
-        diaryCommentLikeRepository.softDeleteDiaryCommentLikes(memberId, deletedAt);
+        for (SoftDeleteStrategy strategy : softDeleteStrategies) {
+            strategy.softDelete(memberId, deletedAt);
+        }
     }
 
     @Transactional

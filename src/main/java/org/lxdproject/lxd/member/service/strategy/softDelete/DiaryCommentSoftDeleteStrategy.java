@@ -14,7 +14,7 @@ public class DiaryCommentSoftDeleteStrategy implements SoftDeleteStrategy {
 
     @Override
     public void softDelete(Long memberId, LocalDateTime deletedAt) {
-        // 일기 댓글 soft delete
+        // 탈퇴자가 작성한 일기 댓글 및 탈퇴자가 작성한 일기에 달린 댓글 soft delete
         diaryCommentRepository.softDeleteMemberComments(memberId, deletedAt);
     }
 

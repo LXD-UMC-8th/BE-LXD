@@ -14,6 +14,7 @@ public class DiaryLikeSoftDeleteStrategy implements SoftDeleteStrategy {
 
     @Override
     public void softDelete(Long memberId, LocalDateTime deletedAt) {
+        // 탈퇴자가 누른 일기 좋아요 및 탈퇴자가 작성한 일기가 받은 좋아요 soft delete
         diaryLikeRepository.softDeleteDiaryLikes(memberId, deletedAt);
     }
 }
