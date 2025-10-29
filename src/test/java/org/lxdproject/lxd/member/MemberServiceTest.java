@@ -9,7 +9,6 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
-import org.lxdproject.lxd.diary.service.DiaryService;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.diarycommentlike.entity.DiaryCommentLike;
@@ -96,7 +95,7 @@ public class MemberServiceTest {
         diaryCommentLikeRepository.save(commentLike);
 
         // when
-        memberService.deleteMember(member.getId());
+        memberService.softDeleteMember(member.getId());
 
         // then
         Member deletedMember = memberRepository.findById(member.getId()).orElseThrow();
@@ -209,7 +208,7 @@ public class MemberServiceTest {
 
 
         // [when] 탈퇴 실행
-        memberService.deleteMember(memberA.getId());
+        memberService.softDeleteMember(memberA.getId());
 
         // [then] A의 리소스와 연관된 리소스들 soft delete 확인
         DiaryComment deletedCommentB = diaryCommentRepository.findById(commentB_on_diaryA1.getId()).orElseThrow();
@@ -326,7 +325,7 @@ public class MemberServiceTest {
 
 
         // [when] B 탈퇴 → A의 일기 관련 데이터 soft delete 및 commentCount 및 likeCount 감소
-        memberService.deleteMember(memberB.getId());
+        memberService.softDeleteMember(memberB.getId());
 
         // [then] 일기 상태 재조회
         Diary afterBDeletedDiary = diaryRepository.findById(diaryA1.getId()).orElseThrow();
@@ -341,7 +340,7 @@ public class MemberServiceTest {
 
 
         // [when] C 탈퇴 → A의 댓글 관련 데이터 soft delete 및 likeCount 감소
-        memberService.deleteMember(memberC.getId());
+        memberService.softDeleteMember(memberC.getId());
 
         // [then] A의 댓글 재조회
         DiaryComment afterCDeletedComment = diaryCommentRepository.findById(commentA1.getId()).orElseThrow();
@@ -413,7 +412,7 @@ public class MemberServiceTest {
 
 
         // [when] 스케쥴러를 통해 일기/댓글/좋아요 hard delete 실행
-        memberService.hardDeleteWithdrawnMembers();
+        memberService.hardDeleteMembers();
 
         // [then] 데이터가 완전히 삭제되었는지 검증
         assertThat(memberRepository.findById(member.getId())).isEmpty();

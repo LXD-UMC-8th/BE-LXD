@@ -188,7 +188,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMember(Long memberId) {
+    public void softDeleteMember(Long memberId) {
         LocalDateTime deletedAt = LocalDateTime.now();
 
         for (SoftDeleteStrategy strategy : softDeleteStrategies) {
@@ -196,12 +196,13 @@ public class MemberService {
                 strategy.softDelete(memberId, deletedAt);
             } catch (Exception e) {
                 log.error("[SoftDelete] {} failed for memberId={}", strategy.getClass().getSimpleName(), memberId, e);
+                throw new MemberHandler(ErrorStatus.SOFTDELETE_FAILED);
             }
         }
     }
 
     @Transactional
-    public void hardDeleteWithdrawnMembers() {
+    public void hardDeleteMembers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
 
         // 탈퇴자의 댓글 좋아요 모두 hard delete

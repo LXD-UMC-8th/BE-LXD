@@ -29,6 +29,7 @@ public enum ErrorStatus implements BaseErrorCode {
     NEW_PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER4316", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다"),
     RESOURCE_OWNER_WITHDRAWN(HttpStatus.FORBIDDEN, "MEMBER4320", "리소스 소유자가 탈퇴하여 접근할 수 없습니다."),
     TARGET_USER_WITHDRAWN(HttpStatus.FORBIDDEN, "AUTH4322", "해당 유저가 탈퇴하였습니다."),
+    SOFTDELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"MEMBER4003", "멤버 탈퇴를 실패했습니다."),
 
     // 친구 관련 에러
     FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4314", "이미 친구 요청을 보냈습니다."),

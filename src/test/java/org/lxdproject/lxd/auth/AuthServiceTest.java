@@ -96,7 +96,7 @@ public class AuthServiceTest {
         diaryCommentLikeRepository.save(commentLike);
 
         // soft delete (회원 탈퇴)
-        memberService.deleteMember(member.getId());
+        memberService.softDeleteMember(member.getId());
 
 
         // [when] 회원 복구
@@ -220,7 +220,7 @@ public class AuthServiceTest {
         diaryCommentLikeRepository.save(likeC_on_commentA);
 
         // A 탈퇴
-        memberService.deleteMember(memberA.getId());
+        memberService.softDeleteMember(memberA.getId());
 
         // [when]
         // CustomUserDetails 객체 생성
@@ -344,9 +344,9 @@ public class AuthServiceTest {
 
 
         // B 탈퇴 → A의 일기 관련 데이터 soft delete 및 commentCount 및 likeCount 감소
-        memberService.deleteMember(memberB.getId());
+        memberService.softDeleteMember(memberB.getId());
         // C 탈퇴 → A의 댓글 관련 데이터 soft delete 및 likeCount 감소
-        memberService.deleteMember(memberC.getId());
+        memberService.softDeleteMember(memberC.getId());
 
         // [when]
         // CustomUserDetails 객체 생성

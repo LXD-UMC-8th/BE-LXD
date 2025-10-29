@@ -20,7 +20,7 @@ public class MemberCleanupSchedular {
     public void cleanupWithdrawnMembers() {
         // 일기, 일기 댓글, 일기 좋아요, 댓글 좋아요에 대해 hardDelete 수행
         log.info("탈퇴한 지 30일이 지난 회원 스케쥴링 중 ...");
-        memberService.hardDeleteWithdrawnMembers();
+        memberService.hardDeleteMembers();
 
     }
 
