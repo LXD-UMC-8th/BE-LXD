@@ -1,6 +1,7 @@
 package org.lxdproject.lxd.member.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.common.entity.enums.ImageDir;
@@ -28,6 +29,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -190,7 +192,11 @@ public class MemberService {
         LocalDateTime deletedAt = LocalDateTime.now();
 
         for (SoftDeleteStrategy strategy : softDeleteStrategies) {
-            strategy.softDelete(memberId, deletedAt);
+            try {
+                strategy.softDelete(memberId, deletedAt);
+            } catch (Exception e) {
+                log.error("[SoftDelete] {} failed for memberId={}", strategy.getClass().getSimpleName(), memberId, e);
+            }
         }
     }
 
