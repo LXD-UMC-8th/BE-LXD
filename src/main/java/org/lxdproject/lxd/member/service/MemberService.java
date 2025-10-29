@@ -15,7 +15,7 @@ import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
-import org.lxdproject.lxd.member.service.strategy.SoftDeleteStrategy;
+import org.lxdproject.lxd.member.service.strategy.softDelete.SoftDeleteStrategy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
