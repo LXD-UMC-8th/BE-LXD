@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member.service.strategy.softDelete;
+package org.lxdproject.lxd.member.strategy.softDelete;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
