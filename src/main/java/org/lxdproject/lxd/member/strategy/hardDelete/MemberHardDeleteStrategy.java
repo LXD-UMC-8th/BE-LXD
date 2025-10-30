@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +16,7 @@ public class MemberHardDeleteStrategy implements HardDeleteStrategy {
 
     private final MemberRepository memberRepository;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void hardDelete(LocalDateTime threshold) {
 
