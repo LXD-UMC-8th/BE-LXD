@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-@Order(3)
+@Order(HardDeleteOrder.NOTIFICATION)
 public class NotificationHardDeleteStrategy implements HardDeleteStrategy {
 
     private final NotificationRepository notificationRepository;

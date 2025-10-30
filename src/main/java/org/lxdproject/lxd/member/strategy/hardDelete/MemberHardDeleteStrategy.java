@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-@Order(6)
+@Order(HardDeleteOrder.MEMBER)
 public class MemberHardDeleteStrategy implements HardDeleteStrategy {
 
     private final MemberRepository memberRepository;

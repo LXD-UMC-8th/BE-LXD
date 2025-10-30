@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-@Order(0)
+@Order(HardDeleteOrder.DIARY_COMMENT_LIKE)
 public class DiaryCommentLikeHardDeleteStrategy implements HardDeleteStrategy {
 
     private final DiaryCommentLikeRepository diaryCommentLikeRepository;
