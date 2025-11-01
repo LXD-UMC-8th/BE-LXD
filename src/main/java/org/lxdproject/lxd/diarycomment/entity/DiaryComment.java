@@ -41,6 +41,14 @@ public class DiaryComment extends BaseEntity {
         this.replyCount +=1;
     }
 
+    public void increaseReplyCount(int delta){
+        this.replyCount +=delta;
+    }
+
+    public void decreaseReplyCount(int delta){
+        this.replyCount -= delta;
+    }
+
     public void increaseLikeCount() {
         this.likeCount += 1;
     }
