@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.member.service;
 
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lxdproject.lxd.apiPayload.code.exception.handler.MemberHandler;
@@ -16,10 +17,12 @@ import org.lxdproject.lxd.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.repository.MemberRepository;
+import org.lxdproject.lxd.member.strategy.hardDelete.HardDeleteStrategy;
 import org.lxdproject.lxd.member.strategy.softDelete.SoftDeleteStrategy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,12 +39,9 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final ImageService imageService;
     private final S3FileService s3FileService;
-    private final DiaryRepository diaryRepository;
-    private final DiaryCommentRepository diaryCommentRepository;
-    private final DiaryLikeRepository diaryLikeRepository;
-    private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
     private final List<SoftDeleteStrategy> softDeleteStrategies;
+    private final List<HardDeleteStrategy> hardDeleteStrategies;
 
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
@@ -188,7 +188,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMember(Long memberId) {
+    public void softDeleteMember(Long memberId) {
         LocalDateTime deletedAt = LocalDateTime.now();
 
         for (SoftDeleteStrategy strategy : softDeleteStrategies) {
@@ -196,29 +196,66 @@ public class MemberService {
                 strategy.softDelete(memberId, deletedAt);
             } catch (Exception e) {
                 log.error("[SoftDelete] {} failed for memberId={}", strategy.getClass().getSimpleName(), memberId, e);
+                throw new MemberHandler(ErrorStatus.SOFTDELETE_FAILED);
             }
         }
     }
 
     @Transactional
-    public void hardDeleteWithdrawnMembers() {
+    public void hardDeleteMembers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+        StopWatch stopWatch = new StopWatch();
 
-        // 탈퇴자의 댓글 좋아요 모두 hard delete
-        diaryCommentLikeRepository.hardDeleteDiaryCommentLikesOlderThanThreshold(threshold);
+        // Sentry 공통 태그 설정
+        Sentry.configureScope(scope -> {
+            scope.setTag("batch", "hard-delete");
+            scope.setTag("threshold", threshold.toString());
+            scope.setTag("service", "member");
+        });
 
-        // 탈퇴자의 일기 좋아요 모두 hard delete
-        diaryLikeRepository.hardDeleteDiaryLikesOlderThanThreshold(threshold);
+        // 배치 시작 메시지 출력
+        log.info("[HardDeleteBatch] Starting member cleanup (threshold = {})", threshold);
+        Sentry.captureMessage("[HardDeleteBatch] Started member cleanup (threshold=" + threshold + ")");
+        
+        stopWatch.start();
 
-        // 탈퇴자의 댓글 모두 hard delete
-        diaryCommentRepository.hardDeleteDiaryCommentsOlderThanThreshold(threshold);
+        int successCount = 0, failCount = 0;
+        for (HardDeleteStrategy strategy : hardDeleteStrategies) {
+            String strategyName = strategy.getClass().getSimpleName();
 
-        // 탈퇴자의 일기 모두 hard delete
-        diaryRepository.hardDeleteDiariesOlderThanThreshold(threshold);
+            try {
+                log.debug("[HardDeleteBatch] Executing {}", strategyName);
+                strategy.hardDelete(threshold);
+                successCount++;
+                log.info("[HardDeleteBatch] {} executed successfully", strategyName);
+            } catch (Exception e) {
+                failCount++;
 
-        // 30일이 지난 회원의 isPurged 값을 true로 만들고
-        // 새로운 유저의 nickname/email의 unique 조건을 피하기 위해 대체값으로 치환
-        memberRepository.hardDeleteMembersOlderThanThreshold(threshold);
+                // 에러메시지 출력
+                log.error("[HardDeleteBatch] {} failed (error: {})", strategyName, e.getMessage(), e);
+                Sentry.captureException(e);
+                Sentry.captureMessage("[HardDeleteBatch] Strategy failed: " + strategyName + " (" + e.getMessage() + ")");
+            }
+        }
+
+        stopWatch.stop();
+        long elapsed = stopWatch.getTotalTimeMillis();
+
+        // 요약 메시지 출력
+        log.info("[HardDeleteBatch] Completed member cleanup job: success={} / failed={} / duration={}ms", successCount, failCount, elapsed);
+        String summary = String.format(
+                "[HardDeleteBatch] Completed member cleanup: success=%d / failed=%d / duration=%dms",
+                successCount, failCount, elapsed
+        );
+        Sentry.captureMessage(summary);
+
+        // 부분 실패 경고 메시지 출력
+        if (failCount > 0) {
+            log.warn("[HardDeleteBatch] {} strategy(ies) failed. Please check Sentry for details.", failCount);
+            Sentry.captureMessage("[HardDeleteBatch][WARNING] " + failCount + " strategy failures detected.");
+        }
+
+        log.info("[HardDeleteBatch] Cleanup process finished.\n---------------------------------------------");
     }
 
 }

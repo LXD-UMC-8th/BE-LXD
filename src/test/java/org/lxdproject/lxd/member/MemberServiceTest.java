@@ -9,19 +9,27 @@ import org.lxdproject.lxd.diary.entity.enums.Language;
 import org.lxdproject.lxd.diary.entity.enums.Style;
 import org.lxdproject.lxd.diary.entity.enums.Visibility;
 import org.lxdproject.lxd.diary.repository.DiaryRepository;
-import org.lxdproject.lxd.diary.service.DiaryService;
 import org.lxdproject.lxd.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.diarycommentlike.entity.DiaryCommentLike;
 import org.lxdproject.lxd.diarycommentlike.repository.DiaryCommentLikeRepository;
 import org.lxdproject.lxd.diarylike.entity.DiaryLike;
 import org.lxdproject.lxd.diarylike.repository.DiaryLikeRepository;
+import org.lxdproject.lxd.friend.entity.FriendRequest;
+import org.lxdproject.lxd.friend.entity.Friendship;
+import org.lxdproject.lxd.friend.entity.enums.FriendRequestStatus;
+import org.lxdproject.lxd.friend.repository.FriendRepository;
+import org.lxdproject.lxd.friend.repository.FriendRequestRepository;
 import org.lxdproject.lxd.member.entity.Member;
 import org.lxdproject.lxd.member.entity.enums.LoginType;
 import org.lxdproject.lxd.member.entity.enums.Role;
 import org.lxdproject.lxd.member.entity.enums.Status;
 import org.lxdproject.lxd.member.repository.MemberRepository;
 import org.lxdproject.lxd.member.service.MemberService;
+import org.lxdproject.lxd.notification.entity.Notification;
+import org.lxdproject.lxd.notification.entity.enums.NotificationType;
+import org.lxdproject.lxd.notification.entity.enums.TargetType;
+import org.lxdproject.lxd.notification.repository.NotificationRepository;
 import org.lxdproject.lxd.schedular.MemberCleanupSchedular;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +47,9 @@ public class MemberServiceTest {
     @Autowired private DiaryCommentRepository diaryCommentRepository;
     @Autowired private DiaryLikeRepository diaryLikeRepository;
     @Autowired private DiaryCommentLikeRepository diaryCommentLikeRepository;
+    @Autowired private NotificationRepository notificationRepository;
+    @Autowired private FriendRepository friendRepository;
+    @Autowired private FriendRequestRepository friendRequestRepository;
     @Autowired private MemberService memberService;
 
     @Test
@@ -96,7 +107,7 @@ public class MemberServiceTest {
         diaryCommentLikeRepository.save(commentLike);
 
         // when
-        memberService.deleteMember(member.getId());
+        memberService.softDeleteMember(member.getId());
 
         // then
         Member deletedMember = memberRepository.findById(member.getId()).orElseThrow();
@@ -209,7 +220,7 @@ public class MemberServiceTest {
 
 
         // [when] 탈퇴 실행
-        memberService.deleteMember(memberA.getId());
+        memberService.softDeleteMember(memberA.getId());
 
         // [then] A의 리소스와 연관된 리소스들 soft delete 확인
         DiaryComment deletedCommentB = diaryCommentRepository.findById(commentB_on_diaryA1.getId()).orElseThrow();
@@ -326,7 +337,7 @@ public class MemberServiceTest {
 
 
         // [when] B 탈퇴 → A의 일기 관련 데이터 soft delete 및 commentCount 및 likeCount 감소
-        memberService.deleteMember(memberB.getId());
+        memberService.softDeleteMember(memberB.getId());
 
         // [then] 일기 상태 재조회
         Diary afterBDeletedDiary = diaryRepository.findById(diaryA1.getId()).orElseThrow();
@@ -341,7 +352,7 @@ public class MemberServiceTest {
 
 
         // [when] C 탈퇴 → A의 댓글 관련 데이터 soft delete 및 likeCount 감소
-        memberService.deleteMember(memberC.getId());
+        memberService.softDeleteMember(memberC.getId());
 
         // [then] A의 댓글 재조회
         DiaryComment afterCDeletedComment = diaryCommentRepository.findById(commentA1.getId()).orElseThrow();
@@ -353,14 +364,14 @@ public class MemberServiceTest {
 
 
     @Test
-    @DisplayName("탈퇴 후 30일 지난 회원, 일기, 댓글이 hard delete 됩니다")
+    @DisplayName("탈퇴 후 30일 지난 회원, 일기댓글, 일기댓글좋아요, 일기좋아요, 친구, 친구요청, 알림이 hard delete 됩니다")
     void hardDeleteWithdrawnMembers_shouldRemoveOldData() {
         // [given] Member + Diary + DiaryComment
-        Member member = Member.builder()
+        Member memberA = Member.builder()
                 .username("test_user")
                 .password("encodedPw")
                 .email("test@test.com")
-                .nickname("테스터")
+                .nickname("A")
                 .role(Role.USER)
                 .loginType(LoginType.LOCAL)
                 .nativeLanguage(Language.KO)
@@ -370,11 +381,43 @@ public class MemberServiceTest {
                 .isAlarmAgreed(false)
                 .status(Status.ACTIVE)
                 .build();
-        memberRepository.save(member);
+        memberRepository.save(memberA);
+
+        Member memberB = Member.builder()
+                .username("test_friend")
+                .password("encodedPw")
+                .email("friend@test.com")
+                .nickname("B")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberB);
+
+        Member memberC = Member.builder()
+                .username("test_friendRequest")
+                .password("encodedPw")
+                .email("friendRequest@test.com")
+                .nickname("C")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberC);
 
         Diary diary = Diary.builder()
-                .member(member)
-                .title("테스트 일기")
+                .member(memberA)
+                .title("A 일기")
                 .content("내용입니다")
                 .style(Style.FREE)
                 .visibility(Visibility.PUBLIC)
@@ -384,28 +427,50 @@ public class MemberServiceTest {
         diaryRepository.save(diary);
 
         DiaryComment comment = DiaryComment.builder()
-                .member(member)
+                .member(memberA)
                 .diary(diary)
                 .commentText("댓글입니다")
                 .build();
         diaryCommentRepository.save(comment);
 
         DiaryLike diaryLike = DiaryLike.builder()
-                .member(member)
+                .member(memberA)
                 .diary(diary)
                 .build();
         diaryLikeRepository.save(diaryLike);
 
         DiaryCommentLike diaryCommentLike = DiaryCommentLike.builder()
-                .member(member)
+                .member(memberA)
                 .comment(comment)
                 .build();
         diaryCommentLikeRepository.save(diaryCommentLike);
 
+        Notification notification = notificationRepository.save(Notification.builder()
+                .sender(memberA)
+                .receiver(memberB)
+                .notificationType(NotificationType.FRIEND_ACCEPTED)
+                .targetType(TargetType.MEMBER)
+                .targetId(memberB.getId())
+                .redirectUrl("test/" + memberB.getId())
+                .build());
+        notificationRepository.save(notification);
+
+        Friendship friendship = friendRepository.save(Friendship.builder()
+                .requester(memberA)
+                .receiver(memberB)
+                .build());
+        friendRepository.save(friendship);
+
+        FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.builder()
+                .requester(memberA)
+                .receiver(memberC)
+                .status(FriendRequestStatus.PENDING)
+                .build());
+        friendRequestRepository.save(friendRequest);
 
         // soft delete 시점을 31일 전 수정
         LocalDateTime deletedAt = LocalDateTime.now().minusDays(31);
-        member.softDelete(deletedAt);
+        memberA.softDelete(deletedAt);
         diaryCommentLike.softDelete(deletedAt);
         diaryLike.softDelete(deletedAt);
         comment.softDelete(deletedAt);
@@ -413,14 +478,18 @@ public class MemberServiceTest {
 
 
         // [when] 스케쥴러를 통해 일기/댓글/좋아요 hard delete 실행
-        memberService.hardDeleteWithdrawnMembers();
+        memberService.hardDeleteMembers();
 
         // [then] 데이터가 완전히 삭제되었는지 검증
-        assertThat(memberRepository.findById(member.getId())).isEmpty();
-        assertThat(diaryRepository.findById(diary.getId())).isEmpty();
+        assertThat(memberRepository.findById(memberA.getId())).isEmpty();
         assertThat(diaryCommentRepository.findById(comment.getId())).isEmpty();
         assertThat(diaryLikeRepository.findById(diaryLike.getId())).isEmpty();
         assertThat(diaryCommentLikeRepository.findById(diaryCommentLike.getId())).isEmpty();
+        assertThat(friendRequestRepository.findById(friendRequest.getId())).isEmpty();
+        assertThat(friendRepository.findById(friendship.getId())).isEmpty();
+        assertThat(notificationRepository.findById(notification.getId())).isEmpty();
+
+        assertThat(diaryRepository.findById(diary.getId())).isPresent(); // 일기는 유지되어야 함
     }
 
 }
