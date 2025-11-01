@@ -1,5 +1,6 @@
 package org.lxdproject.lxd.diarycomment.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,10 +13,8 @@ import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
 import org.lxdproject.lxd.member.entity.QMember;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom {
@@ -128,6 +127,64 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                     .where(DIARY.id.eq(diaryId))
                     .execute();
         });
+
+        /**
+         * 삭제한 댓글이 대댓글이라면, 삭제한 댓글의 부모 댓글의 replyCount 값도 업데이트 해줘야한다.
+         */
+
+        /**
+         * 삭제한 댓글을 List 목록으로 가져온다.
+         * (탈퇴한 회원이 댓글 작성자일 때와 탈퇴한 회원이 작성한 일기의 댓글들 가져오기)
+         */
+        List<Long> deletedCommentIds = queryFactory
+                .select(DIARY_COMMENT.id)
+                .from(DIARY_COMMENT)
+                .where(
+                        DIARY_COMMENT.deletedAt.eq(deletedAt)
+                                .and(DIARY_COMMENT.member.id.eq(memberId)
+                                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)))
+
+                )
+                .fetch();
+
+        /**
+         * 삭제한 댓글의 모든 부모 댓글을 Tuple로 가져온다
+         * Tuple -> (댓글 아이디, 해당 아이디의 count(*))
+         *
+         * 단, 대댓글이 아닌 경우(부모 댓글이 없는 경우)는 가져오지 않는다.
+         */
+        List<Tuple> parentDeletedComments = queryFactory
+                .select(DIARY_COMMENT.parent.id, DIARY_COMMENT.count())
+                .from(DIARY_COMMENT)
+                .where(DIARY_COMMENT.parent.isNotNull()
+                        .and(DIARY_COMMENT.id.in(deletedCommentIds)))
+                .groupBy(DIARY_COMMENT.parent.id)
+                .fetch();
+
+        /**
+         * 위에서 가져온 Tuple 정보를 Map에 저장한다.
+         * Map -> key: 부모 댓글 아이디 , value: key에 해당하는 부모 댓글의 자식 개수
+         */
+        Map<Long, Long> modifiedParentCommentIds =
+                parentDeletedComments.stream()
+                .collect(Collectors.toMap(
+                        t -> t.get(DIARY_COMMENT.parent.id),
+                        t -> t.get(DIARY_COMMENT.count())
+                ));
+
+        // Map에 저장된 부모 댓글 Entity 가져오기
+        List<DiaryComment> parents = queryFactory
+                .selectFrom(DIARY_COMMENT)
+                .where(DIARY_COMMENT.id.in(modifiedParentCommentIds.keySet()))
+                .fetch();
+
+        // Map에 저장된 댓글 개수 만큼 각각 replyCount 감소
+        parents.forEach(parent -> {
+            int delta = modifiedParentCommentIds.get(parent.getId()).intValue();
+            parent.decreaseReplyCount(delta);
+        });
+
+
     }
 
     @Override
