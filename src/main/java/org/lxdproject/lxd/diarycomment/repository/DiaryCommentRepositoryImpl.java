@@ -163,7 +163,7 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
 
         /**
          * 위에서 가져온 Tuple 정보를 Map에 저장한다.
-         * Map -> key: 부모 댓글 아이디 , value: key에 해당하는 부모 댓글의 자식 개수
+         * Map -> key: 부모 댓글 아이디 , value: 감소한 대댓글 개수
          */
         Map<Long, Long> modifiedParentCommentIds =
                 parentDeletedComments.stream()
@@ -274,6 +274,62 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                     .set(DIARY.commentCount, commentCount.intValue())
                     .where(DIARY.id.eq(diaryId))
                     .execute();
+        });
+
+        /**
+         * 복구한 댓글이 대댓글이라면, 복구한 댓글의 부모 댓글의 replyCount 값도 업데이트 해줘야한다.
+         */
+
+        /**
+         * 복구한 댓글을 List 목록으로 가져온다.
+         * (복구한 회원이 댓글 작성자일 때와 복구한 회원이 작성한 일기의 댓글들 가져오기)
+         */
+        List<Long> deletedCommentIds = queryFactory
+                .select(DIARY_COMMENT.id)
+                .from(DIARY_COMMENT)
+                .where(
+                        DIARY_COMMENT.deletedAt.isNull()
+                                .and(DIARY_COMMENT.member.id.eq(memberId)
+                                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)))
+
+                )
+                .fetch();
+
+        /**
+         * 복구한 댓글의 모든 부모 댓글을 Tuple로 가져온다
+         * Tuple -> (댓글 아이디, 해당 아이디의 count(*))
+         *
+         * 단, 대댓글이 아닌 경우(부모 댓글이 없는 경우)는 가져오지 않는다.
+         */
+        List<Tuple> parentDeletedComments = queryFactory
+                .select(DIARY_COMMENT.parent.id, DIARY_COMMENT.count())
+                .from(DIARY_COMMENT)
+                .where(DIARY_COMMENT.parent.isNotNull()
+                        .and(DIARY_COMMENT.id.in(deletedCommentIds)))
+                .groupBy(DIARY_COMMENT.parent.id)
+                .fetch();
+
+        /**
+         * 위에서 가져온 Tuple 정보를 Map에 저장한다.
+         * Map -> key: 부모 댓글 아이디 , value: 증가된 대댓글 개수
+         */
+        Map<Long, Long> modifiedParentCommentIds =
+                parentDeletedComments.stream()
+                        .collect(Collectors.toMap(
+                                t -> t.get(DIARY_COMMENT.parent.id),
+                                t -> t.get(DIARY_COMMENT.count())
+                        ));
+
+        // Map에 저장된 부모 댓글 Entity 가져오기
+        List<DiaryComment> parents = queryFactory
+                .selectFrom(DIARY_COMMENT)
+                .where(DIARY_COMMENT.id.in(modifiedParentCommentIds.keySet()))
+                .fetch();
+
+        // Map에 저장된 댓글 개수 만큼 각각 replyCount 증가
+        parents.forEach(parent -> {
+            int delta = modifiedParentCommentIds.get(parent.getId()).intValue();
+            parent.increaseReplyCount(delta);
         });
     }
 
