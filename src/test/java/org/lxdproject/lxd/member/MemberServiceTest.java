@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -491,5 +492,149 @@ public class MemberServiceTest {
 
         assertThat(diaryRepository.findById(diary.getId())).isPresent(); // 일기는 유지되어야 함
     }
+
+    @Test
+    @DisplayName("회원 탈퇴 시, 해당 회원이 작성한 대댓글(reply)이 삭제되면 부모 댓글의 replyCount가 감소하는지 테스트")
+    void deleteMember_shouldDecreaseParentCommentReplyCount() {
+        // [given] 작성자 A, 대댓글 단 회원 B, C, D
+        Member memberA = Member.builder()
+                .username("memberA")
+                .password("pw")
+                .email("a@test.com")
+                .nickname("A")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberA);
+
+        Member memberB = Member.builder()
+                .username("memberB")
+                .password("pw")
+                .email("b@test.com")
+                .nickname("B")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberB);
+
+        Member memberC = Member.builder()
+                .username("memberC")
+                .password("pw")
+                .email("c@test.com")
+                .nickname("C")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberC);
+
+        Member memberD = Member.builder()
+                .username("memberD")
+                .password("pw")
+                .email("d@test.com")
+                .nickname("D")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberD);
+
+        // [A]가 일기 작성
+        Diary diaryA = Diary.builder()
+                .member(memberA)
+                .title("A의 일기")
+                .content("내용")
+                .style(Style.FREE)
+                .visibility(Visibility.PUBLIC)
+                .commentPermission(CommentPermission.ALL)
+                .language(Language.KO)
+                .build();
+        diaryRepository.save(diaryA);
+
+        // [A]가 부모 댓글 작성
+        DiaryComment parentComment = DiaryComment.builder()
+                .member(memberA)
+                .diary(diaryA)
+                .commentText("A의 부모 댓글")
+                .replyCount(4)  // 현재 대댓글 4개라고 가정
+                .build();
+        diaryCommentRepository.save(parentComment);
+
+        // [B], [C], [D]가 A의 부모 댓글에 대댓글 작성
+        DiaryComment replyB = DiaryComment.builder()
+                .member(memberB)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("B의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyB);
+
+        DiaryComment replyC = DiaryComment.builder()
+                .member(memberC)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("C의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyC);
+
+        DiaryComment replyD = DiaryComment.builder()
+                .member(memberD)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("D의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyD);
+
+        // [A]가 자기 댓글에 대댓글 추가 (자기 자신)
+        DiaryComment replyA = DiaryComment.builder()
+                .member(memberA)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("A의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyA);
+
+        // replyCount = 4 (B, C, D, A)
+        assertThat(parentComment.getReplyCount()).isEqualTo(4);
+
+        // [when] B, C, D 탈퇴
+        memberService.softDeleteMember(memberB.getId());
+        memberService.softDeleteMember(memberC.getId());
+        memberService.softDeleteMember(memberD.getId());
+
+        // [then] 부모 댓글 재조회
+        DiaryComment updatedParentComment = diaryCommentRepository.findById(parentComment.getId()).orElseThrow();
+
+        // replyCount가 4 → 1로 감소했는지 확인
+        assertThat(updatedParentComment.getReplyCount()).isEqualTo(1);
+
+        // B, C, D의 대댓글이 soft delete 되었는지 확인
+        List<DiaryComment> deletedReplies = diaryCommentRepository.findAllById(
+                List.of(replyB.getId(), replyC.getId(), replyD.getId()));
+        deletedReplies.forEach(reply -> assertThat(reply.getDeletedAt()).isNotNull());
+    }
+
 
 }
