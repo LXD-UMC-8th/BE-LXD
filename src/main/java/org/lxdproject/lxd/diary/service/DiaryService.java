@@ -173,7 +173,7 @@ public class DiaryService {
             throw new DiaryHandler(ErrorStatus.FORBIDDEN_DIARY_UPDATE);
         }
 
-        if (diary.getThumbImg() != null && !diary.getThumbImg().equals(request.getThumbImg())) {
+        if (diary.getThumbImg() != null && !diary.getThumbImg().isBlank() && !diary.getThumbImg().equals(request.getThumbImg())) {
             s3FileService.deleteImage(diary.getThumbImg());
         }
 
