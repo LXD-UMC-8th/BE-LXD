@@ -1,8 +1,7 @@
 package org.lxdproject.lxd.diarycomment.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -161,28 +160,30 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
                 .groupBy(DIARY_COMMENT.parent.id)
                 .fetch();
 
-        /**
-         * 위에서 가져온 Tuple 정보를 Map에 저장한다.
-         * Map -> key: 부모 댓글 아이디 , value: 감소한 대댓글 개수
-         */
-        Map<Long, Long> modifiedParentCommentIds =
-                parentDeletedComments.stream()
-                .collect(Collectors.toMap(
-                        t -> t.get(DIARY_COMMENT.parent.id),
-                        t -> t.get(DIARY_COMMENT.count())
-                ));
+        if (!parentDeletedComments.isEmpty()) {
+            NumberExpression<Integer> replyCaseExpr = Expressions.asNumber(0);
 
-        // Map에 저장된 부모 댓글 Entity 가져오기
-        List<DiaryComment> parents = queryFactory
-                .selectFrom(DIARY_COMMENT)
-                .where(DIARY_COMMENT.id.in(modifiedParentCommentIds.keySet()))
-                .fetch();
+            for (Tuple tuple : parentDeletedComments) {
+                Long parentId = tuple.get(DIARY_COMMENT.parent.id);
+                Long deletedReplyCount = tuple.get(DIARY_COMMENT.count());
 
-        // Map에 저장된 댓글 개수 만큼 각각 replyCount 감소
-        parents.forEach(parent -> {
-            int delta = modifiedParentCommentIds.get(parent.getId()).intValue();
-            parent.decreaseReplyCount(delta);
-        });
+                // CaseBuilder로 조건별 계산식 구성
+                replyCaseExpr = replyCaseExpr.add(
+                        new CaseBuilder()
+                                .when(DIARY_COMMENT.id.eq(parentId))
+                                .then(DIARY_COMMENT.replyCount.subtract(deletedReplyCount.intValue()))
+                                .otherwise(0)
+                );
+            }
+
+            queryFactory.update(DIARY_COMMENT)
+                    .set(DIARY_COMMENT.replyCount, replyCaseExpr)
+                    .where(DIARY_COMMENT.id.in(
+                            parentDeletedComments.stream()
+                                    .map(t -> t.get(DIARY_COMMENT.parent.id))
+                                    .collect(Collectors.toList())))
+                    .execute();
+        }
 
 
     }
