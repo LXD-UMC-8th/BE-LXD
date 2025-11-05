@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.member;
+package org.lxdproject.lxd.integration.member;
 
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
