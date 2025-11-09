@@ -243,6 +243,24 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
         // 연관된 일기가 없을 시 메서드 종료
         if (affectedDiaryIds.isEmpty()) return;
 
+
+        /**
+         * 아래 쪽의 replyCount 계산을 위해 복구할 댓글의 아이디 목록을 미리 가져오기
+         *
+         * 복구할 댓글을 List 목록으로 가져온다.
+         * (복구할 회원이 댓글 작성자일 때와 복구할 회원이 작성한 일기의 댓글들 가져오기)
+         */
+        List<Long> deletedCommentIds = queryFactory
+                .select(DIARY_COMMENT.id)
+                .from(DIARY_COMMENT)
+                .where(
+                        DIARY_COMMENT.deletedAt.eq(deletedAt)
+                                .and(DIARY_COMMENT.member.id.eq(memberId)
+                                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)))
+
+                )
+                .fetch();
+
         // 기존 변경 먼저 DB 반영
         entityManager.flush();
 
@@ -280,21 +298,6 @@ public class DiaryCommentRepositoryImpl implements DiaryCommentRepositoryCustom 
         /**
          * 복구한 댓글이 대댓글이라면, 복구한 댓글의 부모 댓글의 replyCount 값도 업데이트 해줘야한다.
          */
-
-        /**
-         * 복구한 댓글을 List 목록으로 가져온다.
-         * (복구한 회원이 댓글 작성자일 때와 복구한 회원이 작성한 일기의 댓글들 가져오기)
-         */
-        List<Long> deletedCommentIds = queryFactory
-                .select(DIARY_COMMENT.id)
-                .from(DIARY_COMMENT)
-                .where(
-                        DIARY_COMMENT.deletedAt.isNull()
-                                .and(DIARY_COMMENT.member.id.eq(memberId)
-                                        .or(DIARY_COMMENT.diary.member.id.eq(memberId)))
-
-                )
-                .fetch();
 
         /**
          * 복구한 댓글의 모든 부모 댓글을 Tuple로 가져온다
