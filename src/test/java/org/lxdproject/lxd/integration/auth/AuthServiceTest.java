@@ -391,4 +391,179 @@ public class AuthServiceTest {
 
     }
 
+    @Test
+    @DisplayName("회원 복구 시, 복구된 대댓글(reply) 수만큼 부모 댓글의 replyCount가 증가하는지 테스트")
+    void recoverMember_shouldIncreaseParentCommentReplyCount() {
+        // [given] 작성자 A, 대댓글 단 회원 B, C, D
+        Member memberA = Member.builder()
+                .username("memberA")
+                .password("pw")
+                .email("a@test.com")
+                .nickname("A")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberA);
+
+        Member memberB = Member.builder()
+                .username("memberB")
+                .password("pw")
+                .email("b@test.com")
+                .nickname("B")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberB);
+
+        Member memberC = Member.builder()
+                .username("memberC")
+                .password("pw")
+                .email("c@test.com")
+                .nickname("C")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberC);
+
+        Member memberD = Member.builder()
+                .username("memberD")
+                .password("pw")
+                .email("d@test.com")
+                .nickname("D")
+                .role(Role.USER)
+                .loginType(LoginType.LOCAL)
+                .nativeLanguage(Language.KO)
+                .language(Language.ENG)
+                .systemLanguage(Language.KO)
+                .isPrivacyAgreed(true)
+                .isAlarmAgreed(true)
+                .status(Status.ACTIVE)
+                .build();
+        memberRepository.save(memberD);
+
+        // [A]가 일기 작성
+        Diary diaryA = Diary.builder()
+                .member(memberA)
+                .title("A의 일기")
+                .content("내용")
+                .style(Style.FREE)
+                .visibility(Visibility.PUBLIC)
+                .commentPermission(CommentPermission.ALL)
+                .language(Language.KO)
+                .build();
+        diaryRepository.save(diaryA);
+
+        // [A]가 부모 댓글 작성
+        DiaryComment parentComment = DiaryComment.builder()
+                .member(memberA)
+                .diary(diaryA)
+                .commentText("A의 부모 댓글")
+                .replyCount(4) // 초기 replyCount = 4
+                .build();
+        diaryCommentRepository.save(parentComment);
+
+        // [B], [C], [D]가 A의 부모 댓글에 대댓글 작성
+        DiaryComment replyB = DiaryComment.builder()
+                .member(memberB)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("B의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyB);
+
+        DiaryComment replyC = DiaryComment.builder()
+                .member(memberC)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("C의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyC);
+
+        DiaryComment replyD = DiaryComment.builder()
+                .member(memberD)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("D의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyD);
+
+        // [A]가 자기 댓글에 대댓글 작성 (자기 자신)
+        DiaryComment replyA = DiaryComment.builder()
+                .member(memberA)
+                .diary(diaryA)
+                .parent(parentComment)
+                .commentText("A의 대댓글")
+                .build();
+        diaryCommentRepository.save(replyA);
+
+        // B, C, D 탈퇴 (대댓글 3개 soft delete)
+        memberService.softDeleteMember(memberB.getId());
+        memberService.softDeleteMember(memberC.getId());
+        memberService.softDeleteMember(memberD.getId());
+
+        DiaryComment afterDeleteParent = diaryCommentRepository.findById(parentComment.getId()).orElseThrow();
+        assertThat(afterDeleteParent.getReplyCount()).isEqualTo(1);
+
+
+        // [when] B, C, D 복구
+
+        // B 복구
+        // CustomUserDetails 객체 생성
+        CustomUserDetails customUserDetails = new CustomUserDetails(memberB);
+        // SecurityContext에 CustomUserDetails 주입
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        authService.recover();
+
+
+        // C 복구
+        // CustomUserDetails 객체 생성
+        customUserDetails = new CustomUserDetails(memberC);
+        // SecurityContext에 CustomUserDetails 주입
+        authentication = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        authService.recover();
+
+
+        // D 복구
+        // CustomUserDetails 객체 생성
+        customUserDetails = new CustomUserDetails(memberD);
+        // SecurityContext에 CustomUserDetails 주입
+        authentication = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        authService.recover();
+
+
+        // [then] 부모 댓글 재조회
+        DiaryComment afterRecoverParent = diaryCommentRepository.findById(parentComment.getId()).orElseThrow();
+
+        // replyCount가 1 -> 4로 증가했는지 확인
+        assertThat(afterRecoverParent.getReplyCount()).isEqualTo(4);
+
+        // 복구된 대댓글이 deletedAt=null 상태로 돌아왔는지 확인
+        List<DiaryComment> recoveredReplies = diaryCommentRepository.findAllById(
+                List.of(replyB.getId(), replyC.getId(), replyD.getId()));
+        recoveredReplies.forEach(reply -> assertThat(reply.getDeletedAt()).isNull());
+    }
+
+
 }
