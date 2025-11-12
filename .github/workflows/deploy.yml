@@ -7,7 +7,7 @@ on:
       - "README.md"
       - "docs/**"
   pull_request:
-    branches: ["main", "release", "develop"] # pull_request는 테스트 후 없애기
+    branches: ["main", "release"] # pull_request는 테스트 후 없애기
     paths-ignore:
       - "README.md"
       - "docs/**"
@@ -74,7 +74,7 @@ jobs:
   deploy-staging:
     needs: build-docker-image
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main' || github.ref_name == 'develop' || github.event_name == 'pull_request'
+    if: github.ref_name == 'main'
     environment: staging
 
     steps:
