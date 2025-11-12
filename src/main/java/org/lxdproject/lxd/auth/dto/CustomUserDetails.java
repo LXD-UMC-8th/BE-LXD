@@ -79,6 +79,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return !member.isDeleted();
+        return true;
     }
 }

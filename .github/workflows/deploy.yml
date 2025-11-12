@@ -1,16 +1,17 @@
-name: CI/CD using actions & docker
+name: Staging/Production CI/CD
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "release"]
     paths-ignore:
       - "README.md"
       - "docs/**"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "release"] # pull_request는 테스트 후 없애기
     paths-ignore:
       - "README.md"
       - "docs/**"
+  workflow_dispatch: # 수동 실행 기능
 
 jobs:
   build-docker-image:
@@ -69,12 +70,15 @@ jobs:
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: docker push ${DOCKER_USERNAME}/${DOCKER_REPO}
 
-  deploy:
+
+  deploy-staging:
     needs: build-docker-image
     runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
+    environment: staging
 
     steps:
-      - name: Deploy to EC2
+      - name: Deploy to EC2 (staging)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -102,9 +106,53 @@ jobs:
             URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
             URLS_BACKEND=${{ secrets.URLS_BACKEND }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }} 
+            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }}
             EOF
             
+            sudo docker compose -f ~/deploy/docker-compose.yml down
+            sudo docker compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
+            sudo docker compose -f ~/deploy/docker-compose.yml up -d --force-recreate
+            sudo docker image prune -f
+
+
+  deploy-production:
+    needs: build-docker-image
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'release'
+    environment: production
+
+    steps:
+      - name: Deploy to EC2 (production)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cat <<EOF > ~/deploy/.env
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            DOCKER_REPO=${{ secrets.DOCKER_REPO }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PWD=${{ secrets.DB_PWD }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}
+            JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}
+            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            S3_BUCKET=${{ secrets.S3_BUCKET }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+            URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
+            URLS_BACKEND=${{ secrets.URLS_BACKEND }}
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }}
+            EOF
+
             sudo docker compose -f ~/deploy/docker-compose.yml down
             sudo docker compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
             sudo docker compose -f ~/deploy/docker-compose.yml up -d --force-recreate

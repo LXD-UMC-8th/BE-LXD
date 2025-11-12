@@ -15,30 +15,31 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RequiredArgsConstructor
 public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-    private final EntityManager em;
-    private MemberPredicates memberPredicates;
+    private final EntityManager entityManager;
+    private final MemberPredicates memberPredicates;
 
-    private static final QFriendship friendship = QFriendship.friendship;
+    private static final QFriendship FRIENDSHIP = QFriendship.friendship;
     private static final QMember MEMBER = QMember.member;
 
     // create, delete, update 양방향, read 단방향
     // 1. 친구 관계 조회 <read>  → 단방향 조회
     @Override
     public Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable) { // 친구 목록 반환
-        BooleanExpression condition = friendship.requester.id.eq(memberId)
-                .and(friendship.deletedAt.isNull())
+        BooleanExpression condition = FRIENDSHIP.requester.id.eq(memberId)
+                .and(FRIENDSHIP.deletedAt.isNull())
                 .and(memberPredicates.isNotDeleted(MEMBER));
 
         List<Member> result = queryFactory
-                .select(friendship.receiver)
-                .from(friendship)
-                .join(friendship.receiver, MEMBER)
+                .select(FRIENDSHIP.receiver)
+                .from(FRIENDSHIP)
+                .join(FRIENDSHIP.receiver, MEMBER)
                 .where(condition)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -46,8 +47,8 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
 
         Long total = Optional.ofNullable(queryFactory
                 .select(Wildcard.count)
-                .from(friendship)
-                .join(friendship.receiver, MEMBER)
+                .from(FRIENDSHIP)
+                .join(FRIENDSHIP.receiver, MEMBER)
                 .where(condition)
                 .fetchOne()).orElse(0L);
 
@@ -58,10 +59,10 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     @Transactional
     public void deleteFriendship(Member m1, Member m2) {
         queryFactory
-                .delete(friendship)
+                .delete(FRIENDSHIP)
                 .where(
-                        (friendship.requester.id.eq(m1.getId()).and(friendship.receiver.id.eq(m2.getId())))
-                                .or(friendship.requester.id.eq(m2.getId()).and(friendship.receiver.id.eq(m1.getId())))
+                        (FRIENDSHIP.requester.id.eq(m1.getId()).and(FRIENDSHIP.receiver.id.eq(m2.getId())))
+                                .or(FRIENDSHIP.requester.id.eq(m2.getId()).and(FRIENDSHIP.receiver.id.eq(m1.getId())))
                 )
                 .execute();
     }
@@ -75,7 +76,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
                 existing.restore();
             }
         } else {
-            em.persist(Friendship.builder()
+            entityManager.persist(Friendship.builder()
                     .requester(requester)
                     .receiver(receiver)
                     .build());
@@ -87,7 +88,7 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
                 reverse.restore();
             }
         } else {
-            em.persist(Friendship.builder()
+            entityManager.persist(Friendship.builder()
                     .requester(receiver)
                     .receiver(requester)
                     .build());
@@ -97,10 +98,10 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     // 5. 친구 관계 조회 (삭제된 것도 포함) <read> → 단방향 조회
     private Friendship findFriendshipIncludingDeleted(Member requester, Member receiver) {
         return queryFactory
-                .selectFrom(friendship)
+                .selectFrom(FRIENDSHIP)
                 .where(
-                        friendship.requester.eq(requester),
-                        friendship.receiver.eq(receiver)
+                        FRIENDSHIP.requester.eq(requester),
+                        FRIENDSHIP.receiver.eq(receiver)
                 )
                 .fetchOne();
     }
@@ -108,11 +109,11 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     // 6. 친구 관계 조회 (Friendship 객체로 조회) <read> → 단방향 조회
     private Friendship findFriendshipEntity(Long requesterId, Long receiverId) {
         return queryFactory
-                .selectFrom(friendship)
+                .selectFrom(FRIENDSHIP)
                 .where(
-                        friendship.requester.id.eq(requesterId),
-                        friendship.receiver.id.eq(receiverId),
-                        friendship.deletedAt.isNull()
+                        FRIENDSHIP.requester.id.eq(requesterId),
+                        FRIENDSHIP.receiver.id.eq(receiverId),
+                        FRIENDSHIP.deletedAt.isNull()
                 )
                 .fetchOne();
     }
@@ -122,11 +123,11 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     public boolean areFriends(Long requesterId, Long receiverId) {
         return queryFactory
                 .selectOne()
-                .from(friendship)
+                .from(FRIENDSHIP)
                 .where(
-                        friendship.requester.id.eq(requesterId)
-                                .and(friendship.receiver.id.eq(receiverId))
-                                .and(friendship.deletedAt.isNull())
+                        FRIENDSHIP.requester.id.eq(requesterId)
+                                .and(FRIENDSHIP.receiver.id.eq(receiverId))
+                                .and(FRIENDSHIP.deletedAt.isNull())
                 )
                 .fetchFirst() != null;
     }
@@ -134,17 +135,17 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     @Override
     public Set<Long> findFriendIdsByMemberId(Long memberId) {
         List<Long> sentFriendIds = queryFactory
-                .select(friendship.receiver.id)
-                .from(friendship)
-                .where(friendship.requester.id.eq(memberId),
-                        friendship.deletedAt.isNull())
+                .select(FRIENDSHIP.receiver.id)
+                .from(FRIENDSHIP)
+                .where(FRIENDSHIP.requester.id.eq(memberId),
+                        FRIENDSHIP.deletedAt.isNull())
                 .fetch();
 
         List<Long> receivedFriendIds = queryFactory
-                .select(friendship.requester.id)
-                .from(friendship)
-                .where(friendship.receiver.id.eq(memberId),
-                        friendship.deletedAt.isNull())
+                .select(FRIENDSHIP.requester.id)
+                .from(FRIENDSHIP)
+                .where(FRIENDSHIP.receiver.id.eq(memberId),
+                        FRIENDSHIP.deletedAt.isNull())
                 .fetch();
 
         Set<Long> friendIds = new HashSet<>();
@@ -155,15 +156,42 @@ public class FriendRepositoryImpl implements FriendRepositoryCustom {
     }
 
     @Override
+    public void hardDeleteFriendshipsOlderThanThreshold(LocalDateTime threshold) {
+        // 탈퇴 후 아직 purged 전인 회원 조회
+        List<Long> withdrawnMemberIds = queryFactory
+                .select(MEMBER.id)
+                .from(MEMBER)
+                .where(MEMBER.deletedAt.isNotNull()
+                        .and(MEMBER.deletedAt.loe(threshold))
+                        .and(MEMBER.isPurged.isFalse()))
+                .fetch();
+
+        if (withdrawnMemberIds.isEmpty()) return;
+
+        entityManager.flush();
+
+        // 탈퇴 멤버가 포함된 친구 관계 전체 삭제
+        queryFactory
+                .delete(FRIENDSHIP)
+                .where(
+                        FRIENDSHIP.requester.id.in(withdrawnMemberIds)
+                                .or(FRIENDSHIP.receiver.id.in(withdrawnMemberIds))
+                )
+                .execute();
+
+        entityManager.clear();
+    }
+
+    @Override
     @Transactional
     public long countFriendsByMemberId(Long memberId) {
         return Optional.ofNullable(queryFactory
                 .select(Wildcard.count)
-                .from(friendship)
-                .join(friendship.receiver, MEMBER)
+                .from(FRIENDSHIP)
+                .join(FRIENDSHIP.receiver, MEMBER)
                 .where(
-                        friendship.requester.id.eq(memberId),
-                        friendship.deletedAt.isNull(),
+                        FRIENDSHIP.requester.id.eq(memberId),
+                        FRIENDSHIP.deletedAt.isNull(),
                         memberPredicates.isNotDeleted(MEMBER)
                 )
                 .fetchOne()).orElse(0L);

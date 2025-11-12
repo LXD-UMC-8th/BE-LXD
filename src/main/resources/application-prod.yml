@@ -74,6 +74,7 @@ sentry:
   sample-rate: 1.0
   traces-sample-rate: 0.2
   send-default-pii: true
+  max-request-body-size: always
 
   exception-resolver-order: -2147483647
 
