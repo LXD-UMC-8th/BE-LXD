@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  app:
+  app-dev:
     image: ${DOCKER_USERNAME}/${DOCKER_REPO}
     pull_policy: always
     ports:
@@ -31,6 +31,39 @@ services:
         condition: service_healthy
     networks:
        - app-network
+    restart: always
+
+  app-prod:
+    image: ${DOCKER_USERNAME}/${DOCKER_REPO}
+    pull_policy: always
+    ports:
+      - "8081:8080"
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PWD: ${DB_PWD}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      URLS_FRONTEND: ${URLS_FRONTEND}
+      URLS_BACKEND: ${URLS_BACKEND}
+      SPRING_PROFILES_ACTIVE: prod # prod 프로파일 활성화
+      SENTRY_DSN: ${SENTRY_DSN}
+      DISCORD_ERROR_WEBHOOK_URL: ${DISCORD_ERROR_WEBHOOK_URL}
+      hibernate_ddl_auto: update
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
     restart: always
 
   redis:
