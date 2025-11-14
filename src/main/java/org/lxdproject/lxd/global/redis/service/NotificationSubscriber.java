@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.infra.redis.subscriber;
+package org.lxdproject.lxd.global.redis.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

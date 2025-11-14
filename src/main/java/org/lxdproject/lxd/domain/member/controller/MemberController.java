@@ -9,7 +9,7 @@ import org.lxdproject.lxd.global.apiPayload.ApiResponse;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.global.apiPayload.code.status.SuccessStatus;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.domain.member.entity.Member;

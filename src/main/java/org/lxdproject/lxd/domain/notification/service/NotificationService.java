@@ -11,7 +11,7 @@ import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.NotificationHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.global.common.util.DateFormatUtil;
 import org.lxdproject.lxd.domain.correctioncomment.repository.CorrectionCommentRepository;

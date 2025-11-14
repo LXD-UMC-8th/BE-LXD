@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.infra.redis;
+package org.lxdproject.lxd.global.redis.service;
 
 public class RedisKeyPrefix {
 

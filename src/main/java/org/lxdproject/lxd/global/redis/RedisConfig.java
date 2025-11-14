@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.config.redis;
+package org.lxdproject.lxd.global.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

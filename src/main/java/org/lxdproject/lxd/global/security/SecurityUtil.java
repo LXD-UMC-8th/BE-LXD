@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.config.security;
+package org.lxdproject.lxd.global.security;
 
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;

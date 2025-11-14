@@ -5,7 +5,7 @@ import org.lxdproject.lxd.domain.friend.dto.*;
 import org.lxdproject.lxd.global.apiPayload.ApiResponse;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.FriendHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.domain.friend.service.FriendService;
 import org.springframework.validation.annotation.Validated;

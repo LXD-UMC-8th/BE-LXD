@@ -6,7 +6,7 @@ import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.global.authz.guard.MemberGuard;
 import org.lxdproject.lxd.global.common.dto.MemberProfileDTO;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.diarycomment.entity.DiaryComment;
 import org.lxdproject.lxd.domain.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.domain.diarycommentlike.dto.DiaryCommentLikeResponseDTO;

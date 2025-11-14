@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.infra.redis;
+package org.lxdproject.lxd.global.redis.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

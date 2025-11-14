@@ -6,7 +6,7 @@ import org.lxdproject.lxd.global.apiPayload.code.exception.handler.CorrectionHan
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.global.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.correctionlike.dto.MemberSavedCorrectionRequestDTO;
 import org.lxdproject.lxd.domain.correctionlike.dto.MemberSavedCorrectionResponseDTO;
 import org.lxdproject.lxd.domain.correction.entity.Correction;

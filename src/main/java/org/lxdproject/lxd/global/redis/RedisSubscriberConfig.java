@@ -1,8 +1,8 @@
-package org.lxdproject.lxd.global.config.redis;
+package org.lxdproject.lxd.global.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.lxdproject.lxd.global.infra.redis.subscriber.NotificationSubscriber;
+import org.lxdproject.lxd.global.redis.service.NotificationSubscriber;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

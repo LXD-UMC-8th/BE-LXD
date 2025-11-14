@@ -8,8 +8,8 @@ import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.global.common.entity.enums.ImageDir;
 import org.lxdproject.lxd.global.common.service.ImageService;
-import org.lxdproject.lxd.global.infra.storage.S3FileService;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.s3.S3FileService;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.member.converter.MemberConverter;
 import org.lxdproject.lxd.member.dto.*;
 import org.lxdproject.lxd.domain.member.entity.Member;

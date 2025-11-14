@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.infra.storage;
+package org.lxdproject.lxd.global.s3;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

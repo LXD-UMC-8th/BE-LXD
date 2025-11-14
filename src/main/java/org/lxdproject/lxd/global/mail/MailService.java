@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.infra.mail;
+package org.lxdproject.lxd.global.mail;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

@@ -1,10 +1,10 @@
-package org.lxdproject.lxd.global.config.security;
+package org.lxdproject.lxd.global.security;
 
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.global.apiPayload.code.exception.SecurityExceptionHandler;
 import org.lxdproject.lxd.global.auth.filter.WithdrawnAccountFilter;
-import org.lxdproject.lxd.global.config.security.jwt.JwtAuthenticationFilter;
-import org.lxdproject.lxd.global.config.security.jwt.JwtTokenProvider;
+import org.lxdproject.lxd.global.security.jwt.JwtAuthenticationFilter;
+import org.lxdproject.lxd.global.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

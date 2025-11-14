@@ -13,7 +13,7 @@ import org.lxdproject.lxd.global.authz.guard.MemberGuard;
 import org.lxdproject.lxd.global.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
 import org.lxdproject.lxd.global.common.util.DateFormatUtil;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.correction.entity.Correction;
 import org.lxdproject.lxd.domain.correction.repository.CorrectionRepository;
 import org.lxdproject.lxd.correctioncomment.dto.*;

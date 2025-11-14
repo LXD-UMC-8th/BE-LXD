@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.config.redis;
+package org.lxdproject.lxd.global.redis;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

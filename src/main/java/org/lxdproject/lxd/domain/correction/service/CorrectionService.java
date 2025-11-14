@@ -5,7 +5,7 @@ import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler
 import org.lxdproject.lxd.global.authz.guard.MemberGuard;
 import org.lxdproject.lxd.global.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.correctionlike.entity.MemberSavedCorrection;
 import org.lxdproject.lxd.domain.correctionlike.repository.MemberSavedCorrectionRepository;
 import org.lxdproject.lxd.global.common.util.DateFormatUtil;

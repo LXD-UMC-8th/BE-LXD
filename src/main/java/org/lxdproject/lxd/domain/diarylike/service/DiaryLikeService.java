@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.DiaryHandler;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.diary.entity.Diary;
 import org.lxdproject.lxd.domain.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.domain.diarylike.dto.DiaryLikeResponseDTO;

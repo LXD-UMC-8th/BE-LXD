@@ -10,7 +10,7 @@ import org.lxdproject.lxd.global.authz.guard.MemberGuard;
 import org.lxdproject.lxd.global.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
 import org.lxdproject.lxd.global.common.util.DateFormatUtil;
-import org.lxdproject.lxd.global.config.security.SecurityUtil;
+import org.lxdproject.lxd.global.security.SecurityUtil;
 import org.lxdproject.lxd.domain.diary.entity.Diary;
 import org.lxdproject.lxd.domain.diary.repository.DiaryRepository;
 import org.lxdproject.lxd.domain.diarycomment.dto.DiaryCommentDeleteResponseDTO;

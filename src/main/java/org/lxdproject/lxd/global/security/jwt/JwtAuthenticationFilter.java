@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.config.security.jwt;
+package org.lxdproject.lxd.global.security.jwt;
 
 import lombok.RequiredArgsConstructor;
 
@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.global.auth.enums.TokenType;
-import org.lxdproject.lxd.global.config.security.SecurityConfig;
+import org.lxdproject.lxd.global.security.SecurityConfig;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.AntPathMatcher;

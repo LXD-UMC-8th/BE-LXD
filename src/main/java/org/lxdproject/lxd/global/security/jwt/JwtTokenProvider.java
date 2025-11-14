@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.config.security.jwt;
+package org.lxdproject.lxd.global.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

@@ -1,4 +1,4 @@
-package org.lxdproject.lxd.global.config.security.jwt;
+package org.lxdproject.lxd.global.security.jwt;
 
 public final class JwtConstants {
     public static final String AUTH_HEADER = "Authorization";
