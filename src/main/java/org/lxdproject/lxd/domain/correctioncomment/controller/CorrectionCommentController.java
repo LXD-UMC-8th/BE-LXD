@@ -7,7 +7,6 @@ import org.lxdproject.lxd.domain.correctioncomment.dto.CorrectionCommentResponse
 import org.lxdproject.lxd.global.apiPayload.ApiResponse;
 import org.lxdproject.lxd.global.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.correctioncomment.dto.*;
 import org.lxdproject.lxd.domain.correctioncomment.service.CorrectionCommentService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;

@@ -7,7 +7,6 @@ import org.lxdproject.lxd.domain.diarycomment.dto.DiaryCommentResponseDTO;
 import org.lxdproject.lxd.global.apiPayload.ApiResponse;
 import org.lxdproject.lxd.global.apiPayload.code.status.SuccessStatus;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.diarycomment.dto.*;
 import org.lxdproject.lxd.domain.diarycomment.service.DiaryCommentService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;

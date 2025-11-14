@@ -4,9 +4,9 @@ import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
-import org.lxdproject.lxd.diarycommentlike.entity.QDiaryCommentLike;
-import org.lxdproject.lxd.member.entity.QMember;
+import org.lxdproject.lxd.domain.diarycomment.entity.QDiaryComment;
+import org.lxdproject.lxd.domain.diarycommentlike.entity.QDiaryCommentLike;
+import org.lxdproject.lxd.domain.member.entity.QMember;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;

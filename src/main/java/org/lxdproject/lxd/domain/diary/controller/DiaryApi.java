@@ -13,7 +13,6 @@ import org.lxdproject.lxd.domain.diary.dto.*;
 import org.lxdproject.lxd.global.apiPayload.ApiResponse;
 import org.lxdproject.lxd.global.common.dto.ImageDTO;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.diary.dto.*;
 import org.lxdproject.lxd.global.validation.annotation.PageSizeValid;
 import org.lxdproject.lxd.global.validation.annotation.PageValid;
 import org.springframework.http.MediaType;
