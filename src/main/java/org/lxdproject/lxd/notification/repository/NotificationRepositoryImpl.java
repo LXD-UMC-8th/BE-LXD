@@ -36,7 +36,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         // fetch join한 contentQuery
         List<Notification> content = queryFactory
                 .selectFrom(NOTIFICATION)
-                .join(NOTIFICATION.sender, MEMBER).fetchJoin()
+                .leftJoin(NOTIFICATION.sender, MEMBER).fetchJoin()
                 .where(where)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

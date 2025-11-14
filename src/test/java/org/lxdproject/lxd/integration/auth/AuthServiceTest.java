@@ -563,6 +563,9 @@ public class AuthServiceTest {
         List<DiaryComment> recoveredReplies = diaryCommentRepository.findAllById(
                 List.of(replyB.getId(), replyC.getId(), replyD.getId()));
         recoveredReplies.forEach(reply -> assertThat(reply.getDeletedAt()).isNull());
+
+        // test 끝나면 context 초기화
+        SecurityContextHolder.clearContext();
     }
 
 
