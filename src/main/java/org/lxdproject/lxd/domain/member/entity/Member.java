@@ -1,0 +1,110 @@
+package org.lxdproject.lxd.domain.member.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.Where;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import org.lxdproject.lxd.domain.diary.entity.Diary;
+import org.lxdproject.lxd.global.common.entity.BaseEntity;
+import org.lxdproject.lxd.domain.diary.entity.enums.Language;
+import org.lxdproject.lxd.domain.diarylike.entity.DiaryLike;
+import org.lxdproject.lxd.domain.member.entity.enums.LoginType;
+import org.lxdproject.lxd.domain.member.entity.enums.Role;
+import org.lxdproject.lxd.domain.member.entity.enums.Status;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@DynamicUpdate
+@DynamicInsert
+@Where(clause = "is_purged = false")
+public class Member extends BaseEntity {
+
+    // 고유번호
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // 주사용언어
+    @Enumerated(EnumType.STRING)
+    @Column(name = "native_language", nullable = false)
+    private Language nativeLanguage;
+
+    // 학습언어
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Language language;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Language systemLanguage;
+
+    // 권한
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    // 아이디
+    @Column(nullable = false, length = 20, unique = true)
+    private String username;
+
+    // 비밀번호
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String password;
+
+    // 이메일
+    @Column(nullable = false, length = 255, unique = true)
+    private String email;
+
+    // 닉네임
+    @Setter
+    @Column(nullable = false, length = 20)
+    private String nickname;
+
+    // 로그인 타입
+    @Enumerated(EnumType.STRING)
+    @Column(name = "login_type", nullable = false)
+    private LoginType loginType;
+
+    // 개인정보 약관 동의 여부
+    @Column(name = "is_privacy_agreed", nullable = false)
+    private Boolean isPrivacyAgreed;
+
+    // 프로필 이미지 URL
+    @Setter
+    @Column(name = "profile_img", columnDefinition = "TEXT")
+    private String profileImg;
+
+    // 상태
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.ACTIVE;
+
+    // 알림 설정 여부
+    @Column(name = "is_alarm_agreed", nullable = false)
+    private Boolean isAlarmAgreed;
+
+    // 탈퇴 후 30일이 지나 완전히 삭제된 회원 여부
+    // true면 시스템 내 모든 조회에서 제외됨 (@Where 조건에 사용)
+    @Column(name = "is_purged", nullable = false)
+    @Builder.Default
+    private Boolean isPurged = false;
+
+    // 일기 연관관계 설정
+    @OneToMany(mappedBy = "member")
+    private List<Diary> diaries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    private List<DiaryLike> diaryLikes = new ArrayList<>();
+
+    public void updateSystemLanguage(Language systemLanguage) {
+        this.systemLanguage = systemLanguage;
+    }
+    public void updatePassword(String password) {this.password = password;}
+}

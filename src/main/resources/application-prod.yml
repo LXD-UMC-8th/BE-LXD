@@ -80,7 +80,7 @@ sentry:
 
   # Sentry 이슈 생성에서 제외되는 예외들
   ignored-exceptions-for-type:
-    - org.lxdproject.lxd.apiPayload.code.exception.handler.GeneralException
+    - org.lxdproject.lxd.global.apiPayload.code.exception.handler.GeneralException
     - org.springframework.web.bind.MethodArgumentNotValidException
     - org.springframework.http.converter.HttpMessageNotReadableException
     - jakarta.validation.ConstraintViolationException
