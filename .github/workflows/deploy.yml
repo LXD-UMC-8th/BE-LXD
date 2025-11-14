@@ -86,6 +86,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            STACK_FILE=~/deploy/docker-compose.yml
+
+            # 1) env 파일 생성
             cat <<EOF > ~/deploy/.env
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             DOCKER_REPO=${{ secrets.DOCKER_REPO }}
@@ -106,12 +109,27 @@ jobs:
             URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
             URLS_BACKEND=${{ secrets.URLS_BACKEND }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }}
+            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }} 
             EOF
-            
-            sudo docker compose -f ~/deploy/docker-compose.yml down
-            sudo docker compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
-            sudo docker compose -f ~/deploy/docker-compose.yml up -d --force-recreate
+
+            # 2) 업데이트 할 서비스명
+            SERVICE="app-dev"
+            echo "Deploy target service: $SERVICE"
+
+            # 3) 업데이트할 서비스만 새 이미지로 교체
+            sudo docker compose -f "$STACK_FILE" pull "$SERVICE" --ignore-pull-failures
+            sudo docker compose -f "$STACK_FILE" up -d --force-recreate "$SERVICE"
+
+            # 4) 만약 스택 전체가 죽어 있다면(컨테이너 0개) → 전체 스택 복구
+            RUNNING_COUNT=$(sudo docker compose -f "$STACK_FILE" ps -q | wc -l || echo 0)
+
+            if [ "$RUNNING_COUNT" -eq 0 ]; then
+              sudo docker compose -f "$STACK_FILE" up -d
+            else
+              echo "Running containers detected ($RUNNING_COUNT). Skipping full stack up."
+            fi
+
+            # 5) 안 쓰는 이미지 정리
             sudo docker image prune -f
 
 
@@ -130,6 +148,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            STACK_FILE=~/deploy/docker-compose.yml
+
+            # 1) env 파일 생성
             cat <<EOF > ~/deploy/.env
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             DOCKER_REPO=${{ secrets.DOCKER_REPO }}
@@ -150,10 +171,25 @@ jobs:
             URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
             URLS_BACKEND=${{ secrets.URLS_BACKEND }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }}
+            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }} 
             EOF
 
-            sudo docker compose -f ~/deploy/docker-compose.yml down
-            sudo docker compose -f ~/deploy/docker-compose.yml pull --ignore-pull-failures
-            sudo docker compose -f ~/deploy/docker-compose.yml up -d --force-recreate
+            # 2) 업데이트 할 서비스명
+            SERVICE="app-prod"
+            echo "Deploy target service: $SERVICE"
+
+            # 3) 업데이트할 서비스만 새 이미지로 교체
+            sudo docker compose -f "$STACK_FILE" pull "$SERVICE" --ignore-pull-failures
+            sudo docker compose -f "$STACK_FILE" up -d --force-recreate "$SERVICE"
+
+            # 4) 만약 스택 전체가 죽어 있다면(컨테이너 0개) → 전체 스택 복구
+            RUNNING_COUNT=$(sudo docker compose -f "$STACK_FILE" ps -q | wc -l || echo 0)
+
+            if [ "$RUNNING_COUNT" -eq 0 ]; then
+              sudo docker compose -f "$STACK_FILE" up -d
+            else
+              echo "Running containers detected ($RUNNING_COUNT). Skipping full stack up."
+            fi
+
+            # 5) 안 쓰는 이미지 정리
             sudo docker image prune -f
