@@ -7,7 +7,6 @@ import org.lxdproject.lxd.domain.diarycomment.dto.DiaryCommentRequestDTO;
 import org.lxdproject.lxd.domain.diarycomment.dto.DiaryCommentResponseDTO;
 import org.lxdproject.lxd.global.apiPayload.ApiResponse;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
-import org.lxdproject.lxd.diarycomment.dto.*;
 import org.lxdproject.lxd.global.validation.annotation.PageSizeValid;
 import org.lxdproject.lxd.global.validation.annotation.PageValid;
 import org.springframework.web.bind.annotation.*;

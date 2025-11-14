@@ -11,7 +11,6 @@ import org.lxdproject.lxd.global.authz.guard.FriendGuard;
 import org.lxdproject.lxd.global.authz.guard.MemberGuard;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
 import org.lxdproject.lxd.global.security.SecurityUtil;
-import org.lxdproject.lxd.friend.dto.*;
 import org.lxdproject.lxd.domain.friend.entity.FriendRequest;
 import org.lxdproject.lxd.global.redis.service.RedisService;
 import org.lxdproject.lxd.domain.member.entity.Member;

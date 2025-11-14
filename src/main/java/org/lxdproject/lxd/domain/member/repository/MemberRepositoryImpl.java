@@ -7,7 +7,7 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.domain.friend.dto.FriendSearchResponseDTO;
-import org.lxdproject.lxd.member.entity.QMember;
+import org.lxdproject.lxd.domain.member.entity.QMember;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

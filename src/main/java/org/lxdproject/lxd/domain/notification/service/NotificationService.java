@@ -18,7 +18,6 @@ import org.lxdproject.lxd.domain.correctioncomment.repository.CorrectionCommentR
 import org.lxdproject.lxd.domain.diarycomment.repository.DiaryCommentRepository;
 import org.lxdproject.lxd.domain.member.entity.Member;
 import org.lxdproject.lxd.domain.member.repository.MemberRepository;
-import org.lxdproject.lxd.notification.dto.*;
 import org.lxdproject.lxd.domain.notification.entity.Notification;
 import org.lxdproject.lxd.domain.notification.entity.enums.NotificationType;
 import org.lxdproject.lxd.domain.notification.entity.enums.TargetType;

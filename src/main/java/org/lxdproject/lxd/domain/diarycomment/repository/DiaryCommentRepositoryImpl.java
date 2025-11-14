@@ -5,11 +5,11 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.lxdproject.lxd.domain.diary.entity.QDiary;
+import org.lxdproject.lxd.domain.diarycomment.entity.QDiaryComment;
+import org.lxdproject.lxd.domain.member.entity.QMember;
 import org.lxdproject.lxd.global.authz.predicate.MemberPredicates;
-import org.lxdproject.lxd.diary.entity.QDiary;
 import org.lxdproject.lxd.domain.diarycomment.entity.DiaryComment;
-import org.lxdproject.lxd.diarycomment.entity.QDiaryComment;
-import org.lxdproject.lxd.member.entity.QMember;
 
 import java.time.LocalDateTime;
 import java.util.*;

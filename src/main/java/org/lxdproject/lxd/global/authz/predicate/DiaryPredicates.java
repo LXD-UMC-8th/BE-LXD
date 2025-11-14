@@ -2,7 +2,7 @@ package org.lxdproject.lxd.global.authz.predicate;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import org.lxdproject.lxd.diary.entity.QDiary;
+import org.lxdproject.lxd.domain.diary.entity.QDiary;
 import org.lxdproject.lxd.domain.diary.entity.enums.Visibility;
 import org.springframework.stereotype.Component;
 

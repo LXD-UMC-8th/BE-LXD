@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.CorrectionHandler;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.DiaryHandler;
+import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
 import org.lxdproject.lxd.global.common.dto.MemberProfileDTO;
 import org.lxdproject.lxd.global.common.dto.PageDTO;
 import org.lxdproject.lxd.global.security.SecurityUtil;
@@ -67,7 +68,7 @@ public class MemberSavedCorrectionService {
         validateMemberAccess(entity, currentMemberId);
 
         if (entity.getMemo() != null && !entity.getMemo().isBlank()) {
-            throw new CorrectionHandler(INVALID_CORRECTION_MEMO);
+            throw new CorrectionHandler(ErrorStatus.INVALID_CORRECTION_MEMO);
         }
 
         entity.setMemo(request.getMemo());
@@ -86,7 +87,7 @@ public class MemberSavedCorrectionService {
         validateMemberAccess(entity, currentMemberId);
 
         if (entity.getMemo() == null || entity.getMemo().isBlank()) {
-            throw new CorrectionHandler(MEMO_NOT_FOUND);
+            throw new CorrectionHandler(ErrorStatus.MEMO_NOT_FOUND);
         }
 
         entity.setMemo(request.getMemo());
@@ -114,12 +115,12 @@ public class MemberSavedCorrectionService {
 
     private MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem toSavedCorrectionDTO(MemberSavedCorrection entity) {
         Correction correction = Optional.ofNullable(entity.getCorrection())
-                .orElseThrow(() -> new CorrectionHandler(CORRECTION_NOT_FOUND));
+                .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
 
         Member member = correction.getAuthor();
 
         Diary diary = Optional.ofNullable(correction.getDiary())
-                .orElseThrow(() -> new DiaryHandler(DIARY_NOT_FOUND));
+                .orElseThrow(() -> new DiaryHandler(ErrorStatus.DIARY_NOT_FOUND));
 
         return MemberSavedCorrectionResponseDTO.SavedListResponseDTO.SavedCorrectionItem.builder()
                 .savedCorrectionId(entity.getId())
@@ -146,12 +147,12 @@ public class MemberSavedCorrectionService {
 
     private MemberSavedCorrection getSavedCorrectionOrThrow(Long id) {
         return memberSavedCorrectionRepository.findById(id)
-                .orElseThrow(() -> new CorrectionHandler(CORRECTION_NOT_FOUND));
+                .orElseThrow(() -> new CorrectionHandler(ErrorStatus.CORRECTION_NOT_FOUND));
     }
 
     private void validateMemberAccess(MemberSavedCorrection entity, Long currentMemberId) {
         if (!entity.getMember().getId().equals(currentMemberId)) {
-            throw new AuthHandler(NOT_RESOURCE_OWNER);
+            throw new AuthHandler(ErrorStatus.NOT_RESOURCE_OWNER);
         }
     }
 }

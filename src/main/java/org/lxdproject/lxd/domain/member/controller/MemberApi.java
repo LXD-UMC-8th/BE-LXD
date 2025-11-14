@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.lxdproject.lxd.domain.member.dto.*;
 import org.lxdproject.lxd.global.apiPayload.ApiResponse;
-import org.lxdproject.lxd.member.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
