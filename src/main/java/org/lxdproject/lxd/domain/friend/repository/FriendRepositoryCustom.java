@@ -1,0 +1,18 @@
+package org.lxdproject.lxd.domain.friend.repository;
+
+import org.lxdproject.lxd.domain.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+public interface FriendRepositoryCustom {
+    Page<Member> findFriendsByMemberId(Long memberId, Pageable pageable);
+    long countFriendsByMemberId(Long memberId);
+    void saveFriendship(Member requester, Member receiver);
+    void deleteFriendship(Member m1, Member m2);
+    boolean areFriends(Long memberId, Long friendId);
+    Set<Long> findFriendIdsByMemberId(Long memberId);
+    void hardDeleteFriendshipsOlderThanThreshold(LocalDateTime threshold);
+}
