@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  app-dev:
+  app-blue:
     image: ${DOCKER_USERNAME}/${DOCKER_REPO}
     pull_policy: always
     ports:
@@ -30,10 +30,10 @@ services:
       redis:
         condition: service_healthy
     networks:
-       - app-network
+      - app-network
     restart: always
 
-  app-prod:
+  app-green:
     image: ${DOCKER_USERNAME}/${DOCKER_REPO}
     pull_policy: always
     ports:
