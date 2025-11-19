@@ -85,6 +85,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            STACK_FILE=~/deploy/docker-compose.prod.yml
+            COLOR_FILE=~/deploy/.deploy_color
+            NGINX_CONF=/etc/nginx/sites-available/default
+            
+            echo "[INFO] Start deploy (blue-green)"
             
             cat <<EOF > ~/deploy/.env
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
@@ -108,3 +113,53 @@ jobs:
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }} 
             EOF
+            
+            
+            # COLOR 파일 없으면 BLUE로 생성
+            if [ ! -f "$COLOR_FILE" ]; then
+              echo "blue" > "$COLOR_FILE"
+            fi
+            
+            # COLOR 값 읽기
+            COLOR=$(cat "$COLOR_FILE")
+            echo "[INFO] Loaded COLOR=$COLOR"
+            
+            
+            # 현재 컨테이너 수 확인
+            RUNNING_COUNT=$(sudo docker compose -f "$STACK_FILE" ps -q | wc -l || echo 0)
+            echo "[INFO] Running containers: $RUNNING_COUNT"
+            
+            if [ "$RUNNING_COUNT" -eq 0 ]; then
+              echo "[INFO] No containers running. Bring up full stack."
+              sudo docker compose -f "$STACK_FILE" up -d
+              echo "COLOR=blue" >> "$COLOR_FILE"
+              echo "[INFO] First deploy done. Keep COLOR=$COLOR (default blue)"
+              sudo docker image prune -f
+              exit 0
+            fi
+            
+            if [ "$COLOR" = "blue" ]; then
+              echo "현재 color: blue"
+              SERVICE="app-green"
+              sudo docker compose -f "$STACK_FILE" pull "$SERVICE" --ignore-pull-failures
+              sudo docker compose -f "$STACK_FILE" up -d --force-recreate "$SERVICE"
+            
+              sudo sed -i '18s/8080/8081/g' /etc/nginx/sites-available/default
+              sudo nginx -s reload
+            
+              echo "green" > "$COLOR_FILE"
+            
+            elif [ "$COLOR" = "green" ]; then
+              echo "현재 color: green"
+              SERVICE="app-blue"
+              sudo docker compose -f "$STACK_FILE" pull "$SERVICE" --ignore-pull-failures
+              sudo docker compose -f "$STACK_FILE" up -d --force-recreate "$SERVICE"
+            
+              sudo sed -i '18s/8081/8080/g' /etc/nginx/sites-available/default
+              sudo nginx -s reload
+            
+              echo "blue" > "$COLOR_FILE"
+            
+            fi
+            
+            sudo docker image prune -f
