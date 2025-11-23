@@ -1,0 +1,165 @@
+name: Production CI/CD
+
+on:
+  push:
+    branches: ["release"]
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+  pull_request:
+    branches: ["release"] # pull_request는 테스트 후 없애기
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+  workflow_dispatch: # 수동 실행 기능
+
+jobs:
+  build-docker-image-production:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew bootJar
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: create deploy directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/deploy
+
+      - name: copy docker-compose.prod.yml
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "/home/ubuntu/deploy/"
+
+      - name: docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PWD}}
+
+      - name: Docker build and push
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+        run: docker build --no-cache -t ${DOCKER_USERNAME}/${DOCKER_REPO} .
+
+      - name: docker Hub push
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+        run: docker push ${DOCKER_USERNAME}/${DOCKER_REPO}
+
+  deploy-production:
+    needs: build-docker-image-production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy to EC2 (production)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            STACK_FILE=~/deploy/docker-compose.prod.yml
+            COLOR_FILE=~/deploy/.deploy_color
+            NGINX_CONF=/etc/nginx/sites-available/default
+            
+            echo "[INFO] Start deploy (blue-green)"
+            
+            cat <<EOF > ~/deploy/.env
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            DOCKER_REPO=${{ secrets.DOCKER_REPO }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PWD=${{ secrets.DB_PWD }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}
+            JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}
+            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            S3_BUCKET=${{ secrets.S3_BUCKET }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+            URLS_FRONTEND=${{ secrets.URLS_FRONTEND }}
+            URLS_BACKEND=${{ secrets.URLS_BACKEND }}
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }} 
+            EOF
+            
+            
+            # COLOR 파일 없으면 BLUE로 생성
+            if [ ! -f "$COLOR_FILE" ]; then
+              echo "blue" > "$COLOR_FILE"
+            fi
+            
+            # COLOR 값 읽기
+            COLOR=$(cat "$COLOR_FILE")
+            echo "[INFO] Loaded COLOR=$COLOR"
+            
+            
+            # 현재 컨테이너 수 확인
+            RUNNING_COUNT=$(sudo docker compose -f "$STACK_FILE" ps -q | wc -l || echo 0)
+            echo "[INFO] Running containers: $RUNNING_COUNT"
+            
+            if [ "$RUNNING_COUNT" -eq 0 ]; then
+              echo "[INFO] No containers running. Bring up full stack."
+              sudo docker compose -f "$STACK_FILE" up -d
+              echo "COLOR=blue" >> "$COLOR_FILE"
+              echo "[INFO] First deploy done. Keep COLOR=$COLOR (default blue)"
+              sudo docker image prune -f
+              exit 0
+            fi
+            
+            if [ "$COLOR" = "blue" ]; then
+              echo "현재 color: blue"
+              SERVICE="app-green"
+              sudo docker compose -f "$STACK_FILE" pull "$SERVICE" --ignore-pull-failures
+              sudo docker compose -f "$STACK_FILE" up -d --force-recreate "$SERVICE"
+            
+              sudo sed -i '18s/8080/8081/g' /etc/nginx/sites-available/default
+              sudo nginx -s reload
+            
+              echo "green" > "$COLOR_FILE"
+            
+            elif [ "$COLOR" = "green" ]; then
+              echo "현재 color: green"
+              SERVICE="app-blue"
+              sudo docker compose -f "$STACK_FILE" pull "$SERVICE" --ignore-pull-failures
+              sudo docker compose -f "$STACK_FILE" up -d --force-recreate "$SERVICE"
+            
+              sudo sed -i '18s/8081/8080/g' /etc/nginx/sites-available/default
+              sudo nginx -s reload
+            
+              echo "blue" > "$COLOR_FILE"
+            
+            fi
+            
+            sudo docker image prune -f
