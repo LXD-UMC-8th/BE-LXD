@@ -59,6 +59,8 @@ public class DiaryService {
         Member member = memberRepository.findById(currentMemberId)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
+        validateOriginalContentLength(request.getContent());
+
         Diary diary = Diary.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -185,6 +187,8 @@ public class DiaryService {
 
         // diff 없는 최종 본문으로 수정 내용 추출
         String previewContent = DiaryUtil.generateContentPreview(request.getContent());
+
+        validateModifiedContentLength(diffContent, request.getContent());
 
         // DB에 새로운 내용 저장
         diary.update(request, diffContent, request.getContent(), previewContent);
@@ -415,6 +419,28 @@ public class DiaryService {
                 size,
                 diaryPage.hasNext()
         );
+    }
+
+    private static final int MAX_CONTENT_LENGTH = 10000;
+    private static final int MAX_DIFF_CONTENT_LENGTH = 16000;
+
+    private void validateOriginalContentLength(String content){
+        if(content != null && content.length() > MAX_CONTENT_LENGTH){
+            throw new DiaryHandler(ErrorStatus.CONTENT_TOO_LONG);
+        }
+    }
+
+    private void validateModifiedContentLength(String diffContents, String modifiedContents){
+
+        if(diffContents != null && diffContents.length() > MAX_DIFF_CONTENT_LENGTH){
+            throw new DiaryHandler(ErrorStatus.DIFF_CONTENT_TOO_LONG);
+        }
+
+        if(modifiedContents != null && modifiedContents.length() > MAX_CONTENT_LENGTH){
+            throw new DiaryHandler(ErrorStatus.CONTENT_TOO_LONG);
+        }
+
+
     }
 
 }
