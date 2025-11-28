@@ -27,7 +27,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class MemberService {
 
@@ -39,6 +38,7 @@ public class MemberService {
     private final List<SoftDeleteStrategy> softDeleteStrategies;
     private final List<HardDeleteStrategy> hardDeleteStrategies;
 
+    @Transactional
     public Member join(MemberRequestDTO.JoinRequestDTO joinRequestDTO, MultipartFile profileImg) {
 
 
@@ -71,6 +71,7 @@ public class MemberService {
 
     }
 
+    @Transactional
     public MemberResponseDTO.MemberInfoDTO getMemberInfo() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(currentMemberId).orElseThrow(
@@ -85,6 +86,7 @@ public class MemberService {
                 .build();
     }
 
+    @Transactional
     public MemberResponseDTO.CheckUsernameResponseDTO isUsernameDuplicated(String username) {
         if (username == null || username.trim().isEmpty()) {
             throw new MemberHandler(ErrorStatus.INVALID_USERNAME);
@@ -175,6 +177,7 @@ public class MemberService {
 
     }
 
+    @Transactional
     public void deleteProfileImage(){
         Long memberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(memberId)
@@ -197,7 +200,6 @@ public class MemberService {
         }
     }
 
-    @Transactional
     public void hardDeleteMembers() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(30);
         StopWatch stopWatch = new StopWatch();

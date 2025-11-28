@@ -16,7 +16,7 @@ public class NotificationHardDeleteStrategy implements HardDeleteStrategy {
 
     private final NotificationRepository notificationRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
     public void hardDelete(LocalDateTime threshold) {
         notificationRepository.hardDeleteNotificationsOlderThanThreshold(threshold);
