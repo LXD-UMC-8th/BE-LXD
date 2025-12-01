@@ -66,7 +66,7 @@ public class AuthService {
         // 일반 로그인인지 검사
         Member member = memberRepository.findByEmail(loginRequestDTO.getEmail()).orElse(null);
 
-        if(member != null && member.getLoginType() != LoginType.LOCAL){
+        if(member != null && member.getLoginType() != null && member.getLoginType() != LoginType.LOCAL){
             throw new AuthHandler(ErrorStatus.ALREADY_REGISTERED_SOCIAL_ACCOUNT);
         }
 
@@ -238,7 +238,7 @@ public class AuthService {
         String email = oAuthUserInfo.getEmail();
         Member member = memberRepository.findByEmail(email).orElse(null);
 
-        if(member != null && member.getLoginType() == LoginType.LOCAL){
+        if(member != null && member.getLoginType() != null && member.getLoginType() == LoginType.LOCAL){
             throw new AuthHandler(ErrorStatus.ALREADY_REGISTERED_LOCAL_ACCOUNT);
         }
 
