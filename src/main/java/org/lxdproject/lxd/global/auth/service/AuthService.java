@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.lxdproject.lxd.domain.member.entity.enums.LoginType;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.AuthHandler;
 import org.lxdproject.lxd.global.apiPayload.code.exception.handler.MemberHandler;
 import org.lxdproject.lxd.global.apiPayload.code.status.ErrorStatus;
@@ -63,6 +64,11 @@ public class AuthService {
     public AuthResponseDTO.LoginResponseDTO login(AuthRequestDTO.LoginRequestDTO loginRequestDTO) {
 
         // 일반 로그인인지 검사
+        Member member = memberRepository.findByEmail(loginRequestDTO.getEmail()).orElse(null);
+
+        if(member != null && member.getLoginType() != null && member.getLoginType() != LoginType.LOCAL){
+            throw new AuthHandler(ErrorStatus.ALREADY_REGISTERED_SOCIAL_ACCOUNT);
+        }
 
         // 아이디, 비밀번호 기반으로 UsernamePasswordAuthenticationToken 생성
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -231,6 +237,10 @@ public class AuthService {
 
         String email = oAuthUserInfo.getEmail();
         Member member = memberRepository.findByEmail(email).orElse(null);
+
+        if(member != null && member.getLoginType() != null && member.getLoginType() == LoginType.LOCAL){
+            throw new AuthHandler(ErrorStatus.ALREADY_REGISTERED_LOCAL_ACCOUNT);
+        }
 
         log.debug("social login member: {}", member);
 

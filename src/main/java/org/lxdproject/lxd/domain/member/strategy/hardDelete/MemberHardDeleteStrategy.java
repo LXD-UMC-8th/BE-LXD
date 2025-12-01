@@ -16,7 +16,7 @@ public class MemberHardDeleteStrategy implements HardDeleteStrategy {
 
     private final MemberRepository memberRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
     public void hardDelete(LocalDateTime threshold) {
 
