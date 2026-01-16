@@ -58,6 +58,11 @@ jwt:
 
 server:
   port: 8080
+  forward-headers-strategy: framework
+  tomcat:
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      protocol-header: x-forwarded-proto
 
 urls:
   frontend: ${URLS_FRONTEND}
