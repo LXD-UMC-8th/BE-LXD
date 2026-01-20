@@ -68,8 +68,8 @@ LXD는 외국어 학습자가 서로의 일기를 공유하고 교정해주며 �
 BE-LXD/
  ├── .github/  
  │   └── workflows/  
- │        ├── staging_ci_cd.yml         # 배포 자동화 설정 (CI/CD) - 개발 서버 전용
-          └── production_ci_cd.yml      # 배포 자동화 설정 (CI/CD) - 배포 서버 전용
+ │        ├── cd.yml
+          └── ci.yml
  │
  ├── src/
  │   └── main/
@@ -106,8 +106,7 @@ BE-LXD/
  │           ├── application-local.yml       # 로컬 환경 변수
  │           └── application-prod.yml        # 운영 환경 변수
  │
- ├── docker-compose.staging.yml
- ├── docker-compose.prod.yml
+ ├── docker-compose.yml
  └── Dockerfile
 ```
 
