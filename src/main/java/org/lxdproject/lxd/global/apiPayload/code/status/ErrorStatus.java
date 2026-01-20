@@ -20,7 +20,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 멤버 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4300", "사용자가 없습니다"),
-    EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일입니다."),
+    EMAIL_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4311", "이미 존재하는 이메일이거나 소셜 로그인으로 회원가입한 이메일입니다."),
     PRIVACY_POLICY_NOT_AGREED(HttpStatus.BAD_REQUEST, "MEMBER4313", "개인정보 동의는 필수입니다."),
     USERNAME_DUPLICATION(HttpStatus.CONFLICT, "MEMBER4314", "이미 존재하는 아이디입니다."),
     INVALID_USERNAME(HttpStatus.BAD_REQUEST, "MEMBER4001", "올바르지 않는 아이디 형식입니다."),
@@ -51,7 +51,9 @@ public enum ErrorStatus implements BaseErrorCode {
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4303", "액세스 토큰 기간이 만료되었습니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4304", "리프레쉬 토큰 기간이 만료되었습니다."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH4310", "아이디 또는 비밀번호가 올바르지 않습니다."),
-    UNABLE_TO_SOCIAL_MEMBER(HttpStatus.UNAUTHORIZED, "AUTH4311", "일반 로그인 시, 소셜 로그인 계정으로는 불가능합니다"),
+    ALREADY_REGISTERED_SOCIAL_ACCOUNT(HttpStatus.UNAUTHORIZED, "AUTH4311", "해당 이메일은 소셜 로그인 계정으로 이미 가입되어 있습니다. 소셜 로그인을 이용해 주세요."),
+    ALREADY_REGISTERED_LOCAL_ACCOUNT(HttpStatus.UNAUTHORIZED, "AUTH4312", "해당 이메일은 일반 회원가입으로 이미 가입된 계정입니다. 일반 로그인 또는 비밀번호 찾기를 이용해 주세요."),
+
     AUTHENTICATION_INFO_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH4320", "인증 정보를 찾을 수 없습니다."),
     INVALID_AUTHENTICATION_INFO(HttpStatus.FORBIDDEN, "AUTH4321", "인증된 사용자 정보가 올바르지 않습니다."),
     NOT_RESOURCE_OWNER(HttpStatus.FORBIDDEN,"AUTH4001","해당 리소스의 작성자가 아닙니다. 권한이 없습니다."),
@@ -62,6 +64,8 @@ public enum ErrorStatus implements BaseErrorCode {
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND,"DIARY4001","일기를 찾을 수 없습니다."),
     FORBIDDEN_DIARY_UPDATE(HttpStatus.FORBIDDEN, "DIARY4003", "작성자 본인만 수정할 수 있습니다."),
     DIARY_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "DIARY4004", "일기 조회 권한이 없습니다."),
+    CONTENT_TOO_LONG(HttpStatus.BAD_REQUEST, "DIARY4010", "일기 내용이 너무 깁니다."),
+    DIFF_CONTENT_TOO_LONG(HttpStatus.BAD_REQUEST, "DIARY4011", "편집 이력(diff) 내용이 너무 깁니다."),
 
     // 메일 관련 에러
     UNABLE_TO_SEND_EMAIL(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL 4301", "이메일을 보낼 수 없습니다."),

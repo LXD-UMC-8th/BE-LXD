@@ -16,7 +16,7 @@ public class FriendHardDeleteStrategy implements HardDeleteStrategy {
 
     private final FriendRepository friendRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
     public void hardDelete(LocalDateTime threshold) {
         friendRepository.hardDeleteFriendshipsOlderThanThreshold(threshold);

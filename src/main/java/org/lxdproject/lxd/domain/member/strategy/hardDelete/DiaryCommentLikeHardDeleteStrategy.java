@@ -16,7 +16,7 @@ public class DiaryCommentLikeHardDeleteStrategy implements HardDeleteStrategy {
 
     private final DiaryCommentLikeRepository diaryCommentLikeRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
     public void hardDelete(LocalDateTime threshold) {
         diaryCommentLikeRepository.hardDeleteDiaryCommentLikesOlderThanThreshold(threshold);
