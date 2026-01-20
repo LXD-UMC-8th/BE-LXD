@@ -7,6 +7,9 @@ on:
       - completed
     branches:
       - main
+      - develop
+
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -65,28 +68,18 @@ jobs:
             DISCORD_ERROR_WEBHOOK_URL=${{ secrets.DISCORD_ERROR_WEBHOOK_URL }}
             EOF
             
-            # Secure .env file
             chmod 600 ~/deploy/.env
-            
-            # Navigate to deploy directory
             cd ~/deploy
             
-            # Pull new image
             sudo docker compose pull
-            
-            # Deploy with zero-downtime strategy
             sudo docker compose up -d --no-deps --build --force-recreate
-            
-            # Clean up old images
             sudo docker image prune -af --filter "until=24h"
             
-            # Verify deployment
             if ! sudo docker compose ps | grep -q "Up"; then
               echo "Deployment failed!"
               sudo docker compose logs --tail=50
               exit 1
             fi
-            
             echo "Deployment successful!"
 
       - name: Notify deployment status
